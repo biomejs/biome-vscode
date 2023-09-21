@@ -1,5 +1,8 @@
 # Biome VS Code Extension
 
+> [!IMPORTANT]  
+> This repository has been extracted from the [Biome monorepo](https://github.com/biomejs/biome). It is still a work in progress. If you find any issues, please report them in the Biome monorepo.
+
 [Biome](https://biomejs.dev/) unifies your development stack by combining the functionality of separate tools. It uses a single configuration file, has fantastic performance, and works with any stack. This extension brings Biome to your editor so that you can:
 
 - Format files *on save* or when issuing the *Format Document* command
