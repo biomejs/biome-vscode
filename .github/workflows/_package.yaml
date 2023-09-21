@@ -1,0 +1,52 @@
+# Reusable Package Workflow
+name: Package
+
+on:
+  workflow_call:
+    inputs:
+      biome-version:
+        type: string
+        required: true
+        description: 'Biome version to bundle with the extension'
+      target:
+        type: string
+        required: true
+        description: 'Target architecture and platform'
+
+jobs:
+  package:
+    name: "Package for ${{ inputs.target }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Ensure the server directory exists
+        run: mkdir -p server
+
+      - name: Clear the server directory
+        run: rm -rf server/*
+
+      - name: Determine file extension
+        id: file-extension
+        run: echo "extension=${{ contains(inputs.target, 'win32') && '.exe' || '' }}" >> $GITHUB_OUPUT
+        
+      - name: Download the Biome CLI for the target platform
+        run: |
+          curl -L -o server/biome${{ steps.file-extension.outputs.extension }} \
+          https://github.com/biomejs/biome/releases/download/cli%2Fv${{ inputs.biome-version }}/biome-${{ inputs.target }}${{ steps.file-extension.outputs.extension }}
+          
+      - name: Make the Biome CLI executable
+        run: chmod +x server/biome${{ steps.file-extension.outputs.extension }}
+
+      - name: Package the extension
+        run: vsce package -o biome-vscode-${{ inputs.target }}.vsix --target ${{ inputs.target }}
+
+      - name: Upload the artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: biome-vscode-${{ inputs.target }}.vsix
+          path: biome_lsp.vsix
