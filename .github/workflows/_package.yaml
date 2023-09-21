@@ -12,6 +12,10 @@ on:
         type: string
         required: true
         description: 'Target architecture and platform'
+      asset-name:
+        type: string
+        required: true
+        description: 'Name of the asset to download'
 
 jobs:
   package:
@@ -29,19 +33,15 @@ jobs:
 
       - name: Clear the server directory
         run: rm -rf server/*
-
-      - name: Determine file extension
-        id: file-extension
-        run: echo "extension=${{ contains(inputs.target, 'win32') && '.exe' || '' }}" >> $GITHUB_OUPUT
         
       - name: Download the Biome CLI for the target platform
         run: |
-          curl -L -o server/biome${{ steps.file-extension.outputs.extension }} \
-          https://github.com/biomejs/biome/releases/download/cli%2Fv${{ inputs.biome-version }}/biome-${{ inputs.target }}${{ steps.file-extension.outputs.extension }}
+          curl -L -o server/biome${{ contains(inputs.target, 'win32') && '.exe' || '' }} \
+          https://github.com/biomejs/biome/releases/download/cli%2Fv${{ inputs.biome-version }}/${{ inputs.asset-name }}
           
       - name: Make the Biome CLI executable
-        run: chmod +x server/biome${{ steps.file-extension.outputs.extension }}
-
+        run: chmod +x server/biome*
+  
       - name: Package the extension
         run: vsce package -o biome-vscode-${{ inputs.target }}.vsix --target ${{ inputs.target }}
 
