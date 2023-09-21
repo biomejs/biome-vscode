@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
           - target: win32-x64
-            asset-name: "biome-win-x64.exe"
+            asset-name: "biome-win32-x64.exe"
           - target: win32-arm64
-            asset-name: "biome-win-arm64.exe"
+            asset-name: "biome-win32-arm64.exe"
           - target: linux-x64
             asset-name: "biome-linux-x64"
           - target: linux-arm64
@@ -50,7 +50,7 @@ jobs:
         
       - name: Download the Biome CLI for the target platform
         run: |
-          curl -L -o server/biome${{ contains(matrix.target, 'win32') && '.exe' || '' }} \
+          curl -fL -o server/biome${{ contains(matrix.target, 'win32') && '.exe' || '' }} \
           https://github.com/biomejs/biome/releases/download/cli%2Fv${{ inputs.biome-version }}/${{ matrix.asset-name }}
           
       - name: Make the Biome CLI executable
