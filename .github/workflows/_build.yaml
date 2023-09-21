@@ -18,9 +18,8 @@ jobs:
       - name: Build
         run: pnpm run compile
 
-      - name: Upload the built artifacts
-        uses: actions/upload-artifact@v3
+      - name: Cache compiled extension
+        uses: actions/cache@v3
         with:
-          name: compiled-extension
           path: out/
-          retention-days: 5
+          key: compiled-extension-${{ github.sha }}
