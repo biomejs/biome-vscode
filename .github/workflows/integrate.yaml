@@ -18,22 +18,4 @@ jobs:
     needs: [build]
     uses: ./.github/workflows/_package.yaml
     with:
-      target: ${{ matrix.target }}
-      asset-name: ${{ matrix.asset-name }}
       biome-version: "1.2.2"
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-          - target: win32-x64
-            asset-name: "biome-win-x64.exe"
-          - target: win32-arm64
-            asset-name: "biome-win-arm64.exe"
-          - target: linux-x64
-            asset-name: "biome-linux-x64"
-          - target: linux-arm64
-            asset-name: "biome-linux-arm64"
-          - target: darwin-x64
-            asset-name: "biome-darwin-x64"
-          - target: darwin-arm64
-            asset-name: "biome-darwin-arm64"

@@ -8,18 +8,26 @@ on:
         type: string
         required: true
         description: 'Biome version to bundle with the extension'
-      target:
-        type: string
-        required: true
-        description: 'Target architecture and platform'
-      asset-name:
-        type: string
-        required: true
-        description: 'Name of the asset to download'
 
 jobs:
   package:
-    name: "Package for ${{ inputs.target }}"
+    name: "Package for ${{ matrix.target }}"
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - target: win32-x64
+            asset-name: "biome-win-x64.exe"
+          - target: win32-arm64
+            asset-name: "biome-win-arm64.exe"
+          - target: linux-x64
+            asset-name: "biome-linux-x64"
+          - target: linux-arm64
+            asset-name: "biome-linux-arm64"
+          - target: darwin-x64
+            asset-name: "biome-darwin-x64"
+          - target: darwin-arm64
+            asset-name: "biome-darwin-arm64"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,16 +50,16 @@ jobs:
         
       - name: Download the Biome CLI for the target platform
         run: |
-          curl -L -o server/biome${{ contains(inputs.target, 'win32') && '.exe' || '' }} \
-          https://github.com/biomejs/biome/releases/download/cli%2Fv${{ inputs.biome-version }}/${{ inputs.asset-name }}
+          curl -L -o server/biome${{ contains(matrix.target, 'win32') && '.exe' || '' }} \
+          https://github.com/biomejs/biome/releases/download/cli%2Fv${{ inputs.biome-version }}/${{ matrix.asset-name }}
           
       - name: Make the Biome CLI executable
         run: chmod +x server/biome*
   
       - name: Package the extension
-        run: pnpm exec vsce package -o biome-vscode-${{ inputs.target }}.vsix --target ${{ inputs.target }}
+        run: pnpm exec vsce package -o biome-vscode-${{ matrix.target }}.vsix --target ${{ matrix.target }}
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v3
         with:
-          path: biome-vscode-${{ inputs.target }}.vsix
+          path: biome-vscode-${{ matrix.target }}.vsix
