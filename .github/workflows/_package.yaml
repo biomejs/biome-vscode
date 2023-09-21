@@ -62,4 +62,5 @@ jobs:
       - name: Upload the artifact
         uses: actions/upload-artifact@v3
         with:
+          name: biome-vscode-${{ matrix.target }}.vsix
           path: biome-vscode-${{ matrix.target }}.vsix
