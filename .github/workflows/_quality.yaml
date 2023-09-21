@@ -1,0 +1,17 @@
+# Reusable Quality Workflow
+name: Quality
+
+on:
+  workflow_call:
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Run Biome
+        run: pnpm exec biome ci .
