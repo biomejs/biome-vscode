@@ -2,7 +2,7 @@ name: Integrate
 
 on:
   push:
-    tags-ignore: ["*"]
+    branches: ["main"]
   pull_request:
   workflow_dispatch:
 
