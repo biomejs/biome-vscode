@@ -15,6 +15,7 @@ jobs:
     uses: ./.github/workflows/_build.yaml
   package:
     name: Package
+    needs: [build]
     uses: ./.github/workflows/_package.yaml
     with:
       target: ${{ matrix.target }}
