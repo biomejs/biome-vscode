@@ -25,6 +25,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Retrieve the compiled extension
+        uses: actions/download-artifact@v3
+        with:
+          name: compiled-extension
+
       - name: Setup
         uses: ./.github/actions/setup
 
