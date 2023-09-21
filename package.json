@@ -160,5 +160,6 @@
 	},
 	"vsce": {
 		"dependencies": false
-	}
+	},
+	"packageManager": "pnpm@8.6.12"
 }
