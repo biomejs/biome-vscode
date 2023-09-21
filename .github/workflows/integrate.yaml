@@ -1,0 +1,30 @@
+name: Integrate
+
+on:
+  push:
+    tags-ignore: ["*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Run Biome
+        run: pnpm exec biome ci .
+  
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Build extension
+        run: pnpm run compile
