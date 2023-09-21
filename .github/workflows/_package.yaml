@@ -43,7 +43,7 @@ jobs:
         run: chmod +x server/biome*
   
       - name: Package the extension
-        run: vsce package -o biome-vscode-${{ inputs.target }}.vsix --target ${{ inputs.target }}
+        run: pnpm exec vsce package -o biome-vscode-${{ inputs.target }}.vsix --target ${{ inputs.target }}
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v2
