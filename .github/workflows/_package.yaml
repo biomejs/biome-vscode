@@ -52,7 +52,6 @@ jobs:
         run: pnpm exec vsce package -o biome-vscode-${{ inputs.target }}.vsix --target ${{ inputs.target }}
 
       - name: Upload the artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: biome-vscode-${{ inputs.target }}.vsix
-          path: biome_lsp.vsix
+          path: biome-vscode-${{ inputs.target }}.vsix
