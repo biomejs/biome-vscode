@@ -1,5 +1,3 @@
 {
-	"recommendations": [
-		"nhedger.ts-esbuild-problem-matchers"
-	]
+	"recommendations": ["nhedger.ts-esbuild-problem-matchers"]
 }
