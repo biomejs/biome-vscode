@@ -15,7 +15,3 @@ jobs:
         uses: ./.github/actions/setup
       - name: Build
         run: pnpm run compile
-      - uses: actions/upload-artifact@v3
-        with:
-          name: "extension"
-          path: out/
