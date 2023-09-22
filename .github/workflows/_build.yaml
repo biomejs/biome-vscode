@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-extension:
-    name: Build extension
+    name: Build Extension
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

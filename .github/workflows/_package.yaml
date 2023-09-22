@@ -11,7 +11,7 @@ on:
 
 jobs:
   package:
-    name: "Package for ${{ matrix.target }}"
+    name: "${{ matrix.target }}"
     strategy:
       fail-fast: true
       matrix:
