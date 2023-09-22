@@ -5,8 +5,8 @@ on:
   workflow_call:
 
 jobs:
-  quality:
-    name: Quality
+  code-quality:
+    name: Code Quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
