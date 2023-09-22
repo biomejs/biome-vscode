@@ -5,8 +5,8 @@ on:
   workflow_call:
 
 jobs:
-  build:
-    name: Build
+  build-extension:
+    name: Build extension
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
