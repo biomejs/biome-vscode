@@ -5,6 +5,10 @@ on:
     branches: ["main"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      biome-version:
+        description: "Biome CLI version"
+        required: true
 
 jobs:
   quality:
@@ -18,4 +22,4 @@ jobs:
     needs: [build]
     uses: ./.github/workflows/_package.yaml
     with:
-      biome-version: "1.2.2"
+      biome-version: ${{ github.event.inputs.biome-version }}
