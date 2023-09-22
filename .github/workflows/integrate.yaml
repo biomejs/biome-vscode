@@ -7,8 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       biome-version:
-        description: "Biome CLI version"
+        type: string
         required: true
+        description: "Biome CLI version"
 
 jobs:
   quality:
