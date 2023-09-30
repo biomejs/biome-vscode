@@ -3,31 +3,10 @@ name: Package
 
 on:
   workflow_call:
-    inputs:
-      biome-version:
-        type: string
-        required: true
-        description: 'Biome version to bundle with the extension'
 
 jobs:
   package:
-    name: "${{ matrix.target }}"
-    strategy:
-      fail-fast: true
-      matrix:
-        include:
-          - target: win32-x64
-            asset-name: "biome-win32-x64.exe"
-          - target: win32-arm64
-            asset-name: "biome-win32-arm64.exe"
-          - target: linux-x64
-            asset-name: "biome-linux-x64"
-          - target: linux-arm64
-            asset-name: "biome-linux-arm64"
-          - target: darwin-x64
-            asset-name: "biome-darwin-x64"
-          - target: darwin-arm64
-            asset-name: "biome-darwin-arm64"
+    name: Package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,26 +20,12 @@ jobs:
 
       - name: Setup
         uses: ./.github/actions/setup
-
-      - name: Ensure the server directory exists
-        run: mkdir -p server
-
-      - name: Clear the server directory
-        run: rm -rf server/*
-        
-      - name: Download the Biome CLI for the target platform
-        run: |
-          curl -fL -o server/biome${{ contains(matrix.target, 'win32') && '.exe' || '' }} \
-          https://github.com/biomejs/biome/releases/download/cli%2Fv${{ inputs.biome-version }}/${{ matrix.asset-name }}
-          
-      - name: Make the Biome CLI executable
-        run: chmod +x server/biome*
   
       - name: Package the extension
-        run: pnpm exec vsce package -o biome-vscode-${{ matrix.target }}.vsix --target ${{ matrix.target }}
+        run: pnpm exec vsce package -o biome-vscode.vsix
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v3
         with:
-          name: biome-vscode-${{ matrix.target }}.vsix
-          path: biome-vscode-${{ matrix.target }}.vsix
+          name: biome-vscode.vsix
+          path: biome-vscode.vsix
