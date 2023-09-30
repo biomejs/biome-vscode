@@ -16,4 +16,4 @@ jobs:
         with:
           version: 1.2.2
       - name: Run Biome
-        run: pnpm exec biome ci .
+        run: biome ci .
