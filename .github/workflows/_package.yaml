@@ -22,10 +22,10 @@ jobs:
         uses: ./.github/actions/setup
   
       - name: Package the extension
-        run: pnpm exec vsce package -o biome-vscode.vsix
+        run: pnpm exec vsce package -o biome.vsix
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v3
         with:
-          name: biome-vscode.vsix
-          path: biome-vscode.vsix
+          name: biome.vsix
+          path: biome.vsix
