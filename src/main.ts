@@ -27,6 +27,7 @@ import { setContextValue } from "./utils";
 import resolveImpl = require("resolve/async");
 import { createRequire } from "module";
 import type * as resolve from "resolve";
+import { selectAndDownload } from "./downloader";
 
 const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 	resolveImpl,
@@ -61,15 +62,24 @@ export async function activate(context: ExtensionContext) {
 		);
 	}
 
-	const command = await getServerPath(context, outputChannel);
+	let command = await getServerPath(context, outputChannel);
 
 	if (!command) {
-		await window.showErrorMessage(
-			"The Biome extensions doesn't ship with prebuilt binaries for your platform yet. " +
-				"You can still use it by cloning the biomejs/biome repo from GitHub to build the LSP " +
-				"yourself and use it with this extension with the biome.lspBin setting",
+		const action = await window.showWarningMessage(
+			"Could not find Biome in your dependencies. Either add the @biomejs/biome package to your dependencies, or download the Biome CLI.",
+			"Ok",
+			"Download Biome",
 		);
-		return;
+
+		if (action === "Download Biome") {
+			await selectAndDownload(context);
+		}
+
+		command = await getServerPath(context, outputChannel);
+
+		if (!command) {
+			return;
+		}
 	}
 
 	outputChannel.appendLine(`Using Biome from ${command}`);
@@ -286,18 +296,11 @@ async function getBundledBinary(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
 ) {
-	const triplet = PLATFORMS[process.platform]?.[process.arch]?.triplet;
-	if (!triplet) {
-		outputChannel.appendLine(
-			`Unsupported platform ${process.platform} ${process.arch}`,
-		);
-		return undefined;
-	}
-
-	const binaryExt = triplet.includes("windows") ? ".exe" : "";
-	const binaryName = `biome${binaryExt}`;
-
-	const bundlePath = Uri.joinPath(context.extensionUri, "server", binaryName);
+	const bundlePath = Uri.joinPath(
+		context.globalStorageUri,
+		"server",
+		`biome${process.platform === "win32" ? ".exe" : ""}`,
+	);
 	const bundleExists = await fileExists(bundlePath);
 	if (!bundleExists) {
 		outputChannel.appendLine(
