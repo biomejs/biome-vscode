@@ -1,8 +1,8 @@
-import { Octokit } from "octokit";
-import { ExtensionContext, Uri, window, workspace } from "vscode";
-import { coerce, rcompare } from "semver";
-import { ofetch } from "ofetch";
 import { chmodSync } from "node:fs";
+import { Octokit } from "octokit";
+import { ofetch } from "ofetch";
+import { coerce, rcompare } from "semver";
+import { ExtensionContext, Uri, window, workspace } from "vscode";
 
 export const selectAndDownload = async (context: ExtensionContext) => {
 	const versions = await getVersions(context);
