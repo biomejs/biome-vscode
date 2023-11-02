@@ -7,6 +7,7 @@ import {
 	OutputChannel,
 	TextEditor,
 	Uri,
+	commands,
 	languages,
 	window,
 	workspace,
@@ -27,7 +28,7 @@ import { setContextValue } from "./utils";
 import resolveImpl = require("resolve/async");
 import { createRequire } from "module";
 import type * as resolve from "resolve";
-import { selectAndDownload } from "./downloader";
+import { selectAndDownload, updateToLatest } from "./downloader";
 
 const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 	resolveImpl,
@@ -62,9 +63,9 @@ export async function activate(context: ExtensionContext) {
 		);
 	}
 
-	let command = await getServerPath(context, outputChannel);
+	let server = await getServerPath(context, outputChannel);
 
-	if (!command) {
+	if (!server.command) {
 		const action = await window.showWarningMessage(
 			"Could not find Biome in your dependencies. Either add the @biomejs/biome package to your dependencies, or download the Biome CLI.",
 			"Ok",
@@ -75,21 +76,22 @@ export async function activate(context: ExtensionContext) {
 			await selectAndDownload(context);
 		}
 
-		command = await getServerPath(context, outputChannel);
+		server = await getServerPath(context, outputChannel);
 
-		if (!command) {
+		if (!server.command) {
 			return;
 		}
 	}
 
-	outputChannel.appendLine(`Using Biome from ${command}`);
+	outputChannel.appendLine(`Using Biome from ${server.command}`);
 
-	const statusBar = new StatusBar();
+	const statusBar = new StatusBar(context);
+	await statusBar.setUsingBundledBiome(server.bundled);
 
 	const serverOptions: ServerOptions = createMessageTransports.bind(
 		undefined,
 		outputChannel,
-		command,
+		server.command,
 	);
 
 	const documentSelector: DocumentFilter[] = [
@@ -121,6 +123,23 @@ export async function activate(context: ExtensionContext) {
 
 	// we are now in a biome project
 	setContextValue(IN_BIOME_PROJECT, true);
+
+	commands.registerCommand(Commands.UpdateBiome, async (version: string) => {
+		console.log(version);
+		const result = await window.showInformationMessage(
+			`Are you sure you want to update Biome (bundled) to ${version} ?`,
+			{
+				modal: true,
+			},
+			"Update",
+			"Cancel",
+		);
+
+		if (result === "Update") {
+			await updateToLatest(context);
+			statusBar.checkForUpdates();
+		}
+	});
 
 	session.registerCommand(Commands.SyntaxTree, syntaxTree(session));
 	session.registerCommand(Commands.ServerStatus, () => {
@@ -209,29 +228,40 @@ const PLATFORMS: PlatformTriplets = {
 async function getServerPath(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
-): Promise<string | undefined> {
+): Promise<{ bundled: boolean; command: string } | undefined> {
 	// Only allow the bundled Biome binary in untrusted workspaces
 	if (!workspace.isTrusted) {
-		return getBundledBinary(context, outputChannel);
+		return {
+			bundled: true,
+			command: await getBundledBinary(context, outputChannel),
+		};
 	}
 
 	if (process.env.DEBUG_SERVER_PATH) {
 		outputChannel.appendLine(
 			`Biome DEBUG_SERVER_PATH detected: ${process.env.DEBUG_SERVER_PATH}`,
 		);
-		return process.env.DEBUG_SERVER_PATH;
+		return {
+			bundled: false,
+			command: process.env.DEBUG_SERVER_PATH,
+		};
 	}
 
 	const config = workspace.getConfiguration();
 	const explicitPath = config.get("biome.lspBin");
 	if (typeof explicitPath === "string" && explicitPath !== "") {
-		return getWorkspaceRelativePath(explicitPath);
+		return {
+			bundled: false,
+			command: await getWorkspaceRelativePath(explicitPath),
+		};
 	}
 
-	return (
-		(await getWorkspaceDependency(outputChannel)) ??
-		(await getBundledBinary(context, outputChannel))
-	);
+	const workspaceDependency = await getWorkspaceDependency(outputChannel);
+	return {
+		bundled: workspaceDependency === undefined,
+		command:
+			workspaceDependency ?? (await getBundledBinary(context, outputChannel)),
+	};
 }
 
 // Resolve `path` as relative to the workspace root

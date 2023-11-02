@@ -10,6 +10,12 @@ export const selectAndDownload = async (context: ExtensionContext) => {
 	await download(version, context);
 };
 
+export const updateToLatest = async (context: ExtensionContext) => {
+	const versions = await getVersions(context);
+	const version = versions[0];
+	await download(version, context);
+};
+
 /**
  * Download the Biome CLI from GitHub
  *
@@ -66,6 +72,9 @@ const download = async (version: string, context: ExtensionContext) => {
 		).fsPath,
 		0o755,
 	);
+
+	// Record latest version
+	await context.globalState.update("bundled_biome_version", version);
 };
 
 /**
@@ -89,7 +98,9 @@ const askVersion = async (versions: string[]): Promise<string> => {
  *
  * The calls to the API are cached for 1 hour to prevent hitting the rate limit.
  */
-const getVersions = async (context: ExtensionContext): Promise<string[]> => {
+export const getVersions = async (
+	context: ExtensionContext,
+): Promise<string[]> => {
 	const cachedVersions = context.globalState.get<{
 		expires_at: Date;
 		versions: string[];

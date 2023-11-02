@@ -3,4 +3,5 @@ export enum Commands {
 	RestartLspServer = "biome.restartLspServer",
 	SyntaxTree = "biome.syntaxTree",
 	ServerStatus = "biome.serverStatus",
+	UpdateBiome = "biome.updateBiome",
 }
