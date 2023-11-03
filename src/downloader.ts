@@ -12,7 +12,9 @@ import {
 } from "vscode";
 import { Commands } from "./commands";
 
-export const selectAndDownload = async (context: ExtensionContext) => {
+export const selectAndDownload = async (
+	context: ExtensionContext,
+): Promise<string | undefined> => {
 	const versions = await window.withProgress(
 		{
 			location: ProgressLocation.Notification,
@@ -30,7 +32,7 @@ export const selectAndDownload = async (context: ExtensionContext) => {
 		return undefined;
 	}
 
-	await window.withProgress(
+	return await window.withProgress(
 		{
 			location: ProgressLocation.Notification,
 			title: `Downloading Biome ${version}`,
@@ -39,7 +41,10 @@ export const selectAndDownload = async (context: ExtensionContext) => {
 		async () => {
 			await commands.executeCommand(Commands.StopServer);
 			await download(version, context);
+			console.log("Downloaded");
 			await commands.executeCommand(Commands.RestartLspServer);
+			console.log("Restarted");
+			return version;
 		},
 	);
 };
