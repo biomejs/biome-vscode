@@ -1,7 +1,7 @@
 import { chmodSync } from "node:fs";
 import { Octokit } from "octokit";
 import { ofetch } from "ofetch";
-import { coerce, gt, gte, rcompare } from "semver";
+import { coerce, rcompare } from "semver";
 import {
 	ExtensionContext,
 	ProgressLocation,
@@ -25,6 +25,10 @@ export const selectAndDownload = async (context: ExtensionContext) => {
 	);
 
 	const version = await askVersion(versions);
+
+	if (!version) {
+		return undefined;
+	}
 
 	await window.withProgress(
 		{
@@ -121,7 +125,7 @@ const download = async (version: string, context: ExtensionContext) => {
 /**
  * Display the VS Code prompt for selection the version
  */
-const askVersion = async (versions: string[]): Promise<string> => {
+const askVersion = async (versions: string[]): Promise<string | undefined> => {
 	const options = versions.map((version, index) => ({
 		label: version,
 		description: index === 0 ? "(latest)" : "",

@@ -37,6 +37,17 @@ const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 
 let client: LanguageClient;
 
+commands.registerCommand(Commands.StopServer, async () => {
+	if (!client) {
+		return;
+	}
+	try {
+		await client.stop();
+	} catch (error) {
+		client.error("Stopping client failed", error, "force");
+	}
+});
+
 const IN_BIOME_PROJECT = "inBiomeProject";
 
 export async function activate(context: ExtensionContext) {
@@ -74,7 +85,9 @@ export async function activate(context: ExtensionContext) {
 		);
 
 		if (action === "Download Biome") {
-			await selectAndDownload(context);
+			if (!(await selectAndDownload(context))) {
+				return;
+			}
 		}
 
 		server = await getServerPath(context, outputChannel);
@@ -149,13 +162,6 @@ export async function activate(context: ExtensionContext) {
 	session.registerCommand(Commands.SyntaxTree, syntaxTree(session));
 	session.registerCommand(Commands.ServerStatus, () => {
 		traceOutputChannel.show();
-	});
-	session.registerCommand(Commands.StopServer, async () => {
-		try {
-			await client.stop();
-		} catch (error) {
-			client.error("Stopping client failed", error, "force");
-		}
 	});
 	session.registerCommand(Commands.RestartLspServer, async () => {
 		try {
