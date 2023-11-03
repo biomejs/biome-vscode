@@ -1,6 +1,6 @@
 import { chmodSync } from "node:fs";
 import { Octokit } from "octokit";
-import { ofetch } from "ofetch";
+import { fetch, ofetch } from "ofetch";
 import { coerce, rcompare } from "semver";
 import {
 	ExtensionContext,
@@ -68,7 +68,11 @@ export const updateToLatest = async (context: ExtensionContext) => {
  */
 const download = async (version: string, context: ExtensionContext) => {
 	// Find the correct asset to download
-	const octokit = new Octokit();
+	const octokit = new Octokit({
+		request: {
+			fetch: fetch,
+		},
+	});
 
 	const release = await octokit.request(
 		"GET /repos/{owner}/{repo}/releases/tags/{tag}",
@@ -156,7 +160,11 @@ export const getVersions = async (
 		return cachedVersions.versions;
 	}
 
-	const octokit = new Octokit();
+	const octokit = new Octokit({
+		request: {
+			fetch: fetch,
+		},
+	});
 
 	// Retrieve all tags on the biome repository
 	const tags = await octokit.request("GET /repos/{owner}/{repo}/tags", {
