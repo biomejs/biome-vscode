@@ -1,19 +1,58 @@
 import { chmodSync } from "node:fs";
 import { Octokit } from "octokit";
 import { ofetch } from "ofetch";
-import { coerce, rcompare } from "semver";
-import { ExtensionContext, Uri, window, workspace } from "vscode";
+import { coerce, gt, gte, rcompare } from "semver";
+import {
+	ExtensionContext,
+	ProgressLocation,
+	Uri,
+	commands,
+	window,
+	workspace,
+} from "vscode";
+import { Commands } from "./commands";
 
 export const selectAndDownload = async (context: ExtensionContext) => {
-	const versions = await getVersions(context);
+	const versions = await window.withProgress(
+		{
+			location: ProgressLocation.Notification,
+			title: "Fetching Biome versions",
+			cancellable: false,
+		},
+		async () => {
+			return await getVersions(context);
+		},
+	);
+
 	const version = await askVersion(versions);
-	await download(version, context);
+
+	await window.withProgress(
+		{
+			location: ProgressLocation.Notification,
+			title: `Updating Biome to ${version}`,
+			cancellable: false,
+		},
+		async () => {
+			await download(version, context);
+			await commands.executeCommand(Commands.RestartLspServer);
+		},
+	);
 };
 
 export const updateToLatest = async (context: ExtensionContext) => {
-	const versions = await getVersions(context);
-	const version = versions[0];
-	await download(version, context);
+	await window.withProgress(
+		{
+			location: ProgressLocation.Notification,
+			title: "Updating Biome version",
+			cancellable: false,
+		},
+		async () => {
+			const versions = await getVersions(context);
+			const version = versions[0];
+			await download(version, context);
+			await commands.executeCommand(Commands.RestartLspServer);
+		},
+	);
 };
 
 /**

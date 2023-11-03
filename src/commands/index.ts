@@ -4,4 +4,5 @@ export enum Commands {
 	SyntaxTree = "biome.syntaxTree",
 	ServerStatus = "biome.serverStatus",
 	UpdateBiome = "biome.updateBiome",
+	ChangeVersion = "biome.changeVersion",
 }

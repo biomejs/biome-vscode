@@ -144,6 +144,15 @@ export class StatusBar {
 			}
 		}
 
+		if (this.usingBundledBiome) {
+			this.statusBarItem.command = {
+				title: "Change bundled Biome version",
+				command: Commands.ChangeVersion,
+			};
+		} else {
+			this.statusBarItem.command = Commands.ServerStatus;
+		}
+
 		this.statusBarItem.show();
 	}
 
@@ -182,5 +191,7 @@ export class StatusBar {
 		} else {
 			this.statusBarUpdateItem.hide();
 		}
+
+		this.update();
 	}
 }

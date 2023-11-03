@@ -5,6 +5,7 @@ import { TextDecoder, promisify } from "util";
 import {
 	ExtensionContext,
 	OutputChannel,
+	ProgressLocation,
 	TextEditor,
 	Uri,
 	commands,
@@ -125,7 +126,6 @@ export async function activate(context: ExtensionContext) {
 	setContextValue(IN_BIOME_PROJECT, true);
 
 	commands.registerCommand(Commands.UpdateBiome, async (version: string) => {
-		console.log(version);
 		const result = await window.showInformationMessage(
 			`Are you sure you want to update Biome (bundled) to ${version} ?`,
 			{
@@ -139,6 +139,11 @@ export async function activate(context: ExtensionContext) {
 			await updateToLatest(context);
 			statusBar.checkForUpdates();
 		}
+	});
+
+	commands.registerCommand(Commands.ChangeVersion, async () => {
+		await selectAndDownload(context);
+		statusBar.checkForUpdates();
 	});
 
 	session.registerCommand(Commands.SyntaxTree, syntaxTree(session));
