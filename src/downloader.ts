@@ -33,7 +33,7 @@ export const selectAndDownload = async (context: ExtensionContext) => {
 	await window.withProgress(
 		{
 			location: ProgressLocation.Notification,
-			title: `Updating Biome to ${version}`,
+			title: `Downloading Biome ${version}`,
 			cancellable: false,
 		},
 		async () => {

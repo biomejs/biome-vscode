@@ -1,11 +1,10 @@
 import { type ChildProcess, spawn } from "child_process";
 import { type Socket, connect } from "net";
 import { dirname, isAbsolute } from "path";
-import { TextDecoder, promisify } from "util";
+import { promisify } from "util";
 import {
 	ExtensionContext,
 	OutputChannel,
-	ProgressLocation,
 	TextEditor,
 	Uri,
 	commands,
@@ -45,6 +44,21 @@ commands.registerCommand(Commands.StopServer, async () => {
 		await client.stop();
 	} catch (error) {
 		client.error("Stopping client failed", error, "force");
+	}
+});
+
+commands.registerCommand(Commands.RestartLspServer, async () => {
+	if (!client) {
+		return;
+	}
+	try {
+		if (client.isRunning()) {
+			await client.restart();
+		} else {
+			await client.start();
+		}
+	} catch (error) {
+		client.error("Restarting client failed", error, "force");
 	}
 });
 
@@ -162,17 +176,6 @@ export async function activate(context: ExtensionContext) {
 	session.registerCommand(Commands.SyntaxTree, syntaxTree(session));
 	session.registerCommand(Commands.ServerStatus, () => {
 		traceOutputChannel.show();
-	});
-	session.registerCommand(Commands.RestartLspServer, async () => {
-		try {
-			if (client.isRunning()) {
-				await client.restart();
-			} else {
-				await client.start();
-			}
-		} catch (error) {
-			client.error("Restarting client failed", error, "force");
-		}
 	});
 
 	context.subscriptions.push(
