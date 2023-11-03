@@ -41,9 +41,7 @@ export const selectAndDownload = async (
 		async () => {
 			await commands.executeCommand(Commands.StopServer);
 			await download(version, context);
-			console.log("Downloaded");
 			await commands.executeCommand(Commands.RestartLspServer);
-			console.log("Restarted");
 			return version;
 		},
 	);
