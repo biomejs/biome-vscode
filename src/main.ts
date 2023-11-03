@@ -150,6 +150,13 @@ export async function activate(context: ExtensionContext) {
 	session.registerCommand(Commands.ServerStatus, () => {
 		traceOutputChannel.show();
 	});
+	session.registerCommand(Commands.StopServer, async () => {
+		try {
+			await client.stop();
+		} catch (error) {
+			client.error("Stopping client failed", error, "force");
+		}
+	});
 	session.registerCommand(Commands.RestartLspServer, async () => {
 		try {
 			if (client.isRunning()) {

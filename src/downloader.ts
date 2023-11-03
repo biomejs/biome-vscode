@@ -33,6 +33,7 @@ export const selectAndDownload = async (context: ExtensionContext) => {
 			cancellable: false,
 		},
 		async () => {
+			await commands.executeCommand(Commands.StopServer);
 			await download(version, context);
 			await commands.executeCommand(Commands.RestartLspServer);
 		},
@@ -49,6 +50,7 @@ export const updateToLatest = async (context: ExtensionContext) => {
 		async () => {
 			const versions = await getVersions(context);
 			const version = versions[0];
+			await commands.executeCommand(Commands.StopServer);
 			await download(version, context);
 			await commands.executeCommand(Commands.RestartLspServer);
 		},
