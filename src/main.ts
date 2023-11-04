@@ -93,7 +93,7 @@ export async function activate(context: ExtensionContext) {
 
 	if (!server.command) {
 		const action = await window.showWarningMessage(
-			"Could not find Biome in your dependencies. Either add the @biomejs/biome package to your dependencies, or download the Biome CLI.",
+			"Could not find Biome in your dependencies. Either add the @biomejs/biome package to your dependencies, or download the Biome binary.",
 			"Ok",
 			"Download Biome",
 		);
