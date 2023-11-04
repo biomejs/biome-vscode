@@ -102,9 +102,17 @@ const download = async (version: string, context: ExtensionContext) => {
 		return;
 	}
 
-	const bin = await ofetch(asset.browser_download_url, {
-		responseType: "arrayBuffer",
-	});
+	let bin: ArrayBuffer;
+	try {
+		bin = await ofetch(asset.browser_download_url, {
+			responseType: "arrayBuffer",
+		});
+	} catch {
+		window.showErrorMessage(
+			`Could not download the binary for your platform/architecture (${platformArch}).`,
+		);
+		return;
+	}
 
 	// Write binary file to disk
 	await workspace.fs.writeFile(
