@@ -99,6 +99,7 @@ const download = async (version: string, context: ExtensionContext) => {
 		window.showErrorMessage(
 			`The specified version is not available for your platform/architecture (${platformArch}).`,
 		);
+		return;
 	}
 
 	const bin = await ofetch(asset.browser_download_url, {
