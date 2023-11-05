@@ -1,12 +1,13 @@
 import { type ChildProcess, spawn } from "child_process";
 import { type Socket, connect } from "net";
 import { dirname, isAbsolute } from "path";
-import { TextDecoder, promisify } from "util";
+import { promisify } from "util";
 import {
 	ExtensionContext,
 	OutputChannel,
 	TextEditor,
 	Uri,
+	commands,
 	languages,
 	window,
 	workspace,
@@ -27,6 +28,7 @@ import { setContextValue } from "./utils";
 import resolveImpl = require("resolve/async");
 import { createRequire } from "module";
 import type * as resolve from "resolve";
+import { selectAndDownload, updateToLatest } from "./downloader";
 
 const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 	resolveImpl,
@@ -43,6 +45,36 @@ export async function activate(context: ExtensionContext) {
 	const requiresConfiguration = workspace
 		.getConfiguration("biome")
 		.get<boolean>("requireConfiguration");
+
+	commands.registerCommand(Commands.StopServer, async () => {
+		if (!client) {
+			return;
+		}
+		try {
+			await client.stop();
+		} catch (error) {
+			client.error("Stopping client failed", error, "force");
+		}
+	});
+
+	commands.registerCommand(Commands.RestartLspServer, async () => {
+		if (!client) {
+			return;
+		}
+		try {
+			if (client.isRunning()) {
+				await client.restart();
+			} else {
+				await client.start();
+			}
+		} catch (error) {
+			client.error("Restarting client failed", error, "force");
+		}
+	});
+
+	commands.registerCommand("biome.clearVersionsCache", async () => {
+		await context.globalState.update("biome_versions_cache", undefined);
+	});
 
 	// If the extension requires a configuration file to be present, we attempt to
 	// locate it. If a config file cannot be found, we do not go any further.
@@ -61,25 +93,37 @@ export async function activate(context: ExtensionContext) {
 		);
 	}
 
-	const command = await getServerPath(context, outputChannel);
+	let server = await getServerPath(context, outputChannel);
 
-	if (!command) {
-		await window.showErrorMessage(
-			"The Biome extensions doesn't ship with prebuilt binaries for your platform yet. " +
-				"You can still use it by cloning the biomejs/biome repo from GitHub to build the LSP " +
-				"yourself and use it with this extension with the biome.lspBin setting",
+	if (!server.command) {
+		const action = await window.showWarningMessage(
+			"Could not find Biome in your dependencies. Either add the @biomejs/biome package to your dependencies, or download the Biome binary.",
+			"Ok",
+			"Download Biome",
 		);
-		return;
+
+		if (action === "Download Biome") {
+			if (!(await selectAndDownload(context))) {
+				return;
+			}
+		}
+
+		server = await getServerPath(context, outputChannel);
+
+		if (!server.command) {
+			return;
+		}
 	}
 
-	outputChannel.appendLine(`Using Biome from ${command}`);
+	outputChannel.appendLine(`Using Biome from ${server.command}`);
 
-	const statusBar = new StatusBar();
+	const statusBar = new StatusBar(context);
+	await statusBar.setUsingBundledBiome(server.bundled);
 
 	const serverOptions: ServerOptions = createMessageTransports.bind(
 		undefined,
 		outputChannel,
-		command,
+		server.command,
 	);
 
 	const documentSelector: DocumentFilter[] = [
@@ -112,20 +156,30 @@ export async function activate(context: ExtensionContext) {
 	// we are now in a biome project
 	setContextValue(IN_BIOME_PROJECT, true);
 
+	commands.registerCommand(Commands.UpdateBiome, async (version: string) => {
+		const result = await window.showInformationMessage(
+			`Are you sure you want to update Biome (bundled) to ${version} ?`,
+			{
+				modal: true,
+			},
+			"Update",
+			"Cancel",
+		);
+
+		if (result === "Update") {
+			await updateToLatest(context);
+			statusBar.checkForUpdates();
+		}
+	});
+
+	commands.registerCommand(Commands.ChangeVersion, async () => {
+		await selectAndDownload(context);
+		statusBar.checkForUpdates();
+	});
+
 	session.registerCommand(Commands.SyntaxTree, syntaxTree(session));
 	session.registerCommand(Commands.ServerStatus, () => {
 		traceOutputChannel.show();
-	});
-	session.registerCommand(Commands.RestartLspServer, async () => {
-		try {
-			if (client.isRunning()) {
-				await client.restart();
-			} else {
-				await client.start();
-			}
-		} catch (error) {
-			client.error("Restarting client failed", error, "force");
-		}
 	});
 
 	context.subscriptions.push(
@@ -199,29 +253,40 @@ const PLATFORMS: PlatformTriplets = {
 async function getServerPath(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
-): Promise<string | undefined> {
+): Promise<{ bundled: boolean; command: string } | undefined> {
 	// Only allow the bundled Biome binary in untrusted workspaces
 	if (!workspace.isTrusted) {
-		return getBundledBinary(context, outputChannel);
+		return {
+			bundled: true,
+			command: await getBundledBinary(context, outputChannel),
+		};
 	}
 
 	if (process.env.DEBUG_SERVER_PATH) {
 		outputChannel.appendLine(
 			`Biome DEBUG_SERVER_PATH detected: ${process.env.DEBUG_SERVER_PATH}`,
 		);
-		return process.env.DEBUG_SERVER_PATH;
+		return {
+			bundled: false,
+			command: process.env.DEBUG_SERVER_PATH,
+		};
 	}
 
 	const config = workspace.getConfiguration();
 	const explicitPath = config.get("biome.lspBin");
 	if (typeof explicitPath === "string" && explicitPath !== "") {
-		return getWorkspaceRelativePath(explicitPath);
+		return {
+			bundled: false,
+			command: await getWorkspaceRelativePath(explicitPath),
+		};
 	}
 
-	return (
-		(await getWorkspaceDependency(outputChannel)) ??
-		(await getBundledBinary(context, outputChannel))
-	);
+	const workspaceDependency = await getWorkspaceDependency(outputChannel);
+	return {
+		bundled: workspaceDependency === undefined,
+		command:
+			workspaceDependency ?? (await getBundledBinary(context, outputChannel)),
+	};
 }
 
 // Resolve `path` as relative to the workspace root
@@ -286,18 +351,11 @@ async function getBundledBinary(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
 ) {
-	const triplet = PLATFORMS[process.platform]?.[process.arch]?.triplet;
-	if (!triplet) {
-		outputChannel.appendLine(
-			`Unsupported platform ${process.platform} ${process.arch}`,
-		);
-		return undefined;
-	}
-
-	const binaryExt = triplet.includes("windows") ? ".exe" : "";
-	const binaryName = `biome${binaryExt}`;
-
-	const bundlePath = Uri.joinPath(context.extensionUri, "server", binaryName);
+	const bundlePath = Uri.joinPath(
+		context.globalStorageUri,
+		"server",
+		`biome${process.platform === "win32" ? ".exe" : ""}`,
+	);
 	const bundleExists = await fileExists(bundlePath);
 	if (!bundleExists) {
 		outputChannel.appendLine(

@@ -60,6 +60,11 @@
 				"command": "biome.restartLspServer",
 				"title": "Restart LSP Server",
 				"category": "Biome"
+			},
+			{
+				"command": "biome.clearVersionsCache",
+				"title": "Clear versions cache",
+				"category": "Biome"
 			}
 		],
 		"menus": {
@@ -149,6 +154,7 @@
 		"@biomejs/biome": "^1.2.2",
 		"@types/node": "^18.17.5",
 		"@types/resolve": "^1.20.2",
+		"@types/semver": "^7.5.4",
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "^2.20.1",
 		"esbuild": "^0.19.2",
@@ -156,6 +162,8 @@
 	},
 	"dependencies": {
 		"resolve": "^1.22.4",
+		"semver": "^7.5.4",
+		"undici": "^5.27.2",
 		"vscode-languageclient": "^8.1.0"
 	},
 	"vsce": {

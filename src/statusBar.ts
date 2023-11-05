@@ -1,7 +1,15 @@
-import { StatusBarAlignment, StatusBarItem, ThemeColor, window } from "vscode";
+import { gt } from "semver";
+import {
+	ExtensionContext,
+	StatusBarAlignment,
+	StatusBarItem,
+	ThemeColor,
+	window,
+} from "vscode";
 import { State } from "vscode-languageclient";
 import { LanguageClient } from "vscode-languageclient/node";
 import { Commands } from "./commands";
+import { getVersions } from "./downloader";
 
 /**
  * Enumeration of all the status the extension can display
@@ -21,13 +29,15 @@ enum Status {
 }
 
 export class StatusBar {
+	private usingBundledBiome = false;
 	private statusBarItem: StatusBarItem;
+	private statusBarUpdateItem: StatusBarItem;
 
 	private serverState: State = State.Starting;
 	private isActive = false;
 	private serverVersion = "";
 
-	constructor() {
+	constructor(private readonly context: ExtensionContext) {
 		this.statusBarItem = window.createStatusBarItem(
 			"biome.status",
 			StatusBarAlignment.Right,
@@ -36,7 +46,15 @@ export class StatusBar {
 
 		this.statusBarItem.name = "Biome";
 		this.statusBarItem.command = Commands.ServerStatus;
+
+		this.statusBarUpdateItem = window.createStatusBarItem(
+			"biome.update",
+			StatusBarAlignment.Right,
+			-2,
+		);
+
 		this.update();
+		this.checkForUpdates();
 	}
 
 	public setServerState(client: LanguageClient, state: State) {
@@ -70,8 +88,9 @@ export class StatusBar {
 			status = Status.Error;
 		}
 
-		this.statusBarItem.text =
-			`$(${status}) Biome ${this.serverVersion}`.trimEnd();
+		this.statusBarItem.text = `$(${status}) Biome ${this.serverVersion} ${
+			this.usingBundledBiome ? "(bundled)" : ""
+		}`.trimEnd();
 
 		switch (status) {
 			case Status.Pending: {
@@ -125,10 +144,54 @@ export class StatusBar {
 			}
 		}
 
+		if (this.usingBundledBiome) {
+			this.statusBarItem.command = {
+				title: "Change bundled Biome version",
+				command: Commands.ChangeVersion,
+			};
+		} else {
+			this.statusBarItem.command = Commands.ServerStatus;
+		}
+
 		this.statusBarItem.show();
 	}
 
 	public hide() {
 		this.statusBarItem.hide();
+	}
+
+	public async setUsingBundledBiome(usingBundledBiome: boolean) {
+		this.usingBundledBiome = usingBundledBiome;
+		await this.checkForUpdates();
+	}
+
+	public async checkForUpdates() {
+		const latestVersion = (await getVersions(this.context))[0];
+		const hasUpdates = gt(
+			latestVersion,
+			this.context.globalState.get("bundled_biome_version") ?? "0.0.0",
+		);
+
+		if (this.usingBundledBiome && hasUpdates) {
+			this.statusBarUpdateItem.name = "Biome update";
+			this.statusBarUpdateItem.text =
+				"Biome update available $(cloud-download)";
+
+			this.statusBarUpdateItem.tooltip = "Click to update Biome";
+			this.statusBarUpdateItem.backgroundColor = new ThemeColor(
+				"statusBarItem.warningBackground",
+			);
+			this.statusBarUpdateItem.show();
+
+			this.statusBarUpdateItem.command = {
+				title: "Update Biome",
+				command: Commands.UpdateBiome,
+				arguments: [latestVersion],
+			};
+		} else {
+			this.statusBarUpdateItem.hide();
+		}
+
+		this.update();
 	}
 }
