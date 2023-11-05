@@ -117,17 +117,7 @@
 					"markdownDescription": "Require a Biome configuration file to enable syntax errors, formatting and linting."
 				}
 			}
-		},
-		"jsonValidation": [
-			{
-				"fileMatch": "biome.json",
-				"url": "./configuration_schema.json"
-			},
-			{
-				"fileMatch": "rome.json",
-				"url": "./configuration_schema.json"
-			}
-		]
+		}
 	},
 	"categories": [
 		"Formatters",
