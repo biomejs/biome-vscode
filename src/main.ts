@@ -36,32 +36,6 @@ const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 
 let client: LanguageClient;
 
-commands.registerCommand(Commands.StopServer, async () => {
-	if (!client) {
-		return;
-	}
-	try {
-		await client.stop();
-	} catch (error) {
-		client.error("Stopping client failed", error, "force");
-	}
-});
-
-commands.registerCommand(Commands.RestartLspServer, async () => {
-	if (!client) {
-		return;
-	}
-	try {
-		if (client.isRunning()) {
-			await client.restart();
-		} else {
-			await client.start();
-		}
-	} catch (error) {
-		client.error("Restarting client failed", error, "force");
-	}
-});
-
 const IN_BIOME_PROJECT = "inBiomeProject";
 
 export async function activate(context: ExtensionContext) {
@@ -71,6 +45,32 @@ export async function activate(context: ExtensionContext) {
 	const requiresConfiguration = workspace
 		.getConfiguration("biome")
 		.get<boolean>("requireConfiguration");
+
+	commands.registerCommand(Commands.StopServer, async () => {
+		if (!client) {
+			return;
+		}
+		try {
+			await client.stop();
+		} catch (error) {
+			client.error("Stopping client failed", error, "force");
+		}
+	});
+
+	commands.registerCommand(Commands.RestartLspServer, async () => {
+		if (!client) {
+			return;
+		}
+		try {
+			if (client.isRunning()) {
+				await client.restart();
+			} else {
+				await client.start();
+			}
+		} catch (error) {
+			client.error("Restarting client failed", error, "force");
+		}
+	});
 
 	commands.registerCommand("biome.clearVersionsCache", async () => {
 		await context.globalState.update("biome_versions_cache", undefined);
