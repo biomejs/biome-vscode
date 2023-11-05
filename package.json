@@ -4,7 +4,7 @@
 	"displayName": "Biome",
 	"description": "Biome LSP VS Code Extension",
 	"version": "1.4.2",
-	"icon": "icon.png",
+	"icon": "resources/icons/icon.png",
 	"activationEvents": [
 		"onLanguage:javascript",
 		"onLanguage:javascriptreact",
@@ -47,7 +47,7 @@
 			{
 				"language": "biome_syntax_tree",
 				"scopeName": "source.biome_syntax_tree",
-				"path": "biome_syntax_tree.tmGrammar.json"
+				"path": "resources/grammaers/biome_syntax_tree.tmGrammar.json"
 			}
 		],
 		"commands": [
