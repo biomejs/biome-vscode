@@ -60,6 +60,11 @@
 				"command": "biome.restartLspServer",
 				"title": "Restart LSP Server",
 				"category": "Biome"
+			},
+			{
+				"command": "biome.clearVersionsCache",
+				"title": "Clear versions cache",
+				"category": "Biome"
 			}
 		],
 		"menus": {

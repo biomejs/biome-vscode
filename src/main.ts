@@ -72,6 +72,10 @@ export async function activate(context: ExtensionContext) {
 		.getConfiguration("biome")
 		.get<boolean>("requireConfiguration");
 
+	commands.registerCommand("biome.clearVersionsCache", async () => {
+		await context.globalState.update("biome_versions_cache", undefined);
+	});
+
 	// If the extension requires a configuration file to be present, we attempt to
 	// locate it. If a config file cannot be found, we do not go any further.
 	if (requiresConfiguration) {
