@@ -1,54 +1,59 @@
+> [!IMPORTANT]  
+> This repository has been extracted from the [Biome monorepo](https://github.com/biomejs/biome). It is still a work in progress. If you find any issues, please report them in the Biome monorepo.
+
 # Visual Studio Code extension for Biome
 
 [![](https://img.shields.io/visual-studio-marketplace/v/biomejs.biome?color=374151&label=Visual%20Studio%20Marketplace&labelColor=000&logo=visual-studio-code&logoColor=0098FF)](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
 [![](https://img.shields.io/visual-studio-marketplace/v/biomejs.biome?color=374151&label=Open%20VSX%20Registry&labelColor=000&logo=data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHN2ZyB2aWV3Qm94PSI0LjYgNSA5Ni4yIDEyMi43IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxwYXRoIGQ9Ik0zMCA0NC4yTDUyLjYgNUg3LjN6TTQuNiA4OC41aDQ1LjNMMjcuMiA0OS40em01MSAwbDIyLjYgMzkuMiAyMi42LTM5LjJ6IiBmaWxsPSIjYzE2MGVmIi8+CiAgPHBhdGggZD0iTTUyLjYgNUwzMCA0NC4yaDQ1LjJ6TTI3LjIgNDkuNGwyMi43IDM5LjEgMjIuNi0zOS4xem01MSAwTDU1LjYgODguNWg0NS4yeiIgZmlsbD0iI2E2MGVlNSIvPgo8L3N2Zz4=&logoColor=0098FF)](https://open-vsx.org/extension/biomejs/biome)
 
-> [!IMPORTANT]  
-> This repository has been extracted from the [Biome monorepo](https://github.com/biomejs/biome). It is still a work in progress. If you find any issues, please report them in the Biome monorepo.
+The Visual Studio Code extension for Biome brings first-party support for Biome to VS Code and similar editors such as VSCodium. By integrating with Biome's language server, the extension provides the following features, among others:
 
-[Biome](https://biomejs.dev/) unifies your development stack by combining the functionality of separate tools. It uses a single configuration file, has fantastic performance, and works with any stack. This extension brings Biome to your editor so that you can:
-
-- Format files *on save* or when issuing the *Format Document* command
-- See lints while you type and apply code fixes
-- Perform refactors
+- 💾 Format on save
+- 💡 Inline suggestions with quick fixes
+- 🚧 Refactoring
 
 ## Installation
 
-You can install the code extension by heading to the extension's [Visual Studio Code Market Place page](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) or from within VS Code by either:
+The Visual Studio Code extension for Biome is available form the following sources.
 
-- Open the *extensions* tab (_View_ → _Extensions)_ and search for Biome.
-- Open the _Quick Open Overlay_ (<kbd>Ctrl</kbd>/<kbd title="Cmd">⌘</kbd>+<kbd>P</kbd> or _Go -> Go to File_), enter `ext install biomejs.biome`, and hit enter.
+- [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) (recommended for [VS Code](https://code.visualstudio.com/) users)
+- [Open VSX Registry](https://open-vsx.org/extension/biomejs/biome) (recommended for [VSCodium](https://vscodium.com/) users)
 
 ## Getting Started
 
-### Default Formatter
+This section describes how to get started with the Biome VS Code extension.
 
-Configure Biome as the default formatter for supported files to ensure that VS Code uses Biome over other formatters that you may have installed. You can do so by opening a JavaScript or TypeScript and then:
+### Configuration file
 
-- Open the Command Palette (<kbd>Ctrl</kbd>/<kbd title="Cmd">⌘</kbd>+<kbd title="Shift">⇧</kbd>+<kbd>P</kbd> or View → Command Palette)
-- Select _Format Document With…_
-- Select _Configure Default Formatter…_
-- Select Biome
+By default, the extension will not start unless a `biome.json` file is present at the
+root of the workspace. You can disable this behavior by setting the `biome.requireConfiguration`
+setting to `false`.
 
-You can also enable Biome for specific languages only:
+### Setting as the default formatter
 
-- [Open the `settings.json`](https://code.visualstudio.com/docs/getstarted/settings#_settingsjson): open the _Command Palette_(<kbd>Ctrl</kbd>/<kbd title="Cmd">⌘</kbd>+<kbd title="Shift">⇧</kbd>+<kbd>P</kbd>) and select _Preferences: Open User Settings (JSON)_
-- And set the `editor.defaultFormatter` to `biomejs.biome` for the desired language
+To set the VS Code extension for Biome as the default formatter, follow the steps below.
+
+1. Open the **Command Palette**
+2. Select _Format Document With…_
+3. Select _Configure Default Formatter…_
+4. Select **Biome**
+
+This will ensure that VS Code uses Biome to format all supported files, instead of other formatters that you may have installed.
+
+### Setting as the default formatter for specific languages
+
+If you'd rather not set Biome as the default formatter for all languages, you can set it as the default formatter for specific languages only. The following steps describe how to do this.
+
+1. Open the **Command Palette**
+2. Select _Preferences: Open User Settings (JSON)_ 
+
+Set the `editor.defaultFormatter` to `biomejs.biome` for the desired language. For example, to set Biome as the default formatter for JavaScript files, add the following to your editor options.
 
 ```json
-{
-	"editor.defaultFormatter": "<other formatter>",
-	"[javascript]": {
-		"editor.defaultFormatter": "biomejs.biome"
-	}
+"[javascript]": {
+	"editor.defaultFormatter": "biomejs.biome"
 }
 ```
-
-This configuration sets Biome as the default formatter for JavaScript files. All other files will be formatted using `<other formatter>`
-
-## Configuration Resolution
-
-The extension automatically loads the `Biome.json` file from the workspace’s root directory.
 
 ## Biome Resolution
 
