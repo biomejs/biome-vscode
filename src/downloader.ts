@@ -1,7 +1,6 @@
 import { chmodSync } from "node:fs";
-import { Octokit } from "octokit";
-import { fetch, ofetch } from "ofetch";
 import { coerce, rcompare } from "semver";
+import { fetch } from "undici";
 import {
 	ExtensionContext,
 	ProgressLocation,
@@ -70,26 +69,18 @@ export const updateToLatest = async (context: ExtensionContext) => {
  * @param version The version to download
  */
 const download = async (version: string, context: ExtensionContext) => {
-	// Find the correct asset to download
-	const octokit = new Octokit({
-		request: {
-			fetch: fetch,
-		},
-	});
-
-	const release = await octokit.request(
-		"GET /repos/{owner}/{repo}/releases/tags/{tag}",
-		{
-			owner: "biomejs",
-			repo: "biome",
-			tag: `cli/v${version}`,
-		},
-	);
+	const releases = (await (
+		await fetch(
+			`https://api.github.com/repos/biomejs/biome/releases/tags/cli/v${version}`,
+		)
+	).json()) as {
+		assets: { name: string; browser_download_url: string }[];
+	};
 
 	const platformArch = `${process.platform}-${process.arch}`;
 
 	// Find the asset for the current platform
-	const asset = release.data.assets.find(
+	const asset = releases.assets.find(
 		(asset) =>
 			asset.name ===
 			`biome-${platformArch}${process.platform === "win32" ? ".exe" : ""}`,
@@ -104,9 +95,8 @@ const download = async (version: string, context: ExtensionContext) => {
 
 	let bin: ArrayBuffer;
 	try {
-		bin = await ofetch(asset.browser_download_url, {
-			responseType: "arrayBuffer",
-		});
+		const blob = await fetch(asset.browser_download_url);
+		bin = await blob.arrayBuffer();
 	} catch {
 		window.showErrorMessage(
 			`Could not download the binary for your platform/architecture (${platformArch}).`,
@@ -172,26 +162,19 @@ export const getVersions = async (
 		return cachedVersions.versions;
 	}
 
-	const octokit = new Octokit({
-		request: {
-			fetch: fetch,
-		},
-	});
+	const releases = (await (
+		await fetch(
+			"https://api.github.com/repos/biomejs/biome/releases?per_page=100",
+		)
+	).json()) as { tag_name: string }[];
 
-	// Retrieve all tags on the biome repository
-	const tags = await octokit.request("GET /repos/{owner}/{repo}/tags", {
-		owner: "biomejs",
-		repo: "biome",
-		per_page: 50,
-	});
-
-	const versions = tags.data
-		.filter((tag) => tag.name.startsWith("cli/"))
-		.map((tag) => tag.name.replace("cli/", ""))
-		.map((tag) => coerce(tag))
+	const versions = releases
+		.filter((release) => release.tag_name.startsWith("cli/"))
+		.map((release) => release.tag_name.replace("cli/", ""))
+		.map((release) => coerce(release))
 		.sort((a, b) => rcompare(a, b))
-		.filter((tag) => tag?.version !== null)
-		.map((tag) => tag?.version);
+		.filter((release) => release?.version !== null)
+		.map((release) => release?.version);
 
 	// Cache the result for 1 hour
 	await context.globalState.update("biome_versions_cache", {
