@@ -120,14 +120,6 @@ Enables Biome to handle renames in the workspace (experimental).
 Disables formatting, linting, and syntax errors for projects without a `biome.json` file.
 Enabled by default.
 
-## Versioning
-
-We follow the specs suggested by [the official documentation](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions):
-
-Odd minor versions are dedicated to pre-releases, e.g. `*.5.*` .
-Even minor versions are dedicated to official releases, e.g. `*.6.*`.
-
-
 ## Troubleshooting
 
 > I installed `@biomejs/biome`, but the extension shows a warning saying that it could not resolve library.
