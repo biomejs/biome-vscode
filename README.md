@@ -119,22 +119,3 @@ Enables Biome to handle renames in the workspace (experimental).
 
 Disables formatting, linting, and syntax errors for projects without a `biome.json` file.
 Enabled by default.
-
-## Troubleshooting
-
-> I installed `@biomejs/biome`, but the extension shows a warning saying that it could not resolve library.
-
-The library `@biomejs/biome` specifies some optional dependencies that are installed based on your OS and architecture.
-
-It's possible though, that the extension can't resolve the binary when loading the extension. This is caused - probably - by your package manager.
-
-**To resolve the issue**, try to install the binary manually. The warning should show you the binary that belongs to your machine.
-
-**If you work in a team that use different OSs/architectures**, it's advised to install all the binaries:
-
-- `@biomejs/cli-darwin-arm64`
-- `@biomejs/cli-darwin-x64`
-- `@biomejs/cli-linux-arm64`
-- `@biomejs/cli-linux-x64`
-- `@biomejs/cli-win32-arm64`
-- `@biomejs/cli-win32-x64`
