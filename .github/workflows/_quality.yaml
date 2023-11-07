@@ -1,5 +1,5 @@
 # Reusable Quality Workflow
-name: Quality
+name: _Quality
 
 on:
   workflow_call:

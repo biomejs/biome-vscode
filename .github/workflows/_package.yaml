@@ -1,5 +1,5 @@
 # Reusable Package Workflow
-name: Package
+name: _Package
 
 on:
   workflow_call:
