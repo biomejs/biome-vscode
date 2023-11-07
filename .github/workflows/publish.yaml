@@ -1,8 +1,8 @@
 name: Publish
 
 on:
-  schedule:
-    - cron: '0 0 * * *'
+  # schedule:
+  #   - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       nightly:
@@ -27,11 +27,21 @@ jobs:
     name: Publish
     needs: [package]
     runs-on: ubuntu-latest
+    environment: vscode
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
       - name: Download the artifact
         uses: actions/download-artifact@v3
         with:
           name: biome.vsix
           path: biome.vsix
-      - name: Show contents
-        run: ls -la
+    
+      - name: Publish extension to Visual Studio Marketplace
+        run: pnpm exec vsce publish --packagePath biome.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
