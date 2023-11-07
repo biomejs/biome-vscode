@@ -40,8 +40,9 @@ jobs:
         with:
           name: biome.vsix
           path: biome.vsix
-    
-      - name: Publish extension to Visual Studio Marketplace
-        run: pnpm exec vsce publish --packagePath biome.vsix
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      - name: Debug
+        run: ls -la biome.vsix
+      # - name: Publish extension to Visual Studio Marketplace
+      #   run: pnpm exec vsce publish --packagePath biome.vsix
+      #   env:
+      #     VSCE_PAT: ${{ secrets.VSCE_PAT }}
