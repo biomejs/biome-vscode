@@ -28,14 +28,14 @@ jobs:
         uses: ./.github/actions/setup
   
       - name: Replace name in package.json
-        run: jq '.name = "biome"' package.json > package.json
+        run: jq '.name = "biome-nightly"' package.json > package.json
 
       - name: Replace displayName in package.json
-        run: jq '.displayName = "Biome"' package.json > package.json
+        run: jq '.displayName = "Biome (nightly)"' package.json > package.json
 
       - name: Retrieve version from package.json
         id: packageJsonVersion
-        run: echo "version=$(jq -r '.version' package.json)"
+        run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
       - name: Parse version
         id: version
