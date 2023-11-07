@@ -27,11 +27,13 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Retrieve version from package.json
+      - name: Retrieve version from package.json (nightly)
+        if: ${{ github.event.inputs.nightly }}
         id: packageJsonVersion
         run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
       - name: Parse version
+        if: ${{ github.event.inputs.nightly }}
         id: version
         uses: madhead/semver-utils@v3.1.0
         with:
