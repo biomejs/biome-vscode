@@ -54,7 +54,7 @@ jobs:
       - name: Get date
         if: ${{ github.event.inputs.nightly }}
         id: date
-        run: echo "date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+        run: echo "date=$(date +'%Y%m%d%H%M%S')" >> "$GITHUB_OUTPUT"
 
       - name: Build version string
         id: version-string
