@@ -32,10 +32,16 @@ jobs:
 
       - name: Replace name in package.json
         run: jq '.name = "biome-nightly"' package.json > package.json
+      
+      - name: Print package.json
+        run: cat package.json
 
       - name: Replace displayName in package.json
         run: jq '.displayName = "Biome (nightly)"' package.json > package.json
 
+      - name: Print package.json
+        run: cat package.json
+      
       - name: Retrieve version from package.json
         id: packageJsonVersion
         run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
