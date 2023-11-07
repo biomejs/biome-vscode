@@ -9,7 +9,7 @@ on:
         type: boolean
         default: true
         required: false
-        description: 'Whether to publish a nightly build'        
+        description: 'Publish a nightly build'        
         
 jobs:
   build:
