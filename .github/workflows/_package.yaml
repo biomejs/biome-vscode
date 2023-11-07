@@ -51,7 +51,7 @@ jobs:
         with:
           version: "${{ steps.packageJsonVersion.outputs.version }}"
 
-      - name: Get date
+      - name: Generate nightly identifier (nightly)
         if: ${{ github.event.inputs.nightly }}
         id: date
         run: echo "date=$(date +'%Y%m%d%H%M%S')" >> "$GITHUB_OUTPUT"
