@@ -26,21 +26,20 @@ jobs:
 
       - name: Setup
         uses: ./.github/actions/setup
-  
-      - name: Print package.json
-        run: cat package.json
 
-      - name: Replace name in package.json
-        run: jq '.name = "biome-nightly"' package.json > package.json
+      - name: Replace name in package.json (nightly)
+        if: ${{ github.event.inputs.nightly }}
+        run: |
+          tempfile=$(mktemp)
+          jq '.name = "biome-nightly"' package.json > $tempfile
+          mv $tempfile package.json
       
-      - name: Print package.json
-        run: cat package.json
-
-      - name: Replace displayName in package.json
-        run: jq '.displayName = "Biome (nightly)"' package.json > package.json
-
-      - name: Print package.json
-        run: cat package.json
+      - name: Replace displayName in package.json (nightly)
+        if: ${{ github.event.inputs.nightly }}
+        run: |
+          tempfile=$(mktemp)
+          jq '.displayName = "Biome (nightly)"' package.json > $tempfile
+          mv $tempfile package.json
       
       - name: Retrieve version from package.json
         id: packageJsonVersion
@@ -62,7 +61,10 @@ jobs:
         run: echo "version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{  github.event.inputs.nightly && steps.date.outputs.date || steps.version.outputs.patch }}" >> $GITHUB_OUPUT
     
       - name: Replace version in package.json
-        run: jq --arg version "${{ steps.version-string.outputs.version }}" '.version = $version' package.json > package.json
+        run: 
+          tempfile=$(mktemp)
+          jq --arg version "${{ steps.version-string.outputs.version }}" '.version = $version' package.json > $tempfile
+          mv $tempfile package.json
 
       - name: Package the extension
         run: pnpm exec vsce package -o biome.vsix
