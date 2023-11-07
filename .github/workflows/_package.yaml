@@ -53,14 +53,16 @@ jobs:
 
       - name: Generate nightly identifier (nightly)
         if: ${{ github.event.inputs.nightly }}
-        id: date
-        run: echo "date=$(date +'%Y%m%d%H%M%S')" >> "$GITHUB_OUTPUT"
+        id: nightly-identifier
+        run: echo "identifier=$(date +'%Y%m%d%H%M%S')" >> "$GITHUB_OUTPUT"
 
-      - name: Build version string
+      - name: Build nightly version string (nightly)
+        if: ${{ github.event.inputs.nightly }}
         id: version-string
-        run: echo "version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{  github.event.inputs.nightly && steps.date.outputs.date || steps.version.outputs.patch }}" >> $GITHUB_OUTPUT
+        run: echo "version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.nightly-identifier.outputs.identifier }}" >> $GITHUB_OUTPUT
     
-      - name: Replace version in package.json
+      - name: Replace version in package.json (nightly)
+        if: ${{ github.event.inputs.nightly }}
         run: |
           tempfile=$(mktemp)
           jq --arg version "${{ steps.version-string.outputs.version }}" '.version = $version' package.json > $tempfile
