@@ -56,7 +56,7 @@ jobs:
       - name: Generate nightly identifier (nightly)
         if: ${{ github.event.inputs.nightly }}
         id: nightly-identifier
-        run: echo "identifier=$(date +'%Y%m%d.%H%M%S')" >> "$GITHUB_OUTPUT"
+        run: echo "identifier=$(date +'%Y%m%d%H')" >> "$GITHUB_OUTPUT"
 
       - name: Build nightly version string (nightly)
         if: ${{ github.event.inputs.nightly }}
