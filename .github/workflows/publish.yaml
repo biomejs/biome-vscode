@@ -1,0 +1,26 @@
+name: Publish
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      nightly:
+        type: boolean
+        default: true
+        required: false
+        description: 'Whether to publish a nightly build'        
+        
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/_build.yaml
+  package:
+    name: Package
+    needs: [build]
+    uses: ./.github/workflows/_package.yaml
+    with:
+      # If the workflow was triggered by a schedule event, or the nightly 
+      # input is true, package a nightly build
+      nightly: ${{ github.event.inputs.nightly || github.event_name == 'schedule' }}
+    

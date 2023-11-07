@@ -3,6 +3,12 @@ name: Package
 
 on:
   workflow_call:
+    inputs:
+      nightly:
+        type: boolean
+        default: false
+        required: false
+        description: 'Whether to publish a nightly build'       
 
 jobs:
   package:
@@ -21,6 +27,34 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
   
+      - name: Replace name in package.json
+        run: jq '.name = "biome"' package.json > package.json
+
+      - name: Replace displayName in package.json
+        run: jq '.displayName = "Biome"' package.json > package.json
+
+      - name: Retrieve version from package.json
+        id: packageJsonVersion
+        run: echo "version=$(jq -r '.version' package.json)"
+
+      - name: Parse version
+        id: version
+        uses: semver-utils@3.1.0
+        with:
+          version: ${{ steps.packageJsonVersion.outputs.version }}
+
+      - name: Get date
+        if: ${{ github.event.inputs.nightly }}
+        id: date
+        run: echo "date=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Build version string
+        id: version-string
+        run: echo "version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{  github.event.inputs.nightly && steps.date.outputs.date || steps.version.outputs.patch }}" >> $GITHUB_OUPUT
+    
+      - name: Replace version in package.json
+        run: jq --arg version "${{ steps.version-string.outputs.version }}" '.version = $version' package.json > package.json
+
       - name: Package the extension
         run: pnpm exec vsce package -o biome.vsix
 
