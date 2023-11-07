@@ -23,4 +23,15 @@ jobs:
       # If the workflow was triggered by a schedule event, or the nightly 
       # input is true, package a nightly build
       nightly: ${{ (github.event.inputs.nightly || github.event_name == 'schedule') && true || false }}
-    
+  publish:
+    name: Publish
+    needs: [package]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: biome.vsix
+          path: biome.vsix
+      - name: Show contents
+        run: ls -la
