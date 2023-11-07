@@ -27,20 +27,6 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Replace name in package.json (nightly)
-        if: ${{ github.event.inputs.nightly }}
-        run: |
-          tempfile=$(mktemp)
-          jq '.name = "biome-nightly"' package.json > $tempfile
-          mv $tempfile package.json
-      
-      - name: Replace displayName in package.json (nightly)
-        if: ${{ github.event.inputs.nightly }}
-        run: |
-          tempfile=$(mktemp)
-          jq '.displayName = "Biome (nightly)"' package.json > $tempfile
-          mv $tempfile package.json
-      
       - name: Retrieve version from package.json
         id: packageJsonVersion
         run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
@@ -50,6 +36,20 @@ jobs:
         uses: madhead/semver-utils@v3.1.0
         with:
           version: "${{ steps.packageJsonVersion.outputs.version }}"
+
+      - name: Replace name in package.json (nightly)
+        if: ${{ github.event.inputs.nightly }}
+        run: |
+          tempfile=$(mktemp)
+          jq '.name = "biome-nightly"' package.json > $tempfile
+          mv $tempfile package.json
+        
+      - name: Replace displayName in package.json (nightly)
+        if: ${{ github.event.inputs.nightly }}
+        run: |
+          tempfile=$(mktemp)
+          jq '.displayName = "Biome (nightly)"' package.json > $tempfile
+          mv $tempfile package.json
 
       - name: Generate nightly identifier (nightly)
         if: ${{ github.event.inputs.nightly }}
