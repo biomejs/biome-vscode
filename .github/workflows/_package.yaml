@@ -58,7 +58,7 @@ jobs:
 
       - name: Build version string
         id: version-string
-        run: echo "version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{  github.event.inputs.nightly && steps.date.outputs.date || steps.version.outputs.patch }}" >> $GITHUB_OUPUT
+        run: echo "version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{  github.event.inputs.nightly && steps.date.outputs.date || steps.version.outputs.patch }}" >> $GITHUB_OUTPUT
     
       - name: Replace version in package.json
         run: 
