@@ -44,7 +44,7 @@ jobs:
       - name: Generate nightly version identifier (nightly)
         if: ${{ github.event.inputs.nightly }}
         id: nightly-version
-        run: echo "version=$(date +'%Y.%m.%d%H%M')" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(date +'%Y.%-m.%-d%-H%-M')" >> "$GITHUB_OUTPUT"
     
       - name: Replace version in package.json (nightly)
         if: ${{ github.event.inputs.nightly }}
