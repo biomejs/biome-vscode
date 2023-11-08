@@ -40,6 +40,13 @@ jobs:
           tempfile=$(mktemp)
           jq '.displayName = "Biome (nightly)"' package.json > $tempfile
           mv $tempfile package.json
+      
+      - name: Mark nightly build as preview in package.json
+        if: ${{ github.event.inputs.nightly }}
+        run: |
+          tempfile=$(mktemp)
+          jq '.preview = true' package.json > $tempfile
+          mv $tempfile package.json
 
       - name: Generate nightly version identifier (nightly)
         if: ${{ github.event.inputs.nightly }}
