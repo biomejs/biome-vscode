@@ -27,18 +27,6 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Retrieve version from package.json (nightly)
-        if: ${{ github.event.inputs.nightly }}
-        id: packageJsonVersion
-        run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
-
-      - name: Parse version
-        if: ${{ github.event.inputs.nightly }}
-        id: version
-        uses: madhead/semver-utils@v3.1.0
-        with:
-          version: "${{ steps.packageJsonVersion.outputs.version }}"
-
       - name: Replace name in package.json (nightly)
         if: ${{ github.event.inputs.nightly }}
         run: |
@@ -53,21 +41,16 @@ jobs:
           jq '.displayName = "Biome (nightly)"' package.json > $tempfile
           mv $tempfile package.json
 
-      - name: Generate nightly identifier (nightly)
+      - name: Generate nightly version identifier (nightly)
         if: ${{ github.event.inputs.nightly }}
-        id: nightly-identifier
-        run: echo "identifier=$(date +'%Y%m%d%H')" >> "$GITHUB_OUTPUT"
-
-      - name: Build nightly version string (nightly)
-        if: ${{ github.event.inputs.nightly }}
-        id: version-string
-        run: echo "version=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}.${{ steps.nightly-identifier.outputs.identifier }}" >> $GITHUB_OUTPUT
+        id: nightly-version
+        run: echo "version=$(date +'%Y.%m.%d%H%M')" >> "$GITHUB_OUTPUT"
     
       - name: Replace version in package.json (nightly)
         if: ${{ github.event.inputs.nightly }}
         run: |
           tempfile=$(mktemp)
-          jq --arg version "${{ steps.version-string.outputs.version }}" '.version = $version' package.json > $tempfile
+          jq --arg version "${{ steps.nightly-version.outputs.version }}" '.version = $version' package.json > $tempfile
           mv $tempfile package.json
 
       - name: Package the extension
