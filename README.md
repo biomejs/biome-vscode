@@ -55,13 +55,19 @@ Set the `editor.defaultFormatter` to `biomejs.biome` for the desired language. F
 }
 ```
 
-## Biome Resolution
+### Choosing a `biome` binary
 
-The extension tries to use Biome from your project's local dependencies (`node_modules/Biome`). We recommend adding Biome as a project dependency to ensure that NPM scripts and the extension use the same Biome version.
+To resolve the location of the `biome` binary, the extension will look into the following places, in order:
 
-You can also explicitly specify the `Biome` binary the extension should use by configuring the `biome.lspBin` setting in your editor options.
+1. The project's local dependencies (`node_modules`)
+2. The path specified in the `biome.lspBin` configuration option of the extension
+3. The extension's `globalStorage` location
 
-If the project has no dependency on Biome and no explicit path is configured, the extension uses the Biome version included in its bundle.
+If none of these locations has a `biome` binary, the extension will prompt you to download a binary compatible with your operating system and architecture and store it in the `globalStorage`.
+
+> [!NOTE]  
+> We recommend adding Biome to your project's devDependencies so that both the extension and your NPM scripts use the same version of Biome.
+
 
 ## Usage
 
