@@ -14,7 +14,7 @@ The Visual Studio Code extension for Biome brings first-party support for Biome 
 
 ## Installation
 
-The Visual Studio Code extension for Biome is available form the following sources.
+The Visual Studio Code extension for Biome is available from the following sources.
 
 - [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) (recommended for [VS Code](https://code.visualstudio.com/) users)
 - [Open VSX Registry](https://open-vsx.org/extension/biomejs/biome) (recommended for [VSCodium](https://vscodium.com/) users)
@@ -26,7 +26,7 @@ This section describes how to get started with the Biome VS Code extension.
 ### Configuration file
 
 By default, the extension will not start unless a `biome.json` file is present at the
-root of the workspace. You can disable this behavior by setting the `biome.requireConfiguration`
+root of the workspace. You can disable this behaviour by setting the `biome.requireConfiguration`
 setting to `false`.
 
 ### Setting as the default formatter
