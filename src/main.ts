@@ -29,6 +29,9 @@ import resolveImpl = require("resolve/async");
 import { createRequire } from "module";
 import type * as resolve from "resolve";
 import { selectAndDownload, updateToLatest } from "./downloader";
+import { copyFileSync } from "fs";
+import * as path from "path";
+import * as os from 'os';
 
 const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 	resolveImpl,
@@ -114,17 +117,9 @@ export async function activate(context: ExtensionContext) {
 			return;
 		}
 	}
-
-	outputChannel.appendLine(`Using Biome from ${server.command}`);
-
+  
 	const statusBar = new StatusBar(context);
 	await statusBar.setUsingBundledBiome(server.bundled);
-
-	const serverOptions: ServerOptions = createMessageTransports.bind(
-		undefined,
-		outputChannel,
-		server.command,
-	);
 
 	const documentSelector: DocumentFilter[] = [
 		{ language: "javascript", scheme: "file" },
@@ -141,11 +136,74 @@ export async function activate(context: ExtensionContext) {
 		traceOutputChannel,
 	};
 
-	client = new LanguageClient(
-		"biome_lsp",
-		"Biome",
-		serverOptions,
-		clientOptions,
+  
+	const reloadClient = async () => {
+		outputChannel.appendLine(`Using Biome from ${server.command}`);
+
+		let tmpDestination: string;
+
+		try {
+			tmpDestination = path.resolve(
+				os.tmpdir(),
+				`./biome${process.platform === "win32" ? ".exe" : ""}`,
+			);
+			outputChannel.appendLine(`Copying file to tmp folder: ${tmpDestination}`);
+			copyFileSync(server.command, tmpDestination);
+		} catch (error) {
+			if (error.code === "EBUSY") {
+				// The file is busy, but attempt to use it anyways.
+				tmpDestination = path.resolve(
+					os.tmpdir(),
+					`./biome${process.platform === "win32" ? ".exe" : ""}`,
+				);
+			} else {
+				outputChannel.appendLine(`Error copying file: ${error}`);
+			}
+		}
+
+		const serverOptions: ServerOptions = createMessageTransports.bind(
+			undefined,
+			outputChannel,
+			tmpDestination ?? server.command,
+		);
+
+		client = new LanguageClient(
+			"biome_lsp",
+			"Biome",
+			serverOptions,
+			clientOptions,
+		);
+
+		context.subscriptions.push(
+			client.onDidChangeState((evt) => {
+				statusBar.setServerState(client, evt.newState);
+			}),
+		);
+	};
+
+	reloadClient();
+
+	// Best way to determine package updates. Will work for npm, yarn, pnpm and bun. (Might work for more files also).
+	// It is not possible to listen node_modules, because it is usually gitignored.
+	const watcher = workspace.createFileSystemWatcher("**/*lock*");
+	context.subscriptions.push(
+		watcher.onDidChange(async () => {
+			try {
+				// When the lockfile changes, reload the biome executable.
+				outputChannel.appendLine("Reloading biome executable..");
+				if (client.isRunning()) {
+					await client.stop();
+				}
+				await reloadClient();
+				if (client.isRunning()) {
+					await client.restart();
+				} else {
+					await client.start();
+				}
+			} catch (error) {
+				outputChannel.appendLine(`Reloading client failed: ${error}`);
+			}
+		}),
 	);
 
 	const session = new Session(context, client);
@@ -181,12 +239,6 @@ export async function activate(context: ExtensionContext) {
 	session.registerCommand(Commands.ServerStatus, () => {
 		traceOutputChannel.show();
 	});
-
-	context.subscriptions.push(
-		client.onDidChangeState((evt) => {
-			statusBar.setServerState(client, evt.newState);
-		}),
-	);
 
 	const handleActiveTextEditorChanged = (textEditor?: TextEditor) => {
 		if (!textEditor) {
