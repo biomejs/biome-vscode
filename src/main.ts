@@ -27,8 +27,6 @@ import { setContextValue } from "./utils";
 
 import resolveImpl = require("resolve/async");
 import { createRequire } from "module";
-import * as os from "os";
-import * as path from "path";
 import type * as resolve from "resolve";
 import { selectAndDownload, updateToLatest } from "./downloader";
 
