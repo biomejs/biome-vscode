@@ -26,12 +26,12 @@ import { StatusBar } from "./statusBar";
 import { setContextValue } from "./utils";
 
 import resolveImpl = require("resolve/async");
+import { copyFileSync } from "fs";
 import { createRequire } from "module";
+import * as os from "os";
+import * as path from "path";
 import type * as resolve from "resolve";
 import { selectAndDownload, updateToLatest } from "./downloader";
-import { copyFileSync } from "fs";
-import * as path from "path";
-import * as os from 'os';
 
 const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 	resolveImpl,
@@ -117,7 +117,7 @@ export async function activate(context: ExtensionContext) {
 			return;
 		}
 	}
-  
+
 	const statusBar = new StatusBar(context);
 	await statusBar.setUsingBundledBiome(server.bundled);
 
@@ -136,35 +136,34 @@ export async function activate(context: ExtensionContext) {
 		traceOutputChannel,
 	};
 
-  
 	const reloadClient = async () => {
 		outputChannel.appendLine(`Using Biome from ${server.command}`);
 
-		let tmpDestination: string;
+		let destination: Uri | undefined = Uri.joinPath(
+			context.storageUri,
+			`./biome${process.platform === "win32" ? ".exe" : ""}`,
+		);
 
 		try {
-			tmpDestination = path.resolve(
-				os.tmpdir(),
-				`./biome${process.platform === "win32" ? ".exe" : ""}`,
-			);
-			outputChannel.appendLine(`Copying file to tmp folder: ${tmpDestination}`);
-			copyFileSync(server.command, tmpDestination);
+			// Create the destination if it does not exist.
+			await workspace.fs.createDirectory(context.storageUri);
+
+			outputChannel.appendLine(`Copying file to tmp folder: ${destination}`);
+			workspace.fs.copy(Uri.file(server.command), destination, {
+				overwrite: true,
+			});
 		} catch (error) {
-			if (error.code === "EBUSY") {
-				// The file is busy, but attempt to use it anyways.
-				tmpDestination = path.resolve(
-					os.tmpdir(),
-					`./biome${process.platform === "win32" ? ".exe" : ""}`,
-				);
-			} else {
+			console.error(error);
+			if (error.code !== "EBUSY") {
 				outputChannel.appendLine(`Error copying file: ${error}`);
+				destination = undefined;
 			}
 		}
 
 		const serverOptions: ServerOptions = createMessageTransports.bind(
 			undefined,
 			outputChannel,
-			tmpDestination ?? server.command,
+			destination.fsPath ?? server.command,
 		);
 
 		client = new LanguageClient(
@@ -181,7 +180,7 @@ export async function activate(context: ExtensionContext) {
 		);
 	};
 
-	reloadClient();
+	await reloadClient();
 
 	// Best way to determine package updates. Will work for npm, yarn, pnpm and bun. (Might work for more files also).
 	// It is not possible to listen node_modules, because it is usually gitignored.
