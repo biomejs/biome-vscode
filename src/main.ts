@@ -26,7 +26,6 @@ import { StatusBar } from "./statusBar";
 import { setContextValue } from "./utils";
 
 import resolveImpl = require("resolve/async");
-import { copyFileSync } from "fs";
 import { createRequire } from "module";
 import * as os from "os";
 import * as path from "path";
