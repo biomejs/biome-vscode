@@ -150,11 +150,8 @@ export async function activate(context: ExtensionContext) {
 				overwrite: true,
 			});
 		} catch (error) {
-			console.error(error);
-			if (error.code !== "EBUSY") {
-				outputChannel.appendLine(`Error copying file: ${error}`);
-				destination = undefined;
-			}
+      outputChannel.appendLine(`Error copying file: ${error}`);
+      destination = undefined;
 		}
 
 		const serverOptions: ServerOptions = createMessageTransports.bind(
@@ -186,7 +183,7 @@ export async function activate(context: ExtensionContext) {
 		watcher.onDidChange(async () => {
 			try {
 				// When the lockfile changes, reload the biome executable.
-				outputChannel.appendLine("Reloading biome executable..");
+				outputChannel.appendLine("Reloading biome executable.");
 				if (client.isRunning()) {
 					await client.stop();
 				}
@@ -212,7 +209,7 @@ export async function activate(context: ExtensionContext) {
 
 	commands.registerCommand(Commands.UpdateBiome, async (version: string) => {
 		const result = await window.showInformationMessage(
-			`Are you sure you want to update Biome (bundled) to ${version} ?`,
+			`Are you sure you want to update Biome (bundled) to ${version}?`,
 			{
 				modal: true,
 			},
