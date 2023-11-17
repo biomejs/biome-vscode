@@ -150,8 +150,8 @@ export async function activate(context: ExtensionContext) {
 				overwrite: true,
 			});
 		} catch (error) {
-      outputChannel.appendLine(`Error copying file: ${error}`);
-      destination = undefined;
+			outputChannel.appendLine(`Error copying file: ${error}`);
+			destination = undefined;
 		}
 
 		const serverOptions: ServerOptions = createMessageTransports.bind(
