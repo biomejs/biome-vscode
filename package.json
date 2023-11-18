@@ -29,14 +29,18 @@
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": "limited",
-			"restrictedConfigurations": ["biome.lspBin"]
+			"restrictedConfigurations": [
+				"biome.lspBin"
+			]
 		}
 	},
 	"contributes": {
 		"languages": [
 			{
 				"id": "biome_syntax_tree",
-				"extensions": [".rast"]
+				"extensions": [
+					".rast"
+				]
 			}
 		],
 		"grammars": [
@@ -78,18 +82,32 @@
 				"biome_lsp.trace.server": {
 					"type": "string",
 					"scope": "window",
-					"enum": ["off", "messages", "verbose"],
-					"enumDescriptions": ["No traces", "Error only", "Full log"],
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"enumDescriptions": [
+						"No traces",
+						"Error only",
+						"Full log"
+					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				},
 				"biome.lspBin": {
-					"type": ["string", "null"],
+					"type": [
+						"string",
+						"null"
+					],
 					"default": null,
 					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
 				},
 				"biome.rename": {
-					"type": ["boolean", "null"],
+					"type": [
+						"boolean",
+						"null"
+					],
 					"default": null,
 					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
 				},
@@ -101,13 +119,19 @@
 			}
 		}
 	},
-	"categories": ["Formatters", "Linters"],
-	"keywords": ["Formatter", "Linter"],
-	"license": "MIT",
+	"categories": [
+		"Formatters",
+		"Linters"
+	],
+	"keywords": [
+		"Formatter",
+		"Linter"
+	],
+	"license": "MIT OR Apache-2.0",
 	"scripts": {
 		"compile": "esbuild src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --target=node14",
 		"watch": "pnpm run compile --sourcemap --watch",
-		"package": "vsce package --no-dependencies -o biome_lsp.vsix",
+		"package": "vsce package --skip-license -o biome_lsp.vsix",
 		"build": "pnpm run compile --minify && pnpm run package",
 		"install-extension": "code --install-extension biome_lsp.vsix --force",
 		"format": "biome format . --write",
@@ -123,7 +147,7 @@
 		"@types/resolve": "^1.20.2",
 		"@types/semver": "^7.5.4",
 		"@types/vscode": "^1.80.0",
-		"@vscode/vsce": "^2.20.1",
+		"@vscode/vsce": "^2.22.0",
 		"esbuild": "^0.19.2",
 		"lefthook": "^1.5.2",
 		"typescript": "^5.1.6"
@@ -135,7 +159,8 @@
 		"vscode-languageclient": "^8.1.0"
 	},
 	"vsce": {
-		"dependencies": false
+		"dependencies": false,
+		"skipLicense": true
 	},
 	"packageManager": "pnpm@8.6.12"
 }
