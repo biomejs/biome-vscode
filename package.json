@@ -29,18 +29,14 @@
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": "limited",
-			"restrictedConfigurations": [
-				"biome.lspBin"
-			]
+			"restrictedConfigurations": ["biome.lspBin"]
 		}
 	},
 	"contributes": {
 		"languages": [
 			{
 				"id": "biome_syntax_tree",
-				"extensions": [
-					".rast"
-				]
+				"extensions": [".rast"]
 			}
 		],
 		"grammars": [
@@ -82,32 +78,18 @@
 				"biome_lsp.trace.server": {
 					"type": "string",
 					"scope": "window",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"enumDescriptions": [
-						"No traces",
-						"Error only",
-						"Full log"
-					],
+					"enum": ["off", "messages", "verbose"],
+					"enumDescriptions": ["No traces", "Error only", "Full log"],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				},
 				"biome.lspBin": {
-					"type": [
-						"string",
-						"null"
-					],
+					"type": ["string", "null"],
 					"default": null,
 					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
 				},
 				"biome.rename": {
-					"type": [
-						"boolean",
-						"null"
-					],
+					"type": ["boolean", "null"],
 					"default": null,
 					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
 				},
@@ -119,14 +101,8 @@
 			}
 		}
 	},
-	"categories": [
-		"Formatters",
-		"Linters"
-	],
-	"keywords": [
-		"Formatter",
-		"Linter"
-	],
+	"categories": ["Formatters", "Linters"],
+	"keywords": ["Formatter", "Linter"],
 	"license": "MIT OR Apache-2.0",
 	"scripts": {
 		"compile": "esbuild src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --target=node14",
