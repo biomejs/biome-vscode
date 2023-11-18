@@ -33,7 +33,7 @@ setting to `false`.
 
 To set the VS Code extension for Biome as the default formatter, follow the steps below.
 
-1. Open the **Command Palette**
+1. Open the **Command Palette**: <kbd>⌘/Ctrl</kbd>+<kbd>⇧</kbd>+<kbd>P</kbd>
 2. Select _Format Document With…_
 3. Select _Configure Default Formatter…_
 4. Select **Biome**
@@ -71,42 +71,60 @@ If none of these locations has a `biome` binary, the extension will prompt you t
 
 ## Usage
 
-### Format document
+### Formatting documents
 
-To format an entire document, open the _Command Palette_ (<kbd>Ctrl</kbd>/<kbd title="Cmd">⌘</kbd>+<kbd title="Shift">⇧</kbd>+<kbd>P</kbd>) and select _Format Document_.
+#### On-demand formatting
 
-To format a text range, select the text you want to format, open the _Command Palette_ (<kbd>Ctrl</kbd>/<kbd title="Cmd">⌘</kbd>+<kbd title="Shift">⇧</kbd>+<kbd>P</kbd>), and select _Format Selection_.
+To format a document on-demand, follow the steps below.
 
-### Format on save
+1. Open the **Command Palette**: <kbd>⌘/Ctrl</kbd>+<kbd>⇧</kbd>+<kbd>P</kbd>
+2. Select _Format Document_
 
-Biome respects VS Code's _Format on Save_ setting. To enable format on save, open the settings (_File_ -> _Preferences_ -> _Settings_), search for `editor.formatOnSave`, and enable the option.
+You can also format a selection of text by following the steps below.
 
-### Fix on save
+1. Select the text you want to format
+2. Open the **Command Palette**: <kbd>⌘/Ctrl</kbd>+<kbd>⇧</kbd>+<kbd>P</kbd>
+3. Select _Format Selection_
 
-Biome respects VS Code's _Code Actions On Save_ setting. To enable fix on save, add
+#### Formatting on save
 
+Thhis supports formatting on save out of the box. You should enable
+format on save in your editor's settings and make sure that the Biome extension is [set as the
+default formatter](#setting-as-the-default-formatter) for your documents/languages.
+
+#### Autofix on save
+
+This extension supports VS Code's _Code Actions On Save_ setting. To enable autofix on save, add
+the following to your editor configuration.
 
 ```json
 {
   "editor.codeActionsOnSave": {
-    "quickfix.biome": true
+	"quickfix.biome": true
   }
 }
 ```
 
-in vscode `settings.json`.
+### Sorting imports (experimental)
 
-### Imports Sorting [Experimental]
+Biome has an experimental `Organize Imports` feature that allows you to sort imports automatically. This feature can be run manually or automatically on save.
 
-The Biome VS Code extension supports imports sorting through the "Organize Imports" code action. By default this action can be run using the <kbd title="Shift">⇧</kbd>+<kbd>Alt</kbd>+<kbd>O</kbd> keyboard shortcut, or is accessible through the _Command Palette_ (<kbd>Ctrl</kbd>/<kbd title="Cmd">⌘</kbd>+<kbd title="Shift">⇧</kbd>+<kbd>P</kbd>) by selecting _Organize Imports_.
+#### On-demand sorting
 
-You can add the following to your editor configuration if you want the action to run automatically on save instead of calling it manually:
+To sort imports on-demand, follow the steps below.
+
+1. Open the **Command Palette**: <kbd>⌘/Ctrl</kbd>+<kbd>⇧</kbd>+<kbd>P</kbd>
+2. Select _Organize Imports_
+
+#### Sorting on save
+
+To automatically sort imports on save, add the following to your editor configuration.
 
 ```json
 {
-	"editor.codeActionsOnSave":{
-		"source.organizeImports.biome": true
-	}
+  "editor.codeActionsOnSave": {
+	"source.organizeImports.biome": true
+  }
 }
 ```
 
