@@ -43,8 +43,8 @@ export async function activate(context: ExtensionContext) {
 	const outputChannel = window.createOutputChannel("Biome");
 	const traceOutputChannel = window.createOutputChannel("Biome Trace");
 
-	// If this extension is a stable version and a nightly version is installed,
-	// we abort activation of the stable version.
+	// If this extension is a stable version and a nightly version is installed
+	// and active, we abort activation of the stable version.
 	if (context.extension.id === "biomejs.biome") {
 		const nightlyExtension = extensions.getExtension("biomejs.biome-nightly");
 		if (nightlyExtension.isActive) {
