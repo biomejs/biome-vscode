@@ -33,6 +33,10 @@ filter_unconventional = true
 # Filter out the commits that are not matched by commit parsers
 filter_commits = true
 
+commit_preprocessors = [
+    { pattern = "\\(#([0-9]+)\\)", replace = "([#${1}](https://github.com/biomejs/biome-vscode/pull/${1}))"}
+]
+
 # Commit parsers to use for parsing commits
 commit_parsers = [
     { message = "^feat", group = "Features" },
