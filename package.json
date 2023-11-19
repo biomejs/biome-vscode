@@ -116,7 +116,7 @@
 		"pack:dev": "pnpm run compile && pnpm run package && pnpm run install-extension",
 		"tsc": "tsc",
 		"prepare": "lefthook install",
-		"changelog": "git-cliff --unreleased 0544a0e103df4308c92b302ac3b22a1e3c26a64d.."
+		"changelog": "git-cliff --unreleased --prepend CHANGELOG.md 0544a0e103df4308c92b302ac3b22a1e3c26a64d.."
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.3.3",
