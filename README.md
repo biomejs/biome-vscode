@@ -67,6 +67,9 @@ If none of these locations has a `biome` binary, the extension will prompt you t
 
 > [!NOTE]  
 > We recommend adding Biome to your project's devDependencies so that both the extension and your NPM scripts use the same version of Biome.
+> ```
+> npm install -D @biomejs/biome
+> ```
 
 
 ## Usage
