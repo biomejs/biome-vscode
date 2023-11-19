@@ -47,7 +47,7 @@ export async function activate(context: ExtensionContext) {
 	// and active, we abort activation of the stable version.
 	if (context.extension.id === "biomejs.biome") {
 		const nightlyExtension = extensions.getExtension("biomejs.biome-nightly");
-		if (nightlyExtension.isActive) {
+		if (nightlyExtension?.isActive) {
 			outputChannel.appendLine(
 				"Biome Nightly detected, disabling Biome extension",
 			);
