@@ -8,6 +8,7 @@ import {
 	TextEditor,
 	Uri,
 	commands,
+	extensions,
 	languages,
 	window,
 	workspace,
@@ -41,6 +42,18 @@ const IN_BIOME_PROJECT = "inBiomeProject";
 export async function activate(context: ExtensionContext) {
 	const outputChannel = window.createOutputChannel("Biome");
 	const traceOutputChannel = window.createOutputChannel("Biome Trace");
+
+	// If this extension is a stable version and a nightly version is installed,
+	// we abort activation of the stable version.
+	if (context.extension.id === "biomejs.biome") {
+		const nightlyExtension = extensions.getExtension("biomejs.biome-nightly");
+		if (nightlyExtension) {
+			outputChannel.appendLine(
+				"Biome Nightly detected, disabling Biome extension",
+			);
+			return;
+		}
+	}
 
 	const requiresConfiguration = workspace
 		.getConfiguration("biome")
