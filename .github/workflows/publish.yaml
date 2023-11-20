@@ -44,3 +44,8 @@ jobs:
         run: pnpm exec vsce publish --packagePath biome.vsix
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Publish extension to Open VSX Registry
+        run: pnpm exec ovsx publish --packagePath biome.vsix
+        env:
+          VSCE_PAT: ${{ secrets.OVSX_PAT }}
