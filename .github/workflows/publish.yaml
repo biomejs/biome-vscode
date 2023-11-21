@@ -106,7 +106,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          name: v${{ needs.package.outputs.version }}
+          name: "v${{ needs.package.outputs.version }} ${{ needs.package.outputs.nightly && '(nightly)' || '' }}"
           body_path: RELEASE_NOTES.md
           prerelease: ${{ needs.package.outputs.nightly }}
           files: biome.vsix
