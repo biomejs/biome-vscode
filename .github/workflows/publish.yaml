@@ -98,6 +98,9 @@ jobs:
           args: -vv --latest --strip header 0544a0e103df4308c92b302ac3b22a1e3c26a64d..
         env:
           OUTPUT: CHANGES.md
+      
+      - name: Debug changes
+        run: echo "changes ${{ steps.release-notes.outputs.content }}"
 
       - name: Publish extension to GitHub Releases
         uses: softprops/action-gh-release@v1
