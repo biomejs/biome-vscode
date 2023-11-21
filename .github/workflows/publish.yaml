@@ -98,21 +98,15 @@ jobs:
           args: -vv --latest --strip header 0544a0e103df4308c92b302ac3b22a1e3c26a64d..
         env:
           OUTPUT: CHANGES.md
-      
-      - name: debug changes (before)
-        run: cat CHANGES.md
 
       - name: Strip tag from release notes
-        run: cat CHANGES.md | tail -n +2 > CHANGES.md
-
-      - name: debug changes (after)
-        run: cat CHANGES.md
+        run: tail -n +3 < CHANGES.md > RELEASE_NOTES.md
 
       - name: Publish extension to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
           draft: true
           name: v${{ needs.package.outputs.version }}
-          body_path: CHANGES.md
+          body_path: RELEASE_NOTES.md
           prerelease: ${{ needs.package.outputs.nightly }}
           files: biome.vsix
