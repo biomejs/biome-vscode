@@ -8,7 +8,14 @@ on:
         type: boolean
         default: false
         required: false
-        description: 'Publish a nightly build'       
+        description: 'Publish a nightly build'
+    outputs:
+      version:
+        value: ${{ jobs.package.outputs.version }}
+        description: 'Version of the packaged extension'
+      nightly:
+        value: ${{ jobs.package.outputs.nightly }}
+        description: 'Whether the packaged extension is a nightly build'
 
 jobs:
   package:
@@ -60,7 +67,11 @@ jobs:
           jq --arg version "${{ steps.nightly-version.outputs.version }}" '.version = $version' package.json > $tempfile
           mv $tempfile package.json
 
+      - name: Read version from package.json
+        run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
+
       - name: Package the extension
+        id: version
         run: pnpm exec vsce package -o biome.vsix
 
       - name: Upload the artifact
@@ -68,3 +79,7 @@ jobs:
         with:
           name: biome.vsix
           path: biome.vsix
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      nightly: ${{ github.event.inputs.nightly }}
