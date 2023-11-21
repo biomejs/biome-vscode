@@ -96,6 +96,8 @@ jobs:
         with:
           config: cliff.toml
           args: -vv --latest --strip header 0544a0e103df4308c92b302ac3b22a1e3c26a64d..
+        env:
+          OUTPUT: CHANGES.md
 
       - name: Publish extension to GitHub Releases
         uses: softprops/action-gh-release@v1
