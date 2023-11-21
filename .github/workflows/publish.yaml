@@ -110,3 +110,4 @@ jobs:
           body_path: RELEASE_NOTES.md
           prerelease: ${{ needs.package.outputs.nightly }}
           files: biome.vsix
+          tag_name: ${{ needs.package.outputs.nightly && github.ref || format('v{0}', needs.package.outputs.version) }}
