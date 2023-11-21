@@ -107,6 +107,6 @@ jobs:
         with:
           draft: true
           name: v${{ needs.package.outputs.version }}
-          body: ${{ steps.release-notes.outputs.content }}
+          body_path: CHANGES.md
           prerelease: ${{ needs.package.outputs.nightly }}
           files: biome.vsix
