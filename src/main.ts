@@ -40,8 +40,16 @@ let client: LanguageClient;
 const IN_BIOME_PROJECT = "inBiomeProject";
 
 export async function activate(context: ExtensionContext) {
-	const outputChannel = window.createOutputChannel("Biome");
-	const traceOutputChannel = window.createOutputChannel("Biome Trace");
+	const outputChannel = window.createOutputChannel(
+		`Biome${
+			context.extension.id === "biomejs.biome-nightly" ? " (nightly)" : ""
+		}`,
+	);
+	const traceOutputChannel = window.createOutputChannel(
+		`Biome Trace${
+			context.extension.id === "biomejs.biome-nightly" ? " (nightly)" : ""
+		}`,
+	);
 
 	// If this extension is a stable version and a nightly version is installed
 	// and active, we abort activation of the stable version.
