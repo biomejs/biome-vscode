@@ -24,7 +24,7 @@ jobs:
     with:
       # If the workflow was triggered by a schedule event, or the nightly 
       # input is true, package a nightly build
-      nightly: ${{ github.event.inputs.nightly && 'true' || 'false' }}
+      nightly: ${{ github.event.inputs.nightly == 'true' && true || false }}
   
   # publish-vs-marketplace:
   #   name: Publish to Visual Studio Marketplace
