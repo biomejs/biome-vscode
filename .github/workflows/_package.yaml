@@ -68,10 +68,10 @@ jobs:
           mv $tempfile package.json
 
       - name: Read version from package.json
+        id: version
         run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
       - name: Package the extension
-        id: version
         run: pnpm exec vsce package -o biome.vsix
 
       - name: Upload the artifact
