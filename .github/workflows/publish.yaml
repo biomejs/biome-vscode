@@ -102,6 +102,9 @@ jobs:
       - name: Strip tag from release notes
         run: cat CHANGES.md | tail -n +2 > CHANGES.md
 
+      - name: debug changes
+        run: cat CHANGES.md
+
       - name: Publish extension to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
