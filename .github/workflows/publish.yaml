@@ -26,49 +26,49 @@ jobs:
       # input is true, package a nightly build
       nightly: ${{ github.event.inputs.nightly == 'true' }}
   
-  # publish-vs-marketplace:
-  #   name: Publish to Visual Studio Marketplace
-  #   needs: [package]
-  #   runs-on: ubuntu-latest
-  #   environment: vscode
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+  publish-vs-marketplace:
+    name: Publish to Visual Studio Marketplace
+    needs: [package]
+    runs-on: ubuntu-latest
+    environment: vscode
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Setup
-  #       uses: ./.github/actions/setup
+      - name: Setup
+        uses: ./.github/actions/setup
 
-  #     - name: Download the artifact
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: biome.vsix
+      - name: Download the artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: biome.vsix
 
-  #     - name: Publish extension to Visual Studio Marketplace
-  #       run: pnpm exec vsce publish --packagePath biome.vsix
-  #       env:
-  #         VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      - name: Publish extension to Visual Studio Marketplace
+        run: pnpm exec vsce publish --packagePath biome.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
-  # publish-ovsx-registry:
-  #   name: Publish to Open VSX Registry
-  #   needs: [package]
-  #   runs-on: ubuntu-latest
-  #   environment: vscode
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
+  publish-ovsx-registry:
+    name: Publish to Open VSX Registry
+    needs: [package]
+    runs-on: ubuntu-latest
+    environment: vscode
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  #     - name: Setup
-  #       uses: ./.github/actions/setup
+      - name: Setup
+        uses: ./.github/actions/setup
 
-  #     - name: Download the artifact
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: biome.vsix
+      - name: Download the artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: biome.vsix
 
-  #     - name: Publish extension to Open VSX Registry
-  #       run: pnpm exec ovsx publish --packagePath biome.vsix
-  #       env:
-  #         OVSX_PAT: ${{ secrets.OVSX_PAT }}
+      - name: Publish extension to Open VSX Registry
+        run: pnpm exec ovsx publish --packagePath biome.vsix
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
 
   publish-github-release:
     name: Publish to GitHub Releases
