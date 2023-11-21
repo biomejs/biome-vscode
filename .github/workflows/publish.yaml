@@ -27,7 +27,7 @@ jobs:
       nightly: ${{ (github.event.inputs.nightly || github.event_name == 'schedule') && true || false }}
   
   publish-vs-marketplace:
-    name: Publish
+    name: Publish to Visual Studio Marketplace
     needs: [package]
     runs-on: ubuntu-latest
     environment: vscode
@@ -49,7 +49,7 @@ jobs:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
   publish-ovsx-registry:
-    name: Publish to OpenVSX Registry
+    name: Publish to Open VSX Registry
     needs: [package]
     runs-on: ubuntu-latest
     environment: vscode
