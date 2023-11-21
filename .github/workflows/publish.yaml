@@ -99,8 +99,8 @@ jobs:
         env:
           OUTPUT: CHANGES.md
       
-      - name: Debug changes
-        run: echo "changes ${{ steps.release-notes.outputs.content }}"
+      - name: Strip tag from release notes
+        run: cat CHANGES.md | tail -n +2 > CHANGES.md
 
       - name: Publish extension to GitHub Releases
         uses: softprops/action-gh-release@v1
