@@ -99,10 +99,13 @@ jobs:
         env:
           OUTPUT: CHANGES.md
       
+      - name: debug changes (before)
+        run: cat CHANGES.md
+
       - name: Strip tag from release notes
         run: cat CHANGES.md | tail -n +2 > CHANGES.md
 
-      - name: debug changes
+      - name: debug changes (after)
         run: cat CHANGES.md
 
       - name: Publish extension to GitHub Releases
