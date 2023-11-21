@@ -35,33 +35,33 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Replace name in package.json (nightly)
-        if: ${{ github.event.inputs.nightly }}
+        if: ${{ github.event.inputs.nightly == 'true' }}
         run: |
           tempfile=$(mktemp)
           jq '.name = "biome-nightly"' package.json > $tempfile
           mv $tempfile package.json
         
       - name: Replace displayName in package.json (nightly)
-        if: ${{ github.event.inputs.nightly }}
+        if: ${{ github.event.inputs.nightly == 'true' }}
         run: |
           tempfile=$(mktemp)
           jq '.displayName = "Biome (nightly)"' package.json > $tempfile
           mv $tempfile package.json
       
       - name: Mark nightly build as preview in package.json
-        if: ${{ github.event.inputs.nightly }}
+        if: ${{ github.event.inputs.nightly == 'true' }}
         run: |
           tempfile=$(mktemp)
           jq '.preview = true' package.json > $tempfile
           mv $tempfile package.json
 
       - name: Generate nightly version identifier (nightly)
-        if: ${{ github.event.inputs.nightly }}
+        if: ${{ github.event.inputs.nightly == 'true' }}
         id: nightly-version
         run: echo "version=$(date +'%Y.%-m.%-d%-H%-M')" >> "$GITHUB_OUTPUT"
     
       - name: Replace version in package.json (nightly)
-        if: ${{ github.event.inputs.nightly }}
+        if: ${{ github.event.inputs.nightly == 'true' }}
         run: |
           tempfile=$(mktemp)
           jq --arg version "${{ steps.nightly-version.outputs.version }}" '.version = $version' package.json > $tempfile
@@ -82,4 +82,4 @@ jobs:
 
     outputs:
       version: ${{ steps.version.outputs.version }}
-      nightly: ${{ github.event.inputs.nightly }}
+      nightly: ${{ github.event.inputs.nightly == 'true' }}

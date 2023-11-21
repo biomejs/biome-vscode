@@ -24,7 +24,7 @@ jobs:
     with:
       # If the workflow was triggered by a schedule event, or the nightly 
       # input is true, package a nightly build
-      nightly: ${{ github.event.inputs.nightly == 'true' && true || false }}
+      nightly: ${{ github.event.inputs.nightly == 'true' }}
   
   # publish-vs-marketplace:
   #   name: Publish to Visual Studio Marketplace
@@ -106,8 +106,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          name: "v${{ needs.package.outputs.version }} ${{ needs.package.outputs.nightly && '(nightly)' || '' }}"
+          name: "v${{ needs.package.outputs.version }} ${{ needs.package.outputs.nightly == 'true' && '(nightly)' || '' }}"
           body_path: RELEASE_NOTES.md
-          prerelease: ${{ needs.package.outputs.nightly }}
+          prerelease: ${{ needs.package.outputs.nightly == 'true' }}
           files: biome.vsix
-          tag_name: ${{ needs.package.outputs.nightly && github.ref || format('v{0}', needs.package.outputs.version) }}
+          tag_name: ${{ needs.package.outputs.nightly == 'true' && github.ref || format('v{0}', needs.package.outputs.version) }}
