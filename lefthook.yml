@@ -1,0 +1,5 @@
+pre-commit:
+  commands:
+    check:
+      glob: "*.{js,ts,jsx,tsx,json}"
+      run: biome check --apply {staged_files} && git add {staged_files}

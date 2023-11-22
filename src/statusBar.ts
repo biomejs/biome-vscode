@@ -88,7 +88,9 @@ export class StatusBar {
 			status = Status.Error;
 		}
 
-		this.statusBarItem.text = `$(${status}) Biome ${this.serverVersion} ${
+		this.statusBarItem.text = `$(${status}) Biome${
+			this.context.extension.id === "biomejs.biome-nightly" ? " (nightly)" : ""
+		} ${this.serverVersion} ${
 			this.usingBundledBiome ? "(bundled)" : ""
 		}`.trimEnd();
 
