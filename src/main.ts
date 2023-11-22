@@ -162,16 +162,20 @@ export async function activate(context: ExtensionContext) {
 			`./biome${process.platform === "win32" ? ".exe" : ""}`,
 		);
 
-		try {
-			// Create the destination if it does not exist.
-			await workspace.fs.createDirectory(context.storageUri);
+		if (server.workspaceDependency) {
+			try {
+				// Create the destination if it does not exist.
+				await workspace.fs.createDirectory(context.storageUri);
 
-			outputChannel.appendLine(`Copying file to tmp folder: ${destination}`);
-			workspace.fs.copy(Uri.file(server.command), destination, {
-				overwrite: true,
-			});
-		} catch (error) {
-			outputChannel.appendLine(`Error copying file: ${error}`);
+				outputChannel.appendLine(`Copying file to tmp folder: ${destination}`);
+				workspace.fs.copy(Uri.file(server.command), destination, {
+					overwrite: true,
+				});
+			} catch (error) {
+				outputChannel.appendLine(`Error copying file: ${error}`);
+				destination = undefined;
+			}
+		} else {
 			destination = undefined;
 		}
 
@@ -319,11 +323,15 @@ const PLATFORMS: PlatformTriplets = {
 async function getServerPath(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
-): Promise<{ bundled: boolean; command: string } | undefined> {
+): Promise<
+	| { bundled: boolean; workspaceDependency: boolean; command: string }
+	| undefined
+> {
 	// Only allow the bundled Biome binary in untrusted workspaces
 	if (!workspace.isTrusted) {
 		return {
 			bundled: true,
+			workspaceDependency: false,
 			command: await getBundledBinary(context, outputChannel),
 		};
 	}
@@ -334,6 +342,7 @@ async function getServerPath(
 		);
 		return {
 			bundled: false,
+			workspaceDependency: false,
 			command: process.env.DEBUG_SERVER_PATH,
 		};
 	}
@@ -343,6 +352,7 @@ async function getServerPath(
 	if (typeof explicitPath === "string" && explicitPath !== "") {
 		return {
 			bundled: false,
+			workspaceDependency: false,
 			command: await getWorkspaceRelativePath(explicitPath),
 		};
 	}
@@ -350,6 +360,7 @@ async function getServerPath(
 	const workspaceDependency = await getWorkspaceDependency(outputChannel);
 	return {
 		bundled: workspaceDependency === undefined,
+		workspaceDependency: workspaceDependency !== undefined,
 		command:
 			workspaceDependency ?? (await getBundledBinary(context, outputChannel)),
 	};
