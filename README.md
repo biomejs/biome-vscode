@@ -1,6 +1,3 @@
-> [!IMPORTANT]  
-> This repository has been extracted from the [Biome monorepo](https://github.com/biomejs/biome). It is still a work in progress. If you find any issues, please report them in the Biome monorepo.
-
 # Visual Studio Code extension for Biome
 
 [![](https://img.shields.io/visual-studio-marketplace/v/biomejs.biome?color=374151&label=Visual%20Studio%20Marketplace&labelColor=000&logo=visual-studio-code&logoColor=0098FF)](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
