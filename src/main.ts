@@ -155,7 +155,7 @@ export async function activate(context: ExtensionContext) {
 	};
 
 	const reloadClient = async () => {
-		outputChannel.appendLine(`Using Biome from ${server.command}`);
+		outputChannel.appendLine(`Biome binary found at ${server.command}`);
 
 		let destination: Uri | undefined = Uri.joinPath(
 			context.storageUri,
@@ -167,7 +167,9 @@ export async function activate(context: ExtensionContext) {
 				// Create the destination if it does not exist.
 				await workspace.fs.createDirectory(context.storageUri);
 
-				outputChannel.appendLine(`Copying file to tmp folder: ${destination}`);
+				outputChannel.appendLine(
+					`Copying binary to temporary folder: ${destination}`,
+				);
 				await workspace.fs.copy(Uri.file(server.command), destination, {
 					overwrite: true,
 				});
@@ -178,6 +180,10 @@ export async function activate(context: ExtensionContext) {
 		} else {
 			destination = undefined;
 		}
+
+		outputChannel.appendLine(
+			`Executing Biome from: ${destination.fsPath ?? server.command}`,
+		);
 
 		const serverOptions: ServerOptions = createMessageTransports.bind(
 			undefined,
