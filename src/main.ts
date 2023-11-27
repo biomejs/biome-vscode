@@ -168,7 +168,7 @@ export async function activate(context: ExtensionContext) {
 				await workspace.fs.createDirectory(context.storageUri);
 
 				outputChannel.appendLine(`Copying file to tmp folder: ${destination}`);
-				workspace.fs.copy(Uri.file(server.command), destination, {
+				await workspace.fs.copy(Uri.file(server.command), destination, {
 					overwrite: true,
 				});
 			} catch (error) {
