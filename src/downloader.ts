@@ -151,7 +151,7 @@ const askVersion = async (versions: string[]): Promise<string | undefined> => {
  */
 export const getVersions = async (
 	context: ExtensionContext,
-): Promise<string[]|undefined> => {
+): Promise<string[] | undefined> => {
 	const cachedVersions = context.globalState.get<{
 		expires_at: Date;
 		versions: string[];
@@ -173,7 +173,7 @@ export const getVersions = async (
 		releases = undefined;
 	}
 
-	if(!releases) {
+	if (!releases) {
 		return undefined;
 	}
 
