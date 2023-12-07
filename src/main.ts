@@ -63,10 +63,6 @@ export async function activate(context: ExtensionContext) {
 		}
 	}
 
-	const requiresConfiguration = workspace
-		.getConfiguration("biome")
-		.get<boolean>("requireConfiguration");
-
 	commands.registerCommand(Commands.StopServer, async () => {
 		if (!client) {
 			return;
@@ -96,23 +92,6 @@ export async function activate(context: ExtensionContext) {
 	commands.registerCommand("biome.clearVersionsCache", async () => {
 		await context.globalState.update("biome_versions_cache", undefined);
 	});
-
-	// If the extension requires a configuration file to be present, we attempt to
-	// locate it. If a config file cannot be found, we do not go any further.
-	if (requiresConfiguration) {
-		outputChannel.appendLine("Configuration file required, looking for one.");
-		// TODO: Stop looking for rome.json when we reach biome v2.0
-		const configFiles = await workspace.findFiles("**/{biome,rome}.json");
-		if (configFiles.length === 0) {
-			outputChannel.appendLine(
-				"No config file found, disabling Biome extension",
-			);
-			return;
-		}
-		outputChannel.appendLine(
-			`Config file found at ${configFiles[0].fsPath}, enabling Biome extension`,
-		);
-	}
 
 	let server = await getServerPath(context, outputChannel);
 

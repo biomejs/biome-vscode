@@ -92,11 +92,6 @@
 					"type": ["boolean", "null"],
 					"default": null,
 					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
-				},
-				"biome.requireConfiguration": {
-					"type": "boolean",
-					"default": true,
-					"markdownDescription": "Require a Biome configuration file to enable syntax errors, formatting and linting."
 				}
 			}
 		}
