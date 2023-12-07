@@ -168,7 +168,21 @@ export class StatusBar {
 	}
 
 	public async checkForUpdates() {
-		const latestVersion = (await getVersions(this.context))[0];
+		// Only check for updates if we're using the bundled version
+		if (!this.usingBundledBiome) {
+			this.statusBarUpdateItem.hide();
+			return;
+		}
+
+		const latestVersion = (await getVersions(this.context))?.[0];
+
+		// If the latest version cannot be fetch, do not display the update
+		// status bar item.
+		if (!latestVersion) {
+			this.statusBarUpdateItem.hide();
+			return;
+		}
+
 		const hasUpdates = gt(
 			latestVersion,
 			this.context.globalState.get("bundled_biome_version") ?? "0.0.0",
