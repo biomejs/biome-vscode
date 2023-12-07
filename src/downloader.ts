@@ -151,7 +151,7 @@ const askVersion = async (versions: string[]): Promise<string | undefined> => {
  */
 export const getVersions = async (
 	context: ExtensionContext,
-): Promise<string[]> => {
+): Promise<string[]|undefined> => {
 	const cachedVersions = context.globalState.get<{
 		expires_at: Date;
 		versions: string[];
@@ -162,11 +162,20 @@ export const getVersions = async (
 		return cachedVersions.versions;
 	}
 
-	const releases = (await (
-		await fetch(
-			"https://api.github.com/repos/biomejs/biome/releases?per_page=100",
-		)
-	).json()) as { tag_name: string }[];
+	let releases = undefined;
+	try {
+		releases = (await (
+			await fetch(
+				"https://api.github.com/repos/biomejs/biome/releases?per_page=100",
+			)
+		).json()) as { tag_name: string }[];
+	} catch (e) {
+		releases = undefined;
+	}
+
+	if(!releases) {
+		return undefined;
+	}
 
 	const versions = releases
 		.filter((release) => release.tag_name.startsWith("cli/"))
