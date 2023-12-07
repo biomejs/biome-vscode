@@ -168,6 +168,14 @@ export class StatusBar {
 	}
 
 	public async checkForUpdates() {
+
+		// Only check for updates if we're using the bundled version and if an
+		// internet connection is available
+		if (!this.usingBundledBiome) {
+			this.statusBarUpdateItem.hide();
+			return;
+		}
+
 		const latestVersion = (await getVersions(this.context))[0];
 		const hasUpdates = gt(
 			latestVersion,
