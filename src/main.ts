@@ -115,16 +115,8 @@ export async function activate(context: ExtensionContext) {
 		}
 	}
 
-	outputChannel.appendLine(`Using Biome from ${server.command}`);
-
 	const statusBar = new StatusBar(context);
 	await statusBar.setUsingBundledBiome(server.bundled);
-
-	const serverOptions: ServerOptions = createMessageTransports.bind(
-		undefined,
-		outputChannel,
-		server.command,
-	);
 
 	const documentSelector: DocumentFilter[] = [
 		{ language: "javascript", scheme: "file" },
@@ -141,11 +133,80 @@ export async function activate(context: ExtensionContext) {
 		traceOutputChannel,
 	};
 
-	client = new LanguageClient(
-		"biome_lsp",
-		"Biome",
-		serverOptions,
-		clientOptions,
+	const reloadClient = async () => {
+		outputChannel.appendLine(`Biome binary found at ${server.command}`);
+
+		let destination: Uri | undefined = Uri.joinPath(
+			context.storageUri,
+			`./biome${process.platform === "win32" ? ".exe" : ""}`,
+		);
+
+		if (server.workspaceDependency) {
+			try {
+				// Create the destination if it does not exist.
+				await workspace.fs.createDirectory(context.storageUri);
+
+				outputChannel.appendLine(
+					`Copying binary to temporary folder: ${destination}`,
+				);
+				await workspace.fs.copy(Uri.file(server.command), destination, {
+					overwrite: true,
+				});
+			} catch (error) {
+				outputChannel.appendLine(`Error copying file: ${error}`);
+				destination = undefined;
+			}
+		} else {
+			destination = undefined;
+		}
+
+		outputChannel.appendLine(
+			`Executing Biome from: ${destination.fsPath ?? server.command}`,
+		);
+
+		const serverOptions: ServerOptions = createMessageTransports.bind(
+			undefined,
+			outputChannel,
+			destination.fsPath ?? server.command,
+		);
+
+		client = new LanguageClient(
+			"biome_lsp",
+			"Biome",
+			serverOptions,
+			clientOptions,
+		);
+
+		context.subscriptions.push(
+			client.onDidChangeState((evt) => {
+				statusBar.setServerState(client, evt.newState);
+			}),
+		);
+	};
+
+	await reloadClient();
+
+	// Best way to determine package updates. Will work for npm, yarn, pnpm and bun. (Might work for more files also).
+	// It is not possible to listen node_modules, because it is usually gitignored.
+	const watcher = workspace.createFileSystemWatcher("**/*lock*");
+	context.subscriptions.push(
+		watcher.onDidChange(async () => {
+			try {
+				// When the lockfile changes, reload the biome executable.
+				outputChannel.appendLine("Reloading biome executable.");
+				if (client.isRunning()) {
+					await client.stop();
+				}
+				await reloadClient();
+				if (client.isRunning()) {
+					await client.restart();
+				} else {
+					await client.start();
+				}
+			} catch (error) {
+				outputChannel.appendLine(`Reloading client failed: ${error}`);
+			}
+		}),
 	);
 
 	const session = new Session(context, client);
@@ -158,7 +219,7 @@ export async function activate(context: ExtensionContext) {
 
 	commands.registerCommand(Commands.UpdateBiome, async (version: string) => {
 		const result = await window.showInformationMessage(
-			`Are you sure you want to update Biome (bundled) to ${version} ?`,
+			`Are you sure you want to update Biome (bundled) to ${version}?`,
 			{
 				modal: true,
 			},
@@ -181,12 +242,6 @@ export async function activate(context: ExtensionContext) {
 	session.registerCommand(Commands.ServerStatus, () => {
 		traceOutputChannel.show();
 	});
-
-	context.subscriptions.push(
-		client.onDidChangeState((evt) => {
-			statusBar.setServerState(client, evt.newState);
-		}),
-	);
 
 	const handleActiveTextEditorChanged = (textEditor?: TextEditor) => {
 		if (!textEditor) {
@@ -253,11 +308,15 @@ const PLATFORMS: PlatformTriplets = {
 async function getServerPath(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
-): Promise<{ bundled: boolean; command: string } | undefined> {
+): Promise<
+	| { bundled: boolean; workspaceDependency: boolean; command: string }
+	| undefined
+> {
 	// Only allow the bundled Biome binary in untrusted workspaces
 	if (!workspace.isTrusted) {
 		return {
 			bundled: true,
+			workspaceDependency: false,
 			command: await getBundledBinary(context, outputChannel),
 		};
 	}
@@ -268,6 +327,7 @@ async function getServerPath(
 		);
 		return {
 			bundled: false,
+			workspaceDependency: false,
 			command: process.env.DEBUG_SERVER_PATH,
 		};
 	}
@@ -277,6 +337,7 @@ async function getServerPath(
 	if (typeof explicitPath === "string" && explicitPath !== "") {
 		return {
 			bundled: false,
+			workspaceDependency: false,
 			command: await getWorkspaceRelativePath(explicitPath),
 		};
 	}
@@ -284,6 +345,7 @@ async function getServerPath(
 	const workspaceDependency = await getWorkspaceDependency(outputChannel);
 	return {
 		bundled: workspaceDependency === undefined,
+		workspaceDependency: workspaceDependency !== undefined,
 		command:
 			workspaceDependency ?? (await getBundledBinary(context, outputChannel)),
 	};
