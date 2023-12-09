@@ -490,7 +490,21 @@ async function getSocket(
 	outputChannel: OutputChannel,
 	command: string,
 ): Promise<string> {
-	const process = spawn(command, ["__print_socket"], {
+	const extraArgs = [];
+
+	const configPath = workspace
+		.getConfiguration()
+		.get<string | null>("biome.configPath");
+	if (configPath && configPath.length > 0) {
+		const canonicalConfigPath = Uri.joinPath(
+			workspace.workspaceFolders[0].uri,
+			configPath,
+		);
+		outputChannel.appendLine(`Using config path: ${canonicalConfigPath}`);
+		extraArgs.push("--config-path", canonicalConfigPath);
+	}
+
+	const process = spawn(command, [...extraArgs, "__print_socket"], {
 		stdio: [null, "pipe", "pipe"],
 	});
 
