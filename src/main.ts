@@ -161,13 +161,13 @@ export async function activate(context: ExtensionContext) {
 		}
 
 		outputChannel.appendLine(
-			`Executing Biome from: ${destination.fsPath ?? server.command}`,
+			`Executing Biome from: ${destination?.fsPath ?? server.command}`,
 		);
 
 		const serverOptions: ServerOptions = createMessageTransports.bind(
 			undefined,
 			outputChannel,
-			destination.fsPath ?? server.command,
+			destination?.fsPath ?? server.command,
 		);
 
 		client = new LanguageClient(
