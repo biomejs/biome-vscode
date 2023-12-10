@@ -88,7 +88,7 @@ You can also format a selection of text by following the steps below.
 
 #### Formatting on save
 
-Thhis supports formatting on save out of the box. You should enable
+This supports formatting on save out of the box. You should enable
 format on save in your editor's settings and make sure that the Biome extension is [set as the
 default formatter](#setting-as-the-default-formatter) for your documents/languages.
 
