@@ -23,8 +23,8 @@ devDependencies:
     specifier: ^1.4.1
     version: 1.4.1
   '@types/node':
-    specifier: ^18.17.5
-    version: 18.17.5
+    specifier: ^18.19.3
+    version: 18.19.3
   '@types/resolve':
     specifier: ^1.20.2
     version: 1.20.2
@@ -326,8 +326,10 @@ packages:
     engines: {node: '>=14'}
     dev: false
 
-  /@types/node@18.17.5:
-    resolution: {integrity: sha512-xNbS75FxH6P4UXTPUJp/zNPq6/xsfdJKussCWNOnz4aULWIRwMgP1LgaB5RiBnMX1DPCYenuqGZfnIAx5mbFLA==}
+  /@types/node@18.19.3:
+    resolution: {integrity: sha512-k5fggr14DwAytoA/t8rPrIz++lXK7/DqckthCmoZOKNsEbJkId4Z//BqgApXBUGrGddrigYa1oqheo/7YmW4rg==}
+    dependencies:
+      undici-types: 5.26.5
     dev: true
 
   /@types/resolve@1.20.2:
@@ -1290,6 +1292,10 @@ packages:
 
   /underscore@1.13.6:
     resolution: {integrity: sha512-+A5Sja4HP1M08MaXya7p5LvjuM7K6q/2EaC0+iovj/wOcMsTzMvDFbasi/oSapiwOlt252IqsKqPjCl7huKS0A==}
+    dev: true
+
+  /undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
     dev: true
 
   /undici@5.27.2:
