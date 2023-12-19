@@ -75,7 +75,7 @@ jobs:
         run: pnpm exec vsce package -o biome.vsix
 
       - name: Upload the artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: biome.vsix
           path: biome.vsix
