@@ -129,7 +129,7 @@
 	"dependencies": {
 		"resolve": "^1.22.8",
 		"semver": "^7.5.4",
-		"undici": "^5.27.2",
+		"undici": "^6.1.0",
 		"vscode-languageclient": "^8.1.0"
 	},
 	"vsce": {
