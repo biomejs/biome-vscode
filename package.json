@@ -116,7 +116,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.4.1",
 		"@types/node": "^18.19.3",
-		"@types/resolve": "^1.20.2",
+		"@types/resolve": "^1.20.6",
 		"@types/semver": "^7.5.4",
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "^2.22.0",
@@ -127,7 +127,7 @@
 		"typescript": "^5.1.6"
 	},
 	"dependencies": {
-		"resolve": "^1.22.4",
+		"resolve": "^1.22.8",
 		"semver": "^7.5.4",
 		"undici": "^5.27.2",
 		"vscode-languageclient": "^8.1.0"
