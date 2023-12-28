@@ -173,7 +173,8 @@ export const getVersions = async (
 		releases = undefined;
 	}
 
-	if (!releases) {
+	// https://github.com/biomejs/biome-vscode/issues/56
+	if (!releases || !Array.isArray(releases)) {
 		return undefined;
 	}
 
