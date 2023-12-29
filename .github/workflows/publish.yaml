@@ -103,8 +103,8 @@ jobs:
       - name: Publish extension to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
-          name: "v${{ needs.package.outputs.version }} ${{ needs.package.outputs.nightly == 'true' && '(nightly)' || '' }}"
+          name: "${{ format('v{0}', needs.package.outputs.version) }}${{ needs.package.outputs.nightly == 'true' && ' (nightly)' || '' }}"
           body_path: RELEASE_NOTES.md
           prerelease: ${{ needs.package.outputs.nightly == 'true' }}
           files: biome.vsix
-          tag_name: ${{ needs.package.outputs.nightly == 'true' && github.ref || format('v{0}', needs.package.outputs.version) }}
+          tag_name: ${{ format('v{0}', needs.package.outputs.version) }}
