@@ -190,22 +190,16 @@ export const getVersions = async (
 		}))
 		.filter((release: Release) => release.version?.version !== null);
 
-	console.log(allReleases);
-
 	const stableVersions = [...allReleases]
 		.filter((release: Release) => release.version?.prerelease?.length === 0)
 		.sort((a: Release, b: Release) => rcompare(a.version, b.version))
 		.map((release: Release) => release?.version.version);
-
-	console.log(stableVersions);
 
 	const nightlyVersions = [...allReleases]
 		.filter((release: Release) => release.version?.prerelease?.length > 0)
 		.sort((a: Release, b: Release) => rcompare(a.version, b.version))
 		.sort((a: Release, b: Release) => b.date.getTime() - a.date.getTime())
 		.map((release: Release) => release?.version.version);
-
-	console.log(nightlyVersions);
 
 	const versions = [...stableVersions, ...nightlyVersions];
 
