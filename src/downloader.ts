@@ -1,5 +1,5 @@
 import { chmodSync } from "node:fs";
-import { coerce, rcompare } from "semver";
+import { SemVer, parse, rcompare } from "semver";
 import { fetch } from "undici";
 import {
 	ExtensionContext,
@@ -177,13 +177,31 @@ export const getVersions = async (
 		return undefined;
 	}
 
-	const versions = releases
+	type Release = {
+		date: Date;
+		version: SemVer;
+	};
+
+	const allReleases = releases
 		.filter((release) => release.tag_name.startsWith("cli/"))
-		.map((release) => release.tag_name.replace("cli/", ""))
-		.map((release) => coerce(release))
-		.sort((a, b) => rcompare(a, b))
-		.filter((release) => release?.version !== null)
-		.map((release) => release?.version);
+		.map((release) => ({
+			date: new Date(release.published_at),
+			version: parse(release.tag_name.replace("cli/", "")),
+		}))
+		.filter((release: Release) => release.version?.version !== null);
+
+	const stableVersions = [...allReleases]
+		.filter((release: Release) => release.version?.prerelease?.length === 0)
+		.sort((a: Release, b: Release) => rcompare(a.version, b.version))
+		.map((release: Release) => release?.version.version);
+
+	const nightlyVersions = [...allReleases]
+		.filter((release: Release) => release.version?.prerelease?.length > 0)
+		.sort((a: Release, b: Release) => rcompare(a.version, b.version))
+		.sort((a: Release, b: Release) => b.date.getTime() - a.date.getTime())
+		.map((release: Release) => release?.version.version);
+
+	const versions = [...stableVersions, ...nightlyVersions];
 
 	// Cache the result for 1 hour
 	await context.globalState.update("biome_versions_cache", {
