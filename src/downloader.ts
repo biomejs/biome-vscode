@@ -3,6 +3,7 @@ import { SemVer, parse, rcompare } from "semver";
 import { fetch } from "undici";
 import {
 	ExtensionContext,
+	OutputChannel,
 	ProgressLocation,
 	Uri,
 	commands,
@@ -13,6 +14,7 @@ import { Commands } from "./commands";
 
 export const selectAndDownload = async (
 	context: ExtensionContext,
+	outputChannel?: OutputChannel,
 ): Promise<string | undefined> => {
 	const versions = await window.withProgress(
 		{
@@ -21,9 +23,13 @@ export const selectAndDownload = async (
 			cancellable: false,
 		},
 		async () => {
-			return await getVersions(context);
+			return await getVersions(context, outputChannel);
 		},
 	);
+
+	if (!versions) {
+		return;
+	}
 
 	const version = await askVersion(versions);
 
@@ -46,7 +52,10 @@ export const selectAndDownload = async (
 	);
 };
 
-export const updateToLatest = async (context: ExtensionContext) => {
+export const updateToLatest = async (
+	context: ExtensionContext,
+	outputChannel?: OutputChannel,
+) => {
 	await window.withProgress(
 		{
 			location: ProgressLocation.Notification,
@@ -54,7 +63,10 @@ export const updateToLatest = async (context: ExtensionContext) => {
 			cancellable: false,
 		},
 		async () => {
-			const versions = await getVersions(context);
+			const versions = await getVersions(context, outputChannel);
+			if (!versions) {
+				return;
+			}
 			const version = versions[0];
 			await commands.executeCommand(Commands.StopServer);
 			await download(version, context);
@@ -151,6 +163,7 @@ const askVersion = async (versions: string[]): Promise<string | undefined> => {
  */
 export const getVersions = async (
 	context: ExtensionContext,
+	outputChannel?: OutputChannel,
 ): Promise<string[] | undefined> => {
 	const cachedVersions = context.globalState.get<{
 		expires_at: Date;
@@ -163,19 +176,19 @@ export const getVersions = async (
 	}
 
 	let releases = undefined;
-	try {
-		releases = (await (
-			await fetch(
-				"https://api.github.com/repos/biomejs/biome/releases?per_page=100",
-			)
-		).json()) as { tag_name: string }[];
-	} catch (e) {
-		releases = undefined;
-	}
 
-	if (!releases) {
+	const response = await fetch(
+		"https://api.github.com/repos/biomejs/biome/releases?per_page=100",
+	);
+
+	if (!response.ok) {
+		outputChannel?.appendLine(
+			`Failed to fetch Biome versions from GitHub API: ${response.statusText}`,
+		);
 		return undefined;
 	}
+
+	releases = (await response.json()) as { tag_name: string }[];
 
 	type Release = {
 		date: Date;

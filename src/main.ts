@@ -103,7 +103,7 @@ export async function activate(context: ExtensionContext) {
 		);
 
 		if (action === "Download Biome") {
-			if (!(await selectAndDownload(context))) {
+			if (!(await selectAndDownload(context, outputChannel))) {
 				return;
 			}
 		}
@@ -115,7 +115,7 @@ export async function activate(context: ExtensionContext) {
 		}
 	}
 
-	const statusBar = new StatusBar(context);
+	const statusBar = new StatusBar(context, outputChannel);
 	await statusBar.setUsingBundledBiome(server.bundled);
 
 	const documentSelector: DocumentFilter[] = [
@@ -228,14 +228,14 @@ export async function activate(context: ExtensionContext) {
 		);
 
 		if (result === "Update") {
-			await updateToLatest(context);
-			statusBar.checkForUpdates();
+			await updateToLatest(context, outputChannel);
+			statusBar.checkForUpdates(outputChannel);
 		}
 	});
 
 	commands.registerCommand(Commands.ChangeVersion, async () => {
 		await selectAndDownload(context);
-		statusBar.checkForUpdates();
+		statusBar.checkForUpdates(outputChannel);
 	});
 
 	session.registerCommand(Commands.SyntaxTree, syntaxTree(session));

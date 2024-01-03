@@ -1,6 +1,7 @@
 import { gt } from "semver";
 import {
 	ExtensionContext,
+	OutputChannel,
 	StatusBarAlignment,
 	StatusBarItem,
 	ThemeColor,
@@ -37,7 +38,10 @@ export class StatusBar {
 	private isActive = false;
 	private serverVersion = "";
 
-	constructor(private readonly context: ExtensionContext) {
+	constructor(
+		private readonly context: ExtensionContext,
+		private readonly outputChannel?: OutputChannel,
+	) {
 		this.statusBarItem = window.createStatusBarItem(
 			"biome.status",
 			StatusBarAlignment.Right,
@@ -54,7 +58,7 @@ export class StatusBar {
 		);
 
 		this.update();
-		this.checkForUpdates();
+		this.checkForUpdates(outputChannel);
 	}
 
 	public setServerState(client: LanguageClient, state: State) {
@@ -164,17 +168,17 @@ export class StatusBar {
 
 	public async setUsingBundledBiome(usingBundledBiome: boolean) {
 		this.usingBundledBiome = usingBundledBiome;
-		await this.checkForUpdates();
+		await this.checkForUpdates(this.outputChannel);
 	}
 
-	public async checkForUpdates() {
+	public async checkForUpdates(outputChannel?: OutputChannel) {
 		// Only check for updates if we're using the bundled version
 		if (!this.usingBundledBiome) {
 			this.statusBarUpdateItem.hide();
 			return;
 		}
 
-		const latestVersion = (await getVersions(this.context))?.[0];
+		const latestVersion = (await getVersions(this.context, outputChannel))?.[0];
 
 		// If the latest version cannot be fetch, do not display the update
 		// status bar item.
