@@ -45,4 +45,4 @@ commit_parsers = [
 ]
 
 # Regex for matching git tags
-tag_pattern = "v[0-9].*"
+tag_pattern = "v[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}"
