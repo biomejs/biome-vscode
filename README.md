@@ -20,12 +20,6 @@ The Visual Studio Code extension for Biome is available from the following sourc
 
 This section describes how to get started with the Biome VS Code extension.
 
-### Configuration file
-
-By default, the extension will not start unless a `biome.json` file is present at the
-root of the workspace. You can disable this behaviour by setting the `biome.requireConfiguration`
-setting to `false`.
-
 ### Setting as the default formatter
 
 To set the VS Code extension for Biome as the default formatter, follow the steps below.
