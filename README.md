@@ -138,8 +138,3 @@ The workspace folder is used as the base path if the path is relative.
 ### `biome.rename`
 
 Enables Biome to handle renames in the workspace (experimental).
-
-### `biome.requireConfiguration`
-
-Disables formatting, linting, and syntax errors for projects without a `biome.json` file.
-Enabled by default.
