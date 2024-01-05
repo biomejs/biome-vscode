@@ -119,12 +119,18 @@ export async function activate(context: ExtensionContext) {
 	await statusBar.setUsingBundledBiome(server.bundled);
 
 	const documentSelector: DocumentFilter[] = [
-		{ language: "javascript" },
-		{ language: "typescript" },
-		{ language: "javascriptreact" },
-		{ language: "typescriptreact" },
-		{ language: "json" },
-		{ language: "jsonc" },
+		{ language: "javascript", scheme: "file" },
+		{ language: "javascript", scheme: "untitled" },
+		{ language: "typescript", scheme: "file" },
+		{ language: "typescript", scheme: "untitled" },
+		{ language: "javascriptreact", scheme: "file" },
+		{ language: "javascriptreact", scheme: "untitled" },
+		{ language: "typescriptreact", scheme: "file" },
+		{ language: "typescriptreact", scheme: "untitled" },
+		{ language: "json", scheme: "file" },
+		{ language: "json", scheme: "untitled" },
+		{ language: "jsonc", scheme: "file" },
+		{ language: "jsonc", scheme: "untitled" },
 	];
 
 	const clientOptions: LanguageClientOptions = {
