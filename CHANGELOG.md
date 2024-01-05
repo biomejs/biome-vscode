@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.1.1 - 2024-01-05
+
+### Bug Fixes
+
+- Filter out unhandled schemes ([#69](https://github.com/biomejs/biome-vscode/pull/69))
+
 ## 2.1.0- 2024-01-04
 
 ### Bug Fixes
