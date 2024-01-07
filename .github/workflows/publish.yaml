@@ -40,9 +40,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: biome.vsix
-      
-      - name: Debug secret
-        run: echo -n "${{ secrets.VSCE_PAT }}" | wc -c
 
       - name: Publish extension to Visual Studio Marketplace
         run: pnpm exec vsce publish --packagePath biome.vsix
