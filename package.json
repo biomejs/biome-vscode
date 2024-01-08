@@ -92,6 +92,11 @@
 					"type": ["boolean", "null"],
 					"default": null,
 					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
+				},
+				"biome.configPath": {
+					"type": ["string", "null"],
+					"default": null,
+					"markdownDescription": "The path to the biome config file. If the path is relative, the root workspace folder will be used as base path. If the path is not specified, the default configuration will be used."
 				}
 			}
 		}
