@@ -1,9 +1,9 @@
-import { spawn, type ChildProcess } from "child_process";
+import { type ChildProcess, spawn } from "child_process";
 import { createRequire } from "module";
-import { connect, type Socket } from "net";
+import { type Socket, connect } from "net";
 import { dirname, isAbsolute } from "path";
-import type * as resolve from "resolve";
 import { promisify } from "util";
+import type * as resolve from "resolve";
 import {
 	ExtensionContext,
 	OutputChannel,
