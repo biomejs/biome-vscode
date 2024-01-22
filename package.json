@@ -122,7 +122,7 @@
 		"@vscode/vsce": "^2.22.0",
 		"esbuild": "^0.19.11",
 		"git-cliff": "^1.4.0",
-		"lefthook": "^1.5.6",
+		"lefthook": "^1.5.7",
 		"ovsx": "^0.8.3",
 		"typescript": "^5.3.3"
 	},
