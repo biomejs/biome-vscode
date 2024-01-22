@@ -196,7 +196,7 @@ export async function activate(context: ExtensionContext) {
 	// Also ignores .wireit folder, because it's lock file is not relevant and forces a unrelated reload.
 	// It is not possible to listen node_modules, because it is usually gitignored.
 	const watcher = workspace.createFileSystemWatcher(
-		"{**/*lock*,!(**/.wireit/**)}",
+		"{**/*lock*,!**/.wireit/**}",
 	);
 	context.subscriptions.push(
 		watcher.onDidChange(async () => {
