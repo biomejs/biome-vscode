@@ -7,6 +7,7 @@ import type * as resolve from "resolve";
 import {
 	ExtensionContext,
 	OutputChannel,
+	RelativePattern,
 	TextEditor,
 	Uri,
 	commands,
@@ -192,28 +193,32 @@ export async function activate(context: ExtensionContext) {
 
 	await reloadClient();
 
-	// Best way to determine package updates. Will work for npm, yarn, pnpm and bun. (Might work for more files also).
-	// It is not possible to listen node_modules, because it is usually gitignored.
-	const watcher = workspace.createFileSystemWatcher("*lock*");
-	context.subscriptions.push(
-		watcher.onDidChange(async () => {
-			try {
-				// When the lockfile changes, reload the biome executable.
-				outputChannel.appendLine("Reloading biome executable.");
-				if (client.isRunning()) {
-					await client.stop();
+	if (workspace.workspaceFolders?.[0]) {
+		// Best way to determine package updates. Will work for npm, yarn, pnpm and bun. (Might work for more files also).
+		// It is not possible to listen node_modules, because it is usually gitignored.
+		const watcher = workspace.createFileSystemWatcher(
+			new RelativePattern(workspace.workspaceFolders[0], "*lock*"),
+		);
+		context.subscriptions.push(
+			watcher.onDidChange(async () => {
+				try {
+					// When the lockfile changes, reload the biome executable.
+					outputChannel.appendLine("Reloading biome executable.");
+					if (client.isRunning()) {
+						await client.stop();
+					}
+					await reloadClient();
+					if (client.isRunning()) {
+						await client.restart();
+					} else {
+						await client.start();
+					}
+				} catch (error) {
+					outputChannel.appendLine(`Reloading client failed: ${error}`);
 				}
-				await reloadClient();
-				if (client.isRunning()) {
-					await client.restart();
-				} else {
-					await client.start();
-				}
-			} catch (error) {
-				outputChannel.appendLine(`Reloading client failed: ${error}`);
-			}
-		}),
-	);
+			}),
+		);
+	}
 
 	const session = new Session(context, client);
 
