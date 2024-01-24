@@ -1,9 +1,9 @@
-import { type ChildProcess, spawn } from "child_process";
+import { spawn, type ChildProcess } from "child_process";
 import { createRequire } from "module";
-import { type Socket, connect } from "net";
+import { connect, type Socket } from "net";
 import { dirname, isAbsolute } from "path";
-import { promisify } from "util";
 import type * as resolve from "resolve";
+import { promisify } from "util";
 import {
 	ExtensionContext,
 	OutputChannel,
@@ -193,11 +193,8 @@ export async function activate(context: ExtensionContext) {
 	await reloadClient();
 
 	// Best way to determine package updates. Will work for npm, yarn, pnpm and bun. (Might work for more files also).
-	// Also ignores .wireit folder, because it's lock file is not relevant and forces a unrelated reload.
 	// It is not possible to listen node_modules, because it is usually gitignored.
-	const watcher = workspace.createFileSystemWatcher(
-		"{**/*lock*,!**/.wireit/**}",
-	);
+	const watcher = workspace.createFileSystemWatcher("*lock*");
 	context.subscriptions.push(
 		watcher.onDidChange(async () => {
 			try {
