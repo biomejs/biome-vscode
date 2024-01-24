@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.1.2 - 2024-01-24
+
+### Bug Fixes
+
+- Only watch lock files in workspace root ([#91](https://github.com/biomejs/biome-vscode/pull/91))
+
 ## 2.1.1 - 2024-01-05
 
 ### Bug Fixes
