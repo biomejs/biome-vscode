@@ -143,28 +143,33 @@ export async function activate(context: ExtensionContext) {
 	const reloadClient = async () => {
 		outputChannel.appendLine(`Biome binary found at ${server.command}`);
 
-		let destination: Uri | undefined = Uri.joinPath(
-			context.storageUri,
-			`./biome${process.platform === "win32" ? ".exe" : ""}`,
-		);
+		let destination: Uri | undefined;
 
-		if (server.workspaceDependency) {
-			try {
-				// Create the destination if it does not exist.
-				await workspace.fs.createDirectory(context.storageUri);
+		// The context.storageURI is only defined when a workspace is opened.
+		if (context.storageUri) {
+			destination = Uri.joinPath(
+				context.storageUri,
+				`./biome${process.platform === "win32" ? ".exe" : ""}`,
+			);
 
-				outputChannel.appendLine(
-					`Copying binary to temporary folder: ${destination}`,
-				);
-				await workspace.fs.copy(Uri.file(server.command), destination, {
-					overwrite: true,
-				});
-			} catch (error) {
-				outputChannel.appendLine(`Error copying file: ${error}`);
+			if (server.workspaceDependency) {
+				try {
+					// Create the destination if it does not exist.
+					await workspace.fs.createDirectory(context.storageUri);
+
+					outputChannel.appendLine(
+						`Copying binary to temporary folder: ${destination}`,
+					);
+					await workspace.fs.copy(Uri.file(server.command), destination, {
+						overwrite: true,
+					});
+				} catch (error) {
+					outputChannel.appendLine(`Error copying file: ${error}`);
+					destination = undefined;
+				}
+			} else {
 				destination = undefined;
 			}
-		} else {
-			destination = undefined;
 		}
 
 		outputChannel.appendLine(
@@ -381,7 +386,7 @@ async function getWorkspaceRelativePath(path: string) {
 async function getWorkspaceDependency(
 	outputChannel: OutputChannel,
 ): Promise<string | undefined> {
-	for (const workspaceFolder of workspace.workspaceFolders) {
+	for (const workspaceFolder of workspace.workspaceFolders ?? []) {
 		// To resolve the @biomejs/cli-*, which is a transitive dependency of the
 		// @biomejs/biome package, we need to create a custom require function that
 		// is scoped to @biomejs/biome. This allows us to reliably resolve the
@@ -411,10 +416,6 @@ async function getWorkspaceDependency(
 
 		return undefined;
 	}
-
-	window.showWarningMessage(
-		"Unable to resolve the biome server from your dependencies. Make sure it's correctly installed, or untick the `requireConfiguration` setting to use the bundled binary.",
-	);
 
 	return undefined;
 }
