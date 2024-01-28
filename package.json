@@ -11,8 +11,7 @@
 		"onLanguage:typescript",
 		"onLanguage:typescriptreact",
 		"onLanguage:json",
-		"onLanguage:jsonc",
-		"onCommand:biome.syntaxTree"
+		"onLanguage:jsonc"
 	],
 	"main": "./out/main.js",
 	"repository": {
@@ -73,7 +72,6 @@
 		},
 		"configuration": {
 			"title": "Biome",
-			"type": "object",
 			"properties": {
 				"biome_lsp.trace.server": {
 					"type": "string",
@@ -86,6 +84,7 @@
 				"biome.lspBin": {
 					"type": "string",
 					"default": "",
+          "ignoreSync": true,
 					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
 				},
 				"biome.rename": {
