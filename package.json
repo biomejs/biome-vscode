@@ -83,6 +83,7 @@
 				},
 				"biome.lspBin": {
 					"type": ["string", "null"],
+					"format": "uri",
 					"default": null,
 					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
 				},
