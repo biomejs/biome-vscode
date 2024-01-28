@@ -84,6 +84,7 @@
 				"biome.lspBin": {
 					"type": ["string", "null"],
 					"default": null,
+					"ignoreSync": true,
 					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
 				},
 				"biome.rename": {
