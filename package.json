@@ -14,13 +14,14 @@
 		"onLanguage:jsonc"
 	],
 	"main": "./out/main.js",
+	"homepage": "https://github.com/biomejs/biome-vscode",
+	"readme": "https://github.com/biomejs/biome-vscode#readme",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/biomejs/biome.git",
-		"directory": "editors/vscode"
+		"url": "https://github.com/biomejs/biome-vscode.git"
 	},
 	"bugs": {
-		"url": "https://github.com/biomejs/biome/issues"
+		"url": "https://github.com/biomejs/biome-vscode/issues"
 	},
 	"engines": {
 		"vscode": "^1.80.0"
