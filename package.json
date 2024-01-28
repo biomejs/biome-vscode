@@ -85,10 +85,12 @@
 				},
 				"biome.lspBin": {
 					"type": "string",
+					"default": "",
 					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
 				},
 				"biome.rename": {
 					"type": "boolean",
+					"default": false,
 					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
 				}
 			}
