@@ -73,7 +73,6 @@
 		},
 		"configuration": {
 			"title": "Biome",
-			"type": "object",
 			"properties": {
 				"biome_lsp.trace.server": {
 					"type": "string",
