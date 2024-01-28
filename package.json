@@ -11,8 +11,7 @@
 		"onLanguage:typescript",
 		"onLanguage:typescriptreact",
 		"onLanguage:json",
-		"onLanguage:jsonc",
-		"onCommand:biome.syntaxTree"
+		"onLanguage:jsonc"
 	],
 	"main": "./out/main.js",
 	"repository": {
@@ -73,16 +72,16 @@
 		},
 		"configuration": {
 			"title": "Biome",
-			"type": "object",
 			"properties": {
 				"biome.rename": {
-					"type": ["boolean", "null"],
-					"default": null,
+					"type": "boolean",
+					"default": false,
 					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
 				},
 				"biome.LSP.bin": {
-					"type": ["string", "null"],
-					"default": null,
+					"type": "string",
+					"default": "",
+					"ignoreSync": true,
 					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
 				},
 				"biome.LSP.trace": {

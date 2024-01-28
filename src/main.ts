@@ -349,8 +349,8 @@ async function getServerPath(
 	}
 
 	const config = workspace.getConfiguration();
-	const explicitPath = config.get("biome.LSP.bin");
-	if (typeof explicitPath === "string" && explicitPath !== "") {
+	const explicitPath: string = config.get("biome.LSP.bin");
+	if (explicitPath !== "") {
 		return {
 			bundled: false,
 			workspaceDependency: false,
