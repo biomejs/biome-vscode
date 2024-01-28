@@ -411,10 +411,10 @@ async function getWorkspaceDependency(
 				return biomePath.fsPath;
 			}
 		} catch {
-			return undefined;
+			outputChannel.appendLine(
+				`Could not resolve Biome in the dependencies of workspace folder: ${workspaceFolder.uri.fsPath}`,
+			);
 		}
-
-		return undefined;
 	}
 
 	return undefined;
