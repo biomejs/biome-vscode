@@ -82,14 +82,15 @@
 					"description": "Traces the communication between VS Code and the language server."
 				},
 				"biome.lspBin": {
-					"type": ["string", "null"],
+					"type": "string",
 					"format": "uri",
-					"default": null,
+					"default": "",
+					"ignoreSync": true,
 					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
 				},
 				"biome.rename": {
-					"type": ["boolean", "null"],
-					"default": null,
+					"type": "boolean",
+					"default": false,
 					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
 				}
 			}
