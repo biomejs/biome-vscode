@@ -29,7 +29,8 @@
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": "limited",
-			"restrictedConfigurations": ["biome.lspBin"]
+			"restrictedConfigurations": ["biome.lspBin"],
+			"description": "Binaries are Unavaible"
 		}
 	},
 	"contributes": {
