@@ -29,7 +29,7 @@
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": "limited",
-			"restrictedConfigurations": ["biome.lspBin"]
+			"restrictedConfigurations": ["biome.LSP.bin"]
 		}
 	},
 	"contributes": {
@@ -75,23 +75,23 @@
 			"title": "Biome",
 			"type": "object",
 			"properties": {
-				"biome_lsp.trace.server": {
+				"biome.rename": {
+					"type": ["boolean", "null"],
+					"default": null,
+					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
+				},
+				"biome.LSP.bin": {
+					"type": ["string", "null"],
+					"default": null,
+					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
+				},
+				"biome.LSP.trace": {
 					"type": "string",
 					"scope": "window",
 					"enum": ["off", "messages", "verbose"],
 					"enumDescriptions": ["No traces", "Error only", "Full log"],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
-				},
-				"biome.lspBin": {
-					"type": ["string", "null"],
-					"default": null,
-					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
-				},
-				"biome.rename": {
-					"type": ["boolean", "null"],
-					"default": null,
-					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
 				}
 			}
 		}

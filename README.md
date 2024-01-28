@@ -51,7 +51,7 @@ Set the `editor.defaultFormatter` to `biomejs.biome` for the desired language. F
 To resolve the location of the `biome` binary, the extension will look into the following places, in order:
 
 1. The project's local dependencies (`node_modules`)
-2. The path specified in the `biome.lspBin` configuration option of the extension
+2. The path specified in the `biome.LSP.bin` configuration option of the extension
 3. The extension's `globalStorage` location
 
 If none of these locations has a `biome` binary, the extension will prompt you to download a binary compatible with your operating system and architecture and store it in the `globalStorage`.
@@ -124,9 +124,9 @@ To automatically sort imports on save, add the following to your editor configur
 
 ## Extension Settings
 
-### `biome.lspBin`
+### `biome.LSP.bin`
 
-The `biome.lspBin` option overrides the Biome binary used by the extension.
+The `biome.LSP.bin` option overrides the Biome binary used by the extension.
 The workspace folder is used as the base path if the path is relative.
 
 ### `biome.rename`
