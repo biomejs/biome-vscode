@@ -11,8 +11,7 @@
 		"onLanguage:typescript",
 		"onLanguage:typescriptreact",
 		"onLanguage:json",
-		"onLanguage:jsonc",
-		"onCommand:biome.syntaxTree"
+		"onLanguage:jsonc"
 	],
 	"main": "./out/main.js",
 	"repository": {
