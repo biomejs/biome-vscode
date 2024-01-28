@@ -121,14 +121,3 @@ To automatically sort imports on save, add the following to your editor configur
   }
 }
 ```
-
-## Extension Settings
-
-### `biome.lspBin`
-
-The `biome.lspBin` option overrides the Biome binary used by the extension.
-The workspace folder is used as the base path if the path is relative.
-
-### `biome.rename`
-
-Enables Biome to handle renames in the workspace (experimental).
