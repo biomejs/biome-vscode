@@ -13,8 +13,8 @@ body:
   - type: input
     attributes:
       label: "Biome version"
-      description: Version of number of the Biome binary
-      placeholder: "1.53"
+      description: The version of Biome that the extension is using. Can be found in the status bar.
+      placeholder: "1.5.3"
     validations:
       required: true
   - type: checkboxes
