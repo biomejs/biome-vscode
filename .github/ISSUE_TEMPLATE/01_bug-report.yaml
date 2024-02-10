@@ -1,5 +1,5 @@
-name: Bug Report
-description: File a bug report
+name: 🐛 Bug report
+description: Report an issue with the Biome VS Code extension
 title: "🐛 "
 labels: ["Triage"]
 body:
