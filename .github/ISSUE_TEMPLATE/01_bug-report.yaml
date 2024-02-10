@@ -1,0 +1,58 @@
+name: Bug Report
+description: File a bug report
+title: "🐛 "
+labels: ["Triage"]
+body:
+  - type: input
+    attributes:
+      label: "Extension version"
+      description: Version of Biome VS Code extension
+      placeholder: "2.0.0"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: "Biome version"
+      description: Version of number of the Biome binary
+      placeholder: "1.53"
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: "Operating System"
+      description: Your operating system
+      options:
+        - label: "Windows"
+          required: false
+        - label: "macOS"
+          required: false
+        - label: "Linux"
+          required: false
+  - type: textarea
+    attributes:
+      label: "Description"
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Steps to Reproduce"
+      description: Steps to reproduce the behavior
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Expected behavior"
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: "Does this issue occur when using the CLI directly?"
+      description: Can this issue be reproduced when using the CLI directly?
+      options: ["Yes", "No", "Not sure / Not applicable"]
+  - type: textarea
+    attributes:
+      label: "Logs"
+      description: If applicable, add the the logs of the Biome Trace
+      render: plain text
