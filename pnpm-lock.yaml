@@ -23,8 +23,8 @@ devDependencies:
     specifier: ^1.5.3
     version: 1.5.3
   '@types/node':
-    specifier: ^18.19.10
-    version: 18.19.10
+    specifier: ^18.19.14
+    version: 18.19.14
   '@types/resolve':
     specifier: ^1.20.6
     version: 1.20.6
@@ -355,8 +355,8 @@ packages:
     engines: {node: '>=14'}
     dev: false
 
-  /@types/node@18.19.10:
-    resolution: {integrity: sha512-IZD8kAM02AW1HRDTPOlz3npFava678pr8Ie9Vp8uRhBROXAv8MXT2pCnGZZAKYdromsNQLHQcfWQ6EOatVLtqA==}
+  /@types/node@18.19.14:
+    resolution: {integrity: sha512-EnQ4Us2rmOS64nHDWr0XqAD8DsO6f3XR6lf9UIIrZQpUzPVdN/oPuEzfDWNHSyXLvoGgjuEm/sPwFGSSs35Wtg==}
     dependencies:
       undici-types: 5.26.5
     dev: true
