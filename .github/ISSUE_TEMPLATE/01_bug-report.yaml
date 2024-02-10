@@ -6,7 +6,7 @@ body:
   - type: input
     attributes:
       label: "Extension version"
-      description: Version of Biome VS Code extension
+      description: Version of Biome VS Code extension.
       placeholder: "2.0.0"
     validations:
       required: true
@@ -56,6 +56,6 @@ body:
   - type: textarea
     attributes:
       label: "Logs"
-      description: If applicable, add the the logs of the Biome Trace
+      description: If applicable, include the biome trace logs. To find these logs, open the output panel and select the Biome Trace category. Try to only include the logs that are relevant to the issue.
       render: plain text
       placeholder: "Biome trace logs can be found in the output panel under the Biome Trace category"
