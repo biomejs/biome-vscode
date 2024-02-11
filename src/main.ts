@@ -338,24 +338,34 @@ async function getServerPath(
 	}
 
 	if (process.env.DEBUG_SERVER_PATH) {
+		if (await fileExists(Uri.file(process.env.DEBUG_SERVER_PATH))) {
+			outputChannel.appendLine(
+				`Biome DEBUG_SERVER_PATH detected: ${process.env.DEBUG_SERVER_PATH}`,
+			);
+			return {
+				bundled: false,
+				workspaceDependency: false,
+				command: process.env.DEBUG_SERVER_PATH,
+			};
+		}
 		outputChannel.appendLine(
-			`Biome DEBUG_SERVER_PATH detected: ${process.env.DEBUG_SERVER_PATH}`,
+			`The DEBUG_SERVER_PATH environment variable points to a non-existing file: ${process.env.DEBUG_SERVER_PATH}`,
 		);
-		return {
-			bundled: false,
-			workspaceDependency: false,
-			command: process.env.DEBUG_SERVER_PATH,
-		};
 	}
 
 	const config = workspace.getConfiguration();
 	const explicitPath: string = config.get("biome.lspBin");
 	if (explicitPath !== "") {
-		return {
-			bundled: false,
-			workspaceDependency: false,
-			command: await getWorkspaceRelativePath(explicitPath),
-		};
+		if (await fileExists(Uri.file(explicitPath))) {
+			return {
+				bundled: false,
+				workspaceDependency: false,
+				command: await getWorkspaceRelativePath(explicitPath),
+			};
+		}
+		outputChannel.appendLine(
+			`The biome.lspBin setting points to a non-existing file: ${explicitPath}`,
+		);
 	}
 
 	const workspaceDependency = await getWorkspaceDependency(outputChannel);
