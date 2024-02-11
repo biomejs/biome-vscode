@@ -1,4 +1,4 @@
-import { type ChildProcess, spawn } from "child_process";
+import { type ChildProcess, spawn, spawnSync } from "child_process";
 import { createRequire } from "module";
 import { type Socket, connect } from "net";
 import { dirname, isAbsolute } from "path";
@@ -31,6 +31,7 @@ import { StatusBar } from "./statusBar";
 import { setContextValue } from "./utils";
 
 import resolveImpl = require("resolve/async");
+import { channel } from "diagnostics_channel";
 
 const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 	resolveImpl,
@@ -369,12 +370,49 @@ async function getServerPath(
 	}
 
 	const workspaceDependency = await getWorkspaceDependency(outputChannel);
+	if (workspaceDependency) {
+		return {
+			bundled: false,
+			workspaceDependency: true,
+			command: workspaceDependency,
+		};
+	}
+
+	if (config.get<boolean | undefined>("biome.searchInPath", true) === true) {
+		outputChannel.appendLine("Searching for Biome in PATH");
+		const biomeInPATH = await findBiomeInPath();
+		if (biomeInPATH) {
+			outputChannel.appendLine(`Biome found in PATH: ${biomeInPATH}`);
+			return {
+				bundled: false,
+				workspaceDependency: false,
+				command: biomeInPATH,
+			};
+		}
+	}
+
+	// Last resort
 	return {
-		bundled: workspaceDependency === undefined,
-		workspaceDependency: workspaceDependency !== undefined,
-		command:
-			workspaceDependency ?? (await getBundledBinary(context, outputChannel)),
+		bundled: true,
+		workspaceDependency: undefined,
+		command: await getBundledBinary(context, outputChannel),
 	};
+}
+
+/**
+ * Attempts top resolve the path to the biome binary from the PATH environment variable.
+ *
+ * This runs `which biome` on Unix-like systems and `where biome` on Windows.
+ */
+async function findBiomeInPath(): Promise<string | undefined> {
+	const which = process.platform === "win32" ? "where" : "which";
+	try {
+		return spawnSync(which, ["biome"], {
+			encoding: "utf-8",
+		}).stdout.trim();
+	} catch (error) {
+		return undefined;
+	}
 }
 
 // Resolve `path` as relative to the workspace root
