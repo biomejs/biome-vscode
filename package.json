@@ -118,7 +118,7 @@
 		"@biomejs/biome": "^1.5.3",
 		"@types/node": "^18.19.15",
 		"@types/resolve": "^1.20.6",
-		"@types/semver": "^7.5.6",
+		"@types/semver": "^7.5.7",
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "^2.23.0",
 		"esbuild": "^0.20.0",
@@ -129,7 +129,7 @@
 	},
 	"dependencies": {
 		"resolve": "^1.22.8",
-		"semver": "^7.5.4",
+		"semver": "^7.6.0",
 		"undici": "^6.6.2",
 		"vscode-languageclient": "^9.0.1"
 	},
