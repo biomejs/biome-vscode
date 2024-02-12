@@ -29,7 +29,8 @@
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": "limited",
-			"restrictedConfigurations": ["biome.lspBin"]
+			"restrictedConfigurations": ["biome.lspBin"],
+			"description": "The use of external binaries is disallowed in untrusted workspaces."
 		}
 	},
 	"contributes": {
