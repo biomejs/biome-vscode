@@ -9,8 +9,8 @@ dependencies:
     specifier: ^1.22.8
     version: 1.22.8
   semver:
-    specifier: ^7.5.4
-    version: 7.5.4
+    specifier: ^7.6.0
+    version: 7.6.0
   undici:
     specifier: ^6.6.2
     version: 6.6.2
@@ -29,8 +29,8 @@ devDependencies:
     specifier: ^1.20.6
     version: 1.20.6
   '@types/semver':
-    specifier: ^7.5.6
-    version: 7.5.6
+    specifier: ^7.5.7
+    version: 7.5.7
   '@types/vscode':
     specifier: ^1.80.0
     version: 1.80.0
@@ -365,8 +365,8 @@ packages:
     resolution: {integrity: sha512-A4STmOXPhMUtHH+S6ymgE2GiBSMqf4oTvcQZMcHzokuTLVYzXTB8ttjcgxOVaAp2lGwEdzZ0J+cRbbeevQj1UQ==}
     dev: true
 
-  /@types/semver@7.5.6:
-    resolution: {integrity: sha512-dn1l8LaMea/IjDoHNd9J52uBbInB796CDffS6VdIxvqYCPSG0V0DzHp76GpaWnlhg88uYyPbXCDIowa86ybd5A==}
+  /@types/semver@7.5.7:
+    resolution: {integrity: sha512-/wdoPq1QqkSj9/QOeKkFquEuPzQbHTWAMPH/PaUMB+JuR31lXhlWXRZ52IpfDYVlDOUBvX09uBrPwxGT1hjNBg==}
     dev: true
 
   /@types/vscode@1.80.0:
@@ -392,7 +392,7 @@ packages:
       minimatch: 3.1.2
       parse-semver: 1.1.1
       read: 1.0.7
-      semver: 7.5.4
+      semver: 7.6.0
       tmp: 0.2.1
       typed-rest-client: 1.8.11
       url-join: 4.0.1
@@ -1062,7 +1062,7 @@ packages:
     engines: {node: '>=10'}
     requiresBuild: true
     dependencies:
-      semver: 7.5.4
+      semver: 7.6.0
     dev: true
     optional: true
 
@@ -1098,7 +1098,7 @@ packages:
       follow-redirects: 1.15.3
       is-ci: 2.0.0
       leven: 3.1.0
-      semver: 7.5.4
+      semver: 7.6.0
       tmp: 0.2.1
     transitivePeerDependencies:
       - debug
@@ -1239,8 +1239,8 @@ packages:
     hasBin: true
     dev: true
 
-  /semver@7.5.4:
-    resolution: {integrity: sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==}
+  /semver@7.6.0:
+    resolution: {integrity: sha512-EnwXhrlwXMk9gKu5/flx5sv/an57AkRplG3hTK68W7FRDN+k+OWBj65M7719OkA82XLBxrcX0KSHj+X5COhOVg==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
@@ -1401,7 +1401,7 @@ packages:
     engines: {vscode: ^1.82.0}
     dependencies:
       minimatch: 5.1.6
-      semver: 7.5.4
+      semver: 7.6.0
       vscode-languageserver-protocol: 3.17.5
     dev: false
 
