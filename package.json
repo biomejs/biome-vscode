@@ -30,7 +30,7 @@
 		"untrustedWorkspaces": {
 			"supported": "limited",
 			"restrictedConfigurations": ["biome.lspBin"],
-			"description": "Binaries are Unavaible"
+			"description": "The use of external binaries is disallowed in untrusted workspaces."
 		}
 	},
 	"contributes": {
