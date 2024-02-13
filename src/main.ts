@@ -1,7 +1,7 @@
-import { type ChildProcess, spawn, spawnSync } from "child_process";
+import { type ChildProcess, spawn } from "child_process";
 import { createRequire } from "module";
 import { type Socket, connect } from "net";
-import { dirname, isAbsolute } from "path";
+import { delimiter, dirname, isAbsolute } from "path";
 import { promisify } from "util";
 import type * as resolve from "resolve";
 import {
@@ -382,11 +382,11 @@ async function getServerPath(
 		outputChannel.appendLine("Searching for Biome in PATH");
 		const biomeInPATH = await findBiomeInPath();
 		if (biomeInPATH) {
-			outputChannel.appendLine(`Biome found in PATH: ${biomeInPATH}`);
+			outputChannel.appendLine(`Biome found in PATH: ${biomeInPATH.fsPath}`);
 			return {
 				bundled: false,
 				workspaceDependency: false,
-				command: biomeInPATH,
+				command: biomeInPATH.fsPath,
 			};
 		}
 	}
@@ -402,16 +402,21 @@ async function getServerPath(
 /**
  * Attempts top resolve the path to the biome binary from the PATH environment variable.
  *
- * This runs `which biome` on Unix-like systems and `where biome` on Windows.
+ * We manually scan all the folders in the path because we may not always have access to
+ * `which` or `where` on the system, or in the PATH.
  */
-async function findBiomeInPath(): Promise<string | undefined> {
-	const which = process.platform === "win32" ? "where" : "which";
-	try {
-		return spawnSync(which, ["biome"], {
-			encoding: "utf-8",
-		}).stdout.trim();
-	} catch (error) {
-		return undefined;
+async function findBiomeInPath(): Promise<Uri | undefined> {
+	const path = process.env.PATH;
+
+	if (!path) {
+		return;
+	}
+
+	for (const dir of path.split(delimiter)) {
+		const biome = Uri.joinPath(Uri.parse(dir), "biome");
+		if (await fileExists(biome)) {
+			return biome;
+		}
 	}
 }
 
