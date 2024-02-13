@@ -91,7 +91,7 @@
 				"biome.searchInPath": {
 					"type": "boolean",
 					"default": true,
-					"markdownDescription": "Whether to search for the biome executable in the PATH environment variable"
+					"markdownDescription": "Whether to search for the biome executable in the folders declared in the PATH environment variable"
 				},
 				"biome.rename": {
 					"type": "boolean",
