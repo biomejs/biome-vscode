@@ -413,7 +413,11 @@ async function findBiomeInPath(): Promise<Uri | undefined> {
 	}
 
 	for (const dir of path.split(delimiter)) {
-		const biome = Uri.joinPath(Uri.parse(dir), "biome");
+		const biome = Uri.joinPath(
+			Uri.file(dir),
+			`biome${process.platform === "win32" ? ".exe" : ""}`,
+		);
+		console.log(biome.fsPath);
 		if (await fileExists(biome)) {
 			return biome;
 		}
