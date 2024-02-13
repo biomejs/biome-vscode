@@ -1,7 +1,7 @@
 import { type ChildProcess, spawn } from "child_process";
 import { createRequire } from "module";
 import { type Socket, connect } from "net";
-import { dirname, isAbsolute } from "path";
+import { delimiter, dirname, isAbsolute } from "path";
 import { promisify } from "util";
 import type * as resolve from "resolve";
 import {
@@ -31,6 +31,7 @@ import { StatusBar } from "./statusBar";
 import { setContextValue } from "./utils";
 
 import resolveImpl = require("resolve/async");
+import { channel } from "diagnostics_channel";
 
 const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 	resolveImpl,
@@ -369,12 +370,57 @@ async function getServerPath(
 	}
 
 	const workspaceDependency = await getWorkspaceDependency(outputChannel);
+	if (workspaceDependency) {
+		return {
+			bundled: false,
+			workspaceDependency: true,
+			command: workspaceDependency,
+		};
+	}
+
+	if (config.get<boolean | undefined>("biome.searchInPath", true) === true) {
+		outputChannel.appendLine("Searching for Biome in PATH");
+		const biomeInPATH = await findBiomeInPath();
+		if (biomeInPATH) {
+			outputChannel.appendLine(`Biome found in PATH: ${biomeInPATH.fsPath}`);
+			return {
+				bundled: false,
+				workspaceDependency: false,
+				command: biomeInPATH.fsPath,
+			};
+		}
+	}
+
+	// Last resort
 	return {
-		bundled: workspaceDependency === undefined,
-		workspaceDependency: workspaceDependency !== undefined,
-		command:
-			workspaceDependency ?? (await getBundledBinary(context, outputChannel)),
+		bundled: true,
+		workspaceDependency: undefined,
+		command: await getBundledBinary(context, outputChannel),
 	};
+}
+
+/**
+ * Attempts top resolve the path to the biome binary from the PATH environment variable.
+ *
+ * We manually scan all the folders in the path because we may not always have access to
+ * `which` or `where` on the system, or in the PATH.
+ */
+async function findBiomeInPath(): Promise<Uri | undefined> {
+	const path = process.env.PATH;
+
+	if (!path) {
+		return;
+	}
+
+	for (const dir of path.split(delimiter)) {
+		const biome = Uri.joinPath(
+			Uri.file(dir),
+			`biome${process.platform === "win32" ? ".exe" : ""}`,
+		);
+		if (await fileExists(biome)) {
+			return biome;
+		}
+	}
 }
 
 // Resolve `path` as relative to the workspace root
