@@ -404,9 +404,9 @@ async function getWorkspaceDependency(
 				`Looks like a Yarn PnP workspace: ${workspaceFolder.uri.fsPath}`,
 			);
 			try {
-				const pnpApi = require(
-					Uri.joinPath(workspaceFolder.uri, ".pnp.cjs").fsPath,
-				);
+				const pnpApi = (
+					await import(Uri.joinPath(workspaceFolder.uri, ".pnp.cjs").fsPath)
+				).default;
 				const pkgPath = pnpApi.resolveRequest(
 					"@biomejs/biome/package.json",
 					workspaceFolder.uri.fsPath,
