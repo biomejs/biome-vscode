@@ -417,7 +417,6 @@ async function findBiomeInPath(): Promise<Uri | undefined> {
 			Uri.file(dir),
 			`biome${process.platform === "win32" ? ".exe" : ""}`,
 		);
-		console.log(biome.fsPath);
 		if (await fileExists(biome)) {
 			return biome;
 		}
