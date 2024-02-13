@@ -409,15 +409,17 @@ async function getWorkspaceDependency(
 				`Looks like a Yarn PnP workspace: ${workspaceFolder.uri.fsPath}`,
 			);
 			try {
-				const { resolveRequest } = (await import(pnpFile.fsPath)).default;
-				const pkgPath = resolveRequest(
+				const pnpApi = require(
+					Uri.joinPath(workspaceFolder.uri, ".pnp.cjs").fsPath,
+				);
+				const pkgPath = pnpApi.resolveRequest(
 					"@biomejs/biome/package.json",
 					workspaceFolder.uri.fsPath,
 				);
 				if (!pkgPath) {
 					throw new Error("No @biomejs/biome dependency configured");
 				}
-				return resolveRequest(
+				return pnpApi.resolveRequest(
 					`@biomejs/cli-${process.platform}-${process.arch}/biome${
 						process.platform === "win32" ? ".exe" : ""
 					}`,
