@@ -1,10 +1,13 @@
 import { type ChildProcess, spawn } from "child_process";
+import { createRequire } from "module";
 import { type Socket, connect } from "net";
 import { dirname, isAbsolute } from "path";
 import { promisify } from "util";
+import type * as resolve from "resolve";
 import {
 	ExtensionContext,
 	OutputChannel,
+	RelativePattern,
 	TextEditor,
 	Uri,
 	commands,
@@ -22,14 +25,12 @@ import {
 } from "vscode-languageclient/node";
 import { Commands } from "./commands";
 import { syntaxTree } from "./commands/syntaxTree";
+import { selectAndDownload, updateToLatest } from "./downloader";
 import { Session } from "./session";
 import { StatusBar } from "./statusBar";
 import { setContextValue } from "./utils";
 
 import resolveImpl = require("resolve/async");
-import { createRequire } from "module";
-import type * as resolve from "resolve";
-import { selectAndDownload, updateToLatest } from "./downloader";
 
 const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
 	resolveImpl,
@@ -63,10 +64,6 @@ export async function activate(context: ExtensionContext) {
 		}
 	}
 
-	const requiresConfiguration = workspace
-		.getConfiguration("biome")
-		.get<boolean>("requireConfiguration");
-
 	commands.registerCommand(Commands.StopServer, async () => {
 		if (!client) {
 			return;
@@ -97,23 +94,6 @@ export async function activate(context: ExtensionContext) {
 		await context.globalState.update("biome_versions_cache", undefined);
 	});
 
-	// If the extension requires a configuration file to be present, we attempt to
-	// locate it. If a config file cannot be found, we do not go any further.
-	if (requiresConfiguration) {
-		outputChannel.appendLine("Configuration file required, looking for one.");
-		// TODO: Stop looking for rome.json when we reach biome v2.0
-		const configFiles = await workspace.findFiles("**/{biome,rome}.json");
-		if (configFiles.length === 0) {
-			outputChannel.appendLine(
-				"No config file found, disabling Biome extension",
-			);
-			return;
-		}
-		outputChannel.appendLine(
-			`Config file found at ${configFiles[0].fsPath}, enabling Biome extension`,
-		);
-	}
-
 	let server = await getServerPath(context, outputChannel);
 
 	if (!server.command) {
@@ -124,7 +104,7 @@ export async function activate(context: ExtensionContext) {
 		);
 
 		if (action === "Download Biome") {
-			if (!(await selectAndDownload(context))) {
+			if (!(await selectAndDownload(context, outputChannel))) {
 				return;
 			}
 		}
@@ -136,24 +116,22 @@ export async function activate(context: ExtensionContext) {
 		}
 	}
 
-	outputChannel.appendLine(`Using Biome from ${server.command}`);
-
-	const statusBar = new StatusBar(context);
+	const statusBar = new StatusBar(context, outputChannel);
 	await statusBar.setUsingBundledBiome(server.bundled);
-
-	const serverOptions: ServerOptions = createMessageTransports.bind(
-		undefined,
-		outputChannel,
-		server.command,
-	);
 
 	const documentSelector: DocumentFilter[] = [
 		{ language: "javascript", scheme: "file" },
+		{ language: "javascript", scheme: "untitled" },
 		{ language: "typescript", scheme: "file" },
+		{ language: "typescript", scheme: "untitled" },
 		{ language: "javascriptreact", scheme: "file" },
+		{ language: "javascriptreact", scheme: "untitled" },
 		{ language: "typescriptreact", scheme: "file" },
+		{ language: "typescriptreact", scheme: "untitled" },
 		{ language: "json", scheme: "file" },
+		{ language: "json", scheme: "untitled" },
 		{ language: "jsonc", scheme: "file" },
+		{ language: "jsonc", scheme: "untitled" },
 	];
 
 	const clientOptions: LanguageClientOptions = {
@@ -162,12 +140,90 @@ export async function activate(context: ExtensionContext) {
 		traceOutputChannel,
 	};
 
-	client = new LanguageClient(
-		"biome_lsp",
-		"Biome",
-		serverOptions,
-		clientOptions,
-	);
+	const reloadClient = async () => {
+		outputChannel.appendLine(`Biome binary found at ${server.command}`);
+
+		let destination: Uri | undefined;
+
+		// The context.storageURI is only defined when a workspace is opened.
+		if (context.storageUri) {
+			destination = Uri.joinPath(
+				context.storageUri,
+				`./biome${process.platform === "win32" ? ".exe" : ""}`,
+			);
+
+			if (server.workspaceDependency) {
+				try {
+					// Create the destination if it does not exist.
+					await workspace.fs.createDirectory(context.storageUri);
+
+					outputChannel.appendLine(
+						`Copying binary to temporary folder: ${destination}`,
+					);
+					await workspace.fs.copy(Uri.file(server.command), destination, {
+						overwrite: true,
+					});
+				} catch (error) {
+					outputChannel.appendLine(`Error copying file: ${error}`);
+					destination = undefined;
+				}
+			} else {
+				destination = undefined;
+			}
+		}
+
+		outputChannel.appendLine(
+			`Executing Biome from: ${destination?.fsPath ?? server.command}`,
+		);
+
+		const serverOptions: ServerOptions = createMessageTransports.bind(
+			undefined,
+			outputChannel,
+			destination?.fsPath ?? server.command,
+		);
+
+		client = new LanguageClient(
+			"biome_lsp",
+			"Biome",
+			serverOptions,
+			clientOptions,
+		);
+
+		context.subscriptions.push(
+			client.onDidChangeState((evt) => {
+				statusBar.setServerState(client, evt.newState);
+			}),
+		);
+	};
+
+	await reloadClient();
+
+	if (workspace.workspaceFolders?.[0]) {
+		// Best way to determine package updates. Will work for npm, yarn, pnpm and bun. (Might work for more files also).
+		// It is not possible to listen node_modules, because it is usually gitignored.
+		const watcher = workspace.createFileSystemWatcher(
+			new RelativePattern(workspace.workspaceFolders[0], "*lock*"),
+		);
+		context.subscriptions.push(
+			watcher.onDidChange(async () => {
+				try {
+					// When the lockfile changes, reload the biome executable.
+					outputChannel.appendLine("Reloading biome executable.");
+					if (client.isRunning()) {
+						await client.stop();
+					}
+					await reloadClient();
+					if (client.isRunning()) {
+						await client.restart();
+					} else {
+						await client.start();
+					}
+				} catch (error) {
+					outputChannel.appendLine(`Reloading client failed: ${error}`);
+				}
+			}),
+		);
+	}
 
 	const session = new Session(context, client);
 
@@ -179,7 +235,7 @@ export async function activate(context: ExtensionContext) {
 
 	commands.registerCommand(Commands.UpdateBiome, async (version: string) => {
 		const result = await window.showInformationMessage(
-			`Are you sure you want to update Biome (bundled) to ${version} ?`,
+			`Are you sure you want to update Biome (bundled) to ${version}?`,
 			{
 				modal: true,
 			},
@@ -188,26 +244,20 @@ export async function activate(context: ExtensionContext) {
 		);
 
 		if (result === "Update") {
-			await updateToLatest(context);
-			statusBar.checkForUpdates();
+			await updateToLatest(context, outputChannel);
+			statusBar.checkForUpdates(outputChannel);
 		}
 	});
 
 	commands.registerCommand(Commands.ChangeVersion, async () => {
 		await selectAndDownload(context);
-		statusBar.checkForUpdates();
+		statusBar.checkForUpdates(outputChannel);
 	});
 
 	session.registerCommand(Commands.SyntaxTree, syntaxTree(session));
 	session.registerCommand(Commands.ServerStatus, () => {
 		traceOutputChannel.show();
 	});
-
-	context.subscriptions.push(
-		client.onDidChangeState((evt) => {
-			statusBar.setServerState(client, evt.newState);
-		}),
-	);
 
 	const handleActiveTextEditorChanged = (textEditor?: TextEditor) => {
 		if (!textEditor) {
@@ -274,37 +324,54 @@ const PLATFORMS: PlatformTriplets = {
 async function getServerPath(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
-): Promise<{ bundled: boolean; command: string } | undefined> {
+): Promise<
+	| { bundled: boolean; workspaceDependency: boolean; command: string }
+	| undefined
+> {
 	// Only allow the bundled Biome binary in untrusted workspaces
 	if (!workspace.isTrusted) {
 		return {
 			bundled: true,
+			workspaceDependency: false,
 			command: await getBundledBinary(context, outputChannel),
 		};
 	}
 
 	if (process.env.DEBUG_SERVER_PATH) {
+		if (await fileExists(Uri.file(process.env.DEBUG_SERVER_PATH))) {
+			outputChannel.appendLine(
+				`Biome DEBUG_SERVER_PATH detected: ${process.env.DEBUG_SERVER_PATH}`,
+			);
+			return {
+				bundled: false,
+				workspaceDependency: false,
+				command: process.env.DEBUG_SERVER_PATH,
+			};
+		}
 		outputChannel.appendLine(
-			`Biome DEBUG_SERVER_PATH detected: ${process.env.DEBUG_SERVER_PATH}`,
+			`The DEBUG_SERVER_PATH environment variable points to a non-existing file: ${process.env.DEBUG_SERVER_PATH}`,
 		);
-		return {
-			bundled: false,
-			command: process.env.DEBUG_SERVER_PATH,
-		};
 	}
 
 	const config = workspace.getConfiguration();
-	const explicitPath = config.get("biome.lspBin");
-	if (typeof explicitPath === "string" && explicitPath !== "") {
-		return {
-			bundled: false,
-			command: await getWorkspaceRelativePath(explicitPath),
-		};
+	const explicitPath: string = config.get("biome.lspBin");
+	if (explicitPath !== "") {
+		if (await fileExists(Uri.file(explicitPath))) {
+			return {
+				bundled: false,
+				workspaceDependency: false,
+				command: await getWorkspaceRelativePath(explicitPath),
+			};
+		}
+		outputChannel.appendLine(
+			`The biome.lspBin setting points to a non-existing file: ${explicitPath}`,
+		);
 	}
 
 	const workspaceDependency = await getWorkspaceDependency(outputChannel);
 	return {
 		bundled: workspaceDependency === undefined,
+		workspaceDependency: workspaceDependency !== undefined,
 		command:
 			workspaceDependency ?? (await getBundledBinary(context, outputChannel)),
 	};
@@ -329,7 +396,7 @@ async function getWorkspaceRelativePath(path: string) {
 async function getWorkspaceDependency(
 	outputChannel: OutputChannel,
 ): Promise<string | undefined> {
-	for (const workspaceFolder of workspace.workspaceFolders) {
+	for (const workspaceFolder of workspace.workspaceFolders ?? []) {
 		// To resolve the @biomejs/cli-*, which is a transitive dependency of the
 		// @biomejs/biome package, we need to create a custom require function that
 		// is scoped to @biomejs/biome. This allows us to reliably resolve the
@@ -354,15 +421,11 @@ async function getWorkspaceDependency(
 				return biomePath.fsPath;
 			}
 		} catch {
-			return undefined;
+			outputChannel.appendLine(
+				`Could not resolve Biome in the dependencies of workspace folder: ${workspaceFolder.uri.fsPath}`,
+			);
 		}
-
-		return undefined;
 	}
-
-	window.showWarningMessage(
-		"Unable to resolve the biome server from your dependencies. Make sure it's correctly installed, or untick the `requireConfiguration` setting to use the bundled binary.",
-	);
 
 	return undefined;
 }
