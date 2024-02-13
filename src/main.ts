@@ -399,22 +399,25 @@ async function getWorkspaceDependency(
 	for (const workspaceFolder of workspace.workspaceFolders ?? []) {
 		// Check for Yarn PnP and try resolving the Biome binary without a node_modules
 		// folder first.
-		if (await fileExists(Uri.joinPath(workspaceFolder.uri, ".pnp.cjs"))) {
+		for (const ext of ["cjs", "js"]) {
+			const pnpFile = Uri.joinPath(workspaceFolder.uri, `.pnp.${ext}`);
+			if (!(await fileExists(pnpFile))) {
+				continue;
+			}
+
 			outputChannel.appendLine(
 				`Looks like a Yarn PnP workspace: ${workspaceFolder.uri.fsPath}`,
 			);
 			try {
-				const pnpApi = (
-					await import(Uri.joinPath(workspaceFolder.uri, ".pnp.cjs").fsPath)
-				).default;
-				const pkgPath = pnpApi.resolveRequest(
+				const { resolveRequest } = (await import(pnpFile.fsPath)).default;
+				const pkgPath = resolveRequest(
 					"@biomejs/biome/package.json",
 					workspaceFolder.uri.fsPath,
 				);
 				if (!pkgPath) {
 					throw new Error("No @biomejs/biome dependency configured");
 				}
-				return pnpApi.resolveRequest(
+				return resolveRequest(
 					`@biomejs/cli-${process.platform}-${process.arch}/biome${
 						process.platform === "win32" ? ".exe" : ""
 					}`,
