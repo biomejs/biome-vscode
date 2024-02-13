@@ -397,7 +397,7 @@ async function getWorkspaceDependency(
 	outputChannel: OutputChannel,
 ): Promise<string | undefined> {
 	for (const workspaceFolder of workspace.workspaceFolders ?? []) {
-		// Check for Yarn PnP and try reolving the Biome binary without a node_modules
+		// Check for Yarn PnP and try resolving the Biome binary without a node_modules
 		// folder first.
 		if (await fileExists(Uri.joinPath(workspaceFolder.uri, ".pnp.cjs"))) {
 			outputChannel.appendLine(
