@@ -397,6 +397,36 @@ async function getWorkspaceDependency(
 	outputChannel: OutputChannel,
 ): Promise<string | undefined> {
 	for (const workspaceFolder of workspace.workspaceFolders ?? []) {
+		// Check for Yarn PnP and try reolving the Biome binary without a node_modules
+		// folder first.
+		if (await fileExists(Uri.joinPath(workspaceFolder.uri, ".pnp.cjs"))) {
+			outputChannel.appendLine(
+				`Looks like a Yarn PnP workspace: ${workspaceFolder.uri.fsPath}`,
+			);
+			try {
+				const pnpApi = require(
+					Uri.joinPath(workspaceFolder.uri, ".pnp.cjs").fsPath,
+				);
+				const pkgPath = pnpApi.resolveRequest(
+					"@biomejs/biome/package.json",
+					workspaceFolder.uri.fsPath,
+				);
+				if (!pkgPath) {
+					throw new Error("No @biomejs/biome dependency configured");
+				}
+				return pnpApi.resolveRequest(
+					`@biomejs/cli-${process.platform}-${process.arch}/biome${
+						process.platform === "win32" ? ".exe" : ""
+					}`,
+					pkgPath,
+				);
+			} catch (err) {
+				outputChannel.appendLine(
+					`Could not resolve Biome using Yarn PnP in ${workspaceFolder.uri.fsPath}: ${err}`,
+				);
+			}
+		}
+
 		// To resolve the @biomejs/cli-*, which is a transitive dependency of the
 		// @biomejs/biome package, we need to create a custom require function that
 		// is scoped to @biomejs/biome. This allows us to reliably resolve the
