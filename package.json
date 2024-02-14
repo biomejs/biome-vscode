@@ -89,6 +89,11 @@
 					"ignoreSync": true,
 					"markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
 				},
+				"biome.searchInPath": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Whether to search for the biome executable in the folders declared in the PATH environment variable"
+				},
 				"biome.rename": {
 					"type": "boolean",
 					"default": false,
