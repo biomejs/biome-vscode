@@ -133,6 +133,12 @@ export async function activate(context: ExtensionContext) {
 		{ language: "json", scheme: "untitled" },
 		{ language: "jsonc", scheme: "file" },
 		{ language: "jsonc", scheme: "untitled" },
+		{ language: "astro", scheme: "file" },
+		{ language: "astro", scheme: "untitled" },
+		{ language: "vue", scheme: "file" },
+		{ language: "vue", scheme: "untitled" },
+		{ language: "svelte", scheme: "file" },
+		{ language: "svelte", scheme: "untitled" },
 	];
 
 	const clientOptions: LanguageClientOptions = {
