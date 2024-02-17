@@ -1,4 +1,4 @@
-import { $ } from "bun";
+import { writeFileSync } from "fs";
 
 /**
  * Generates a nightly version identifier
@@ -19,18 +19,27 @@ const generateNightlyVersion = () => {
 	const year = today.getFullYear();
 	const month = today.getMonth() + 1;
 	const day = today.getDate();
-	const hour = today.getHours();
+	const hour = String(today.getHours()).padStart(2, "0");
 
-	return `${year}.${month}.${day}${String(hour).padStart(2, "0")}`;
+	return `${year}.${month}.${day}${hour}`;
 };
 
 /**
  * Patches the package.json file with a nightly version
  */
 const patchPackageJson = async () => {
-	const json = JSON.parse(await $`cat package.json`.text());
-	json.version = generateNightlyVersion();
-	await $`echo "${JSON.stringify(json, null, 4)}" > package.json`;
+	const json = await import("../package.json");
+	writeFileSync(
+		"package.json",
+		JSON.stringify(
+			{
+				...json,
+				version: generateNightlyVersion(),
+			},
+			null,
+			"\t",
+		),
+	);
 };
 
 patchPackageJson();
