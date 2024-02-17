@@ -33,46 +33,22 @@ jobs:
 
       - name: Setup
         uses: ./.github/actions/setup
-
-      - name: Replace name in package.json (nightly)
-        if: ${{ github.event.inputs.nightly == 'true' }}
-        run: |
-          tempfile=$(mktemp)
-          jq '.name = "biome-nightly"' package.json > $tempfile
-          mv $tempfile package.json
-        
-      - name: Replace displayName in package.json (nightly)
-        if: ${{ github.event.inputs.nightly == 'true' }}
-        run: |
-          tempfile=$(mktemp)
-          jq '.displayName = "Biome (nightly)"' package.json > $tempfile
-          mv $tempfile package.json
       
-      - name: Mark nightly build as preview in package.json
+      - name: Patch package.json version
         if: ${{ github.event.inputs.nightly == 'true' }}
-        run: |
-          tempfile=$(mktemp)
-          jq '.preview = true' package.json > $tempfile
-          mv $tempfile package.json
-
-      - name: Generate nightly version identifier (nightly)
-        if: ${{ github.event.inputs.nightly == 'true' }}
-        id: nightly-version
-        run: echo "version=$(date +'%Y.%-m.%-d%-H%-M')" >> "$GITHUB_OUTPUT"
-    
-      - name: Replace version in package.json (nightly)
-        if: ${{ github.event.inputs.nightly == 'true' }}
-        run: |
-          tempfile=$(mktemp)
-          jq --arg version "${{ steps.nightly-version.outputs.version }}" '.version = $version' package.json > $tempfile
-          mv $tempfile package.json
+        run: bun scripts/patch-package-version.ts
 
       - name: Read version from package.json
         id: version
         run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
-      - name: Package the extension
+      - name: Package stable extension
+        if: ${{ github.event.inputs.nightly == 'false' }}
         run: bun vsce package -o biome.vsix
+
+      - name: Package pre-release extension
+        if: ${{ github.event.inputs.nightly == 'true' }}
+        run: bun vsce package --pre-release -o biome.vsix
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v4
