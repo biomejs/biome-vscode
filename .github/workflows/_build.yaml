@@ -16,7 +16,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Build
-        run: pnpm run compile
+        run: bun run compile
 
       - name: Cache compiled extension
         uses: actions/cache@v4

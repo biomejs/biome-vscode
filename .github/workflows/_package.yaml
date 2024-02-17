@@ -72,7 +72,7 @@ jobs:
         run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
       - name: Package the extension
-        run: pnpm exec vsce package -o biome.vsix
+        run: bun vsce package -o biome.vsix
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v4

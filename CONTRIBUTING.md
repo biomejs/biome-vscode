@@ -15,7 +15,7 @@ Please review the following guidelines before making your contribution.
    ```
 2. Install the dependencies.
    ```shell
-   pnpm install
+   bun install
    ```
 
 ## Development
@@ -45,7 +45,7 @@ This section is for maintainers only. It describes the process for releasing a n
    ```
 2. Generate the changelog.
    ```shell
-   pnpm run changelog --bump
+   bun run changelog --bump
    ```
 3. Bump the version in `package.json` and to match the latest version in the changelog.
 4. Commit and push your changes.
@@ -58,7 +58,7 @@ This section is for maintainers only. It describes the process for releasing a n
 1. Commit your changes to the _main_ branch.
 2. Generate the changelog.
    ```shell
-   pnpm run changelog
+   bun run changelog
    ```
 3. Commit and push your changes.
 4. Run the [`Publish`](https://github.com/biomejs/biome-vscode/actions/workflows/publish.yaml) workflow manually from the Actions tab in GitHub (check _nightly_).

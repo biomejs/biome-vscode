@@ -107,14 +107,14 @@
 	"license": "MIT OR Apache-2.0",
 	"scripts": {
 		"compile": "esbuild src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --target=node14",
-		"watch": "pnpm run compile --sourcemap --watch",
+		"watch": "bun run compile --sourcemap --watch",
 		"package": "vsce package --skip-license -o biome_lsp.vsix",
-		"build": "pnpm run compile --minify && pnpm run package",
+		"build": "bun run compile --minify && bun run package",
 		"install-extension": "code --install-extension biome_lsp.vsix --force",
 		"format": "biome format . --write",
 		"check": "biome check .",
 		"check:apply": "biome check . --apply-unsafe",
-		"pack:dev": "pnpm run compile && pnpm run package && pnpm run install-extension",
+		"pack:dev": "bun run compile && bun run package && bun run install-extension",
 		"tsc": "tsc",
 		"prepare": "lefthook install",
 		"changelog": "git-cliff --unreleased --prepend CHANGELOG.md 0544a0e103df4308c92b302ac3b22a1e3c26a64d.."
@@ -142,5 +142,5 @@
 		"dependencies": false,
 		"skipLicense": true
 	},
-	"packageManager": "pnpm@8.6.12"
+	"packageManager": "bun@1.0.27"
 }
