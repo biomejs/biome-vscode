@@ -18,7 +18,7 @@ jobs:
         uses: orhun/git-cliff-action@v2
         with:
           config: cliff.toml
-          args: -vv --current --strip header
+          args: -vv --latest --strip header
         env:
           OUTPUT: CHANGES.md
       - name: Strip tag from release notes
