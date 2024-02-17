@@ -29,17 +29,22 @@ const generateNightlyVersion = () => {
  */
 const patchPackageJson = async () => {
 	const json = await import("../package.json");
+
+	const nightlyVersion = generateNightlyVersion();
+
 	writeFileSync(
 		"package.json",
 		JSON.stringify(
 			{
 				...json,
-				version: generateNightlyVersion(),
+				version: nightlyVersion,
 			},
 			null,
 			"\t",
 		),
 	);
+
+	console.log(`Patched package.json with nightly version: ${nightlyVersion}`);
 };
 
 patchPackageJson();

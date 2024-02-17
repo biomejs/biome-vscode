@@ -43,11 +43,11 @@ jobs:
         run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
       - name: Package stable extension
-        if: ${{ github.event.inputs.nightly == false }}
+        if: ${{ github.event.inputs.nightly == 'false' }}
         run: bun vsce package -o biome.vsix
 
       - name: Package pre-release extension
-        if: ${{ github.event.inputs.nightly == true }}
+        if: ${{ github.event.inputs.nightly == 'true' }}
         run: bun vsce package --pre-release -o biome.vsix
 
       - name: Upload the artifact
