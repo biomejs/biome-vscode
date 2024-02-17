@@ -29,8 +29,8 @@ The extension can be started in debug mode by pressing <kbd>F5</kbd> in Visual S
    git checkout -b my-branch-name
    ```
 2. **Make your changes.** Make your changes to the codebase and commit them. The format of your commit messages is not important at this stage because they will be squashed later, but please ensure that your commit messages are descriptive.
-
-3. **Create a pull request.** Once you are done making your changes, push your branch to your fork and create a pull request. Please ensure that the title of your pull request follows the conventional commits specification.
+3. Generate the changeset for your changes by running `bun run changelog` and commit the changeset.
+4. **Create a pull request.** Once you are done making your changes, push your branch to your fork and create a pull request. Please ensure that the title of your pull request follows the conventional commits specification.
 
 ## Maintainers
 
@@ -45,20 +45,19 @@ This section is for maintainers only. It describes the process for releasing a n
    ```
 2. Generate the changelog.
    ```shell
-   bun run changelog --bump
+   bun run changelog version
    ```
-3. Bump the version in `package.json` and to match the latest version in the changelog.
-4. Commit and push your changes.
-5. Create a pull request named `chore(release): prepare vX.Y.Z`.
-6. Merge the pull request.
-7. Run the [`Publish`](https://github.com/biomejs/biome-vscode/actions/workflows/publish.yaml) workflow manually from the Actions tab in GitHub (uncheck _nightly_).
+3. Commit and push your changes.
+4. Create a pull request named `chore(release): prepare vX.Y.Z`.
+5. Merge the pull request.
+6. Run the [`Publish`](https://github.com/biomejs/biome-vscode/actions/workflows/publish.yaml) workflow manually from the Actions tab in GitHub (uncheck _nightly_).
 
 ### Releasing a nightly version
 
 1. Commit your changes to the _main_ branch.
 2. Generate the changelog.
    ```shell
-   bun run changelog
+   bun run changelog version
    ```
 3. Commit and push your changes.
 4. Run the [`Publish`](https://github.com/biomejs/biome-vscode/actions/workflows/publish.yaml) workflow manually from the Actions tab in GitHub (check _nightly_).

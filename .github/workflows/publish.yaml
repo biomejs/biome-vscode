@@ -88,23 +88,10 @@ jobs:
         with:
           name: biome.vsix
 
-      - name: Generate release notes
-        id: release-notes
-        uses: orhun/git-cliff-action@v2
-        with:
-          config: cliff.toml
-          args: -vv --current --strip header 0544a0e103df4308c92b302ac3b22a1e3c26a64d..
-        env:
-          OUTPUT: CHANGES.md
-
-      - name: Strip tag from release notes
-        run: tail -n +3 < CHANGES.md > RELEASE_NOTES.md
-
       - name: Publish extension to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
           name: "${{ format('v{0}', needs.package.outputs.version) }}${{ needs.package.outputs.nightly == 'true' && ' (nightly)' || '' }}"
-          body_path: RELEASE_NOTES.md
           prerelease: ${{ needs.package.outputs.nightly == 'true' }}
           files: biome.vsix
           tag_name: ${{ format('v{0}', needs.package.outputs.version) }}
