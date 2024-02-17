@@ -2,8 +2,6 @@ import { type ChildProcess, spawn } from "child_process";
 import { createRequire } from "module";
 import { type Socket, connect } from "net";
 import { delimiter, dirname, isAbsolute } from "path";
-import { promisify } from "util";
-import type * as resolve from "resolve";
 import {
 	ExtensionContext,
 	OutputChannel,
@@ -30,40 +28,13 @@ import { Session } from "./session";
 import { StatusBar } from "./statusBar";
 import { setContextValue } from "./utils";
 
-import resolveImpl = require("resolve/async");
-import { channel } from "diagnostics_channel";
-
-const resolveAsync = promisify<string, resolve.AsyncOpts, string | undefined>(
-	resolveImpl,
-);
-
 let client: LanguageClient;
 
 const IN_BIOME_PROJECT = "inBiomeProject";
 
 export async function activate(context: ExtensionContext) {
-	const outputChannel = window.createOutputChannel(
-		`Biome${
-			context.extension.id === "biomejs.biome-nightly" ? " (nightly)" : ""
-		}`,
-	);
-	const traceOutputChannel = window.createOutputChannel(
-		`Biome Trace${
-			context.extension.id === "biomejs.biome-nightly" ? " (nightly)" : ""
-		}`,
-	);
-
-	// If this extension is a stable version and a nightly version is installed
-	// and active, we abort activation of the stable version.
-	if (context.extension.id === "biomejs.biome") {
-		const nightlyExtension = extensions.getExtension("biomejs.biome-nightly");
-		if (nightlyExtension?.isActive) {
-			outputChannel.appendLine(
-				"Biome Nightly detected, disabling Biome extension",
-			);
-			return;
-		}
-	}
+	const outputChannel = window.createOutputChannel("Biome");
+	const traceOutputChannel = window.createOutputChannel("Biome Trace");
 
 	commands.registerCommand(Commands.StopServer, async () => {
 		if (!client) {
