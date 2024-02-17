@@ -34,14 +34,14 @@ filter_unconventional = true
 filter_commits = true
 
 commit_preprocessors = [
-    { pattern = "\\(#([0-9]+)\\)", replace = "([#${1}](https://github.com/biomejs/biome-vscode/pull/${1}))"}
+    { pattern = "\\(#([0-9]+)\\)", replace = "([#${1}](https://github.com/biomejs/biome-vscode/pull/${1}))" },
 ]
 
 # Commit parsers to use for parsing commits
 commit_parsers = [
-    { message = "^feat", group = "Features" },
-    { message = "^fix", group = "Bug Fixes" },
-    { message = "^doc", group = "Documentation"},
+    { message = "^feat*", group = "<!-- 0 -->:rocket: New features" },
+    { message = "^fix*", group = "<!-- 1 -->:bug: Bug fixes" },
+    { message = "^doc", group = "<!-- 2 -->:book: Documentation" },
 ]
 
 # Regex for matching git tags
