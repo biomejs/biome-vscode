@@ -12,14 +12,16 @@ import { $ } from "bun";
  * This means that at most, there can be one nightly build per hour.
  */
 const generateNightlyVersion = () => {
-	const today = new Date();
+	const today = new Date(
+		new Date().toLocaleString("en-US", { timeZone: "UTC" }),
+	);
 
 	const year = today.getFullYear();
-	const month = (today.getMonth() + 1).toString().padStart(2, "0");
-	const day = today.getDate().toString().padStart(2, "0");
-	const hour = today.getHours().toString().padStart(2, "0");
+	const month = today.getMonth() + 1;
+	const day = today.getDate();
+	const hour = today.getHours();
 
-	return `${year}.${month}.${day}${hour}`;
+	return `${year}.${month}.${day}${String(hour).padStart(2, "0")}`;
 };
 
 /**
