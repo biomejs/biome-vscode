@@ -1,0 +1,23 @@
+name: Test changelog
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate release notes
+        id: release-notes
+        uses: orhun/git-cliff-action@v2
+        with:
+          config: cliff.toml
+          args: -vv --latest --strip header
+        env:
+          OUTPUT: CHANGES.md
+      - name: Strip tag from release notes
+        run: tail -n +3 < CHANGES.md > RELEASE_NOTES.md
+      - name: Print release notes
+        run: cat RELEASE_NOTES.md
