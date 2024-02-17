@@ -3,24 +3,10 @@ description: Sets up the job
 runs:
   using: composite
   steps:
-    - name: Set up Node
-      uses: actions/setup-node@v3
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1.1.1
       with:
-        node-version: 20
-    - name: Set up pnpm
-      uses: pnpm/action-setup@v2.2.4
-      with:
-        run_install: true
-    - name: Get pnpm store directory
-      id: pnpm-cache
-      shell: bash
-      run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-    - uses: actions/cache@v3
-      name: Setup pnpm cache
-      with:
-        path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: ${{ runner.os }}-pnpm-
+        bun-version: 1.0.27
     - name: Install dependencies
       shell: bash
-      run: pnpm install
+      run: bun install
