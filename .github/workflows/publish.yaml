@@ -26,6 +26,7 @@ jobs:
   
   publish-vs-marketplace:
     name: Publish to Visual Studio Marketplace
+    if: github.ref == 'refs/heads/main'
     needs: [package]
     runs-on: ubuntu-latest
     environment: vscode
@@ -48,6 +49,7 @@ jobs:
 
   publish-ovsx-registry:
     name: Publish to Open VSX Registry
+    if: github.ref == 'refs/heads/main'
     needs: [package]
     runs-on: ubuntu-latest
     environment: vscode
@@ -70,7 +72,7 @@ jobs:
 
   publish-github-release:
     name: Publish to GitHub Releases
-    if: github.event.inputs.nightly == 'false'
+    if: github.ref == 'refs/heads/main' && github.event.inputs.nightly == 'false'
     needs: [package]
     runs-on: ubuntu-latest
     permissions:
