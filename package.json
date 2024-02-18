@@ -1,164 +1,164 @@
 {
-    "name": "biome",
-    "publisher": "biomejs",
-    "displayName": "Biome",
-    "description": "Biome LSP VS Code Extension",
-    "version": "2.1.2",
-    "icon": "resources/icons/icon.png",
-    "activationEvents": [
-        "onLanguage:javascript",
-        "onLanguage:javascriptreact",
-        "onLanguage:typescript",
-        "onLanguage:typescriptreact",
-        "onLanguage:json",
-        "onLanguage:jsonc"
+  "name": "biome",
+  "publisher": "biomejs",
+  "displayName": "Biome",
+  "description": "Biome LSP VS Code Extension",
+  "version": "2.1.2",
+  "icon": "resources/icons/icon.png",
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:json",
+    "onLanguage:jsonc"
+  ],
+  "main": "./out/main.js",
+  "homepage": "https://github.com/biomejs/biome-vscode",
+  "readme": "https://github.com/biomejs/biome-vscode#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/biomejs/biome-vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/biomejs/biome-vscode/issues"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "restrictedConfigurations": [
+        "biome.lspBin"
+      ],
+      "description": "The use of external binaries is disallowed in untrusted workspaces."
+    }
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "biome_syntax_tree",
+        "extensions": [
+          ".rast"
+        ]
+      }
     ],
-    "main": "./out/main.js",
-    "homepage": "https://github.com/biomejs/biome-vscode",
-    "readme": "https://github.com/biomejs/biome-vscode#readme",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/biomejs/biome-vscode.git"
-    },
-    "bugs": {
-        "url": "https://github.com/biomejs/biome-vscode/issues"
-    },
-    "engines": {
-        "vscode": "^1.80.0"
-    },
-    "capabilities": {
-        "untrustedWorkspaces": {
-            "supported": "limited",
-            "restrictedConfigurations": [
-                "biome.lspBin"
-            ],
-            "description": "The use of external binaries is disallowed in untrusted workspaces."
+    "grammars": [
+      {
+        "language": "biome_syntax_tree",
+        "scopeName": "source.biome_syntax_tree",
+        "path": "resources/grammaers/biome_syntax_tree.tmGrammar.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "biome.syntaxTree",
+        "title": "Show Syntax Tree",
+        "category": "Biome"
+      },
+      {
+        "command": "biome.restartLspServer",
+        "title": "Restart LSP Server",
+        "category": "Biome"
+      },
+      {
+        "command": "biome.clearVersionsCache",
+        "title": "Clear versions cache",
+        "category": "Biome"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "biome.syntaxTree",
+          "when": "inBiomeProject"
         }
+      ]
     },
-    "contributes": {
-        "languages": [
-            {
-                "id": "biome_syntax_tree",
-                "extensions": [
-                    ".rast"
-                ]
-            }
-        ],
-        "grammars": [
-            {
-                "language": "biome_syntax_tree",
-                "scopeName": "source.biome_syntax_tree",
-                "path": "resources/grammaers/biome_syntax_tree.tmGrammar.json"
-            }
-        ],
-        "commands": [
-            {
-                "command": "biome.syntaxTree",
-                "title": "Show Syntax Tree",
-                "category": "Biome"
-            },
-            {
-                "command": "biome.restartLspServer",
-                "title": "Restart LSP Server",
-                "category": "Biome"
-            },
-            {
-                "command": "biome.clearVersionsCache",
-                "title": "Clear versions cache",
-                "category": "Biome"
-            }
-        ],
-        "menus": {
-            "commandPalette": [
-                {
-                    "command": "biome.syntaxTree",
-                    "when": "inBiomeProject"
-                }
-            ]
+    "configuration": {
+      "title": "Biome",
+      "properties": {
+        "biome_lsp.trace.server": {
+          "type": "string",
+          "scope": "window",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "enumDescriptions": [
+            "No traces",
+            "Error only",
+            "Full log"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
         },
-        "configuration": {
-            "title": "Biome",
-            "properties": {
-                "biome_lsp.trace.server": {
-                    "type": "string",
-                    "scope": "window",
-                    "enum": [
-                        "off",
-                        "messages",
-                        "verbose"
-                    ],
-                    "enumDescriptions": [
-                        "No traces",
-                        "Error only",
-                        "Full log"
-                    ],
-                    "default": "off",
-                    "description": "Traces the communication between VS Code and the language server."
-                },
-                "biome.lspBin": {
-                    "type": "string",
-                    "default": "",
-                    "ignoreSync": true,
-                    "markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
-                },
-                "biome.searchInPath": {
-                    "type": "boolean",
-                    "default": true,
-                    "markdownDescription": "Whether to search for the biome executable in the folders declared in the PATH environment variable"
-                },
-                "biome.rename": {
-                    "type": "boolean",
-                    "default": false,
-                    "markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
-                }
-            }
+        "biome.lspBin": {
+          "type": "string",
+          "default": "",
+          "ignoreSync": true,
+          "markdownDescription": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path"
+        },
+        "biome.searchInPath": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Whether to search for the biome executable in the folders declared in the PATH environment variable"
+        },
+        "biome.rename": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)"
         }
-    },
-    "categories": [
-        "Formatters",
-        "Linters"
-    ],
-    "keywords": [
-        "Formatter",
-        "Linter"
-    ],
-    "license": "MIT OR Apache-2.0",
-    "scripts": {
-        "compile": "esbuild src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --target=node14",
-        "watch": "bun run compile --sourcemap --watch",
-        "package": "vsce package --skip-license -o biome_lsp.vsix",
-        "build": "bun run compile --minify && bun run package",
-        "install-extension": "code --install-extension biome_lsp.vsix --force",
-        "format": "biome format . --write",
-        "check": "biome check .",
-        "check:apply": "biome check . --apply-unsafe",
-        "pack:dev": "bun run compile && bun run package && bun run install-extension",
-        "tsc": "tsc",
-        "prepare": "lefthook install",
-        "changelog": "git-cliff --unreleased --prepend CHANGELOG.md"
-    },
-    "devDependencies": {
-        "@biomejs/biome": "^1.5.3",
-        "@types/node": "^18.19.15",
-        "@types/resolve": "^1.20.6",
-        "@types/semver": "^7.5.7",
-        "@types/vscode": "^1.80.0",
-        "@vscode/vsce": "^2.23.0",
-        "esbuild": "^0.20.0",
-        "git-cliff": "^1.4.0",
-        "lefthook": "^1.6.1",
-        "ovsx": "^0.8.3",
-        "typescript": "^5.3.3"
-    },
-    "dependencies": {
-        "resolve": "^1.22.8",
-        "semver": "^7.6.0",
-        "undici": "^6.6.2",
-        "vscode-languageclient": "^9.0.1"
-    },
-    "vsce": {
-        "dependencies": false,
-        "skipLicense": true
-    },
-    "packageManager": "bun@1.0.27"
+      }
+    }
+  },
+  "categories": [
+    "Formatters",
+    "Linters"
+  ],
+  "keywords": [
+    "Formatter",
+    "Linter"
+  ],
+  "license": "MIT OR Apache-2.0",
+  "scripts": {
+    "compile": "esbuild src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --target=node14",
+    "watch": "bun run compile --sourcemap --watch",
+    "package": "vsce package --skip-license -o biome_lsp.vsix",
+    "build": "bun run compile --minify && bun run package",
+    "install-extension": "code --install-extension biome_lsp.vsix --force",
+    "format": "biome format . --write",
+    "check": "biome check .",
+    "check:apply": "biome check . --apply-unsafe",
+    "pack:dev": "bun run compile && bun run package && bun run install-extension",
+    "tsc": "tsc",
+    "prepare": "lefthook install",
+    "changelog": "git-cliff --unreleased --prepend CHANGELOG.md"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.5.3",
+    "@types/node": "^18.19.15",
+    "@types/resolve": "^1.20.6",
+    "@types/semver": "^7.5.7",
+    "@types/vscode": "^1.80.0",
+    "@vscode/vsce": "^2.23.0",
+    "esbuild": "^0.20.0",
+    "git-cliff": "^1.4.0",
+    "lefthook": "^1.6.1",
+    "ovsx": "^0.8.3",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "resolve": "^1.22.8",
+    "semver": "^7.6.0",
+    "undici": "^6.6.2",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "vsce": {
+    "dependencies": false,
+    "skipLicense": true
+  },
+  "packageManager": "bun@1.0.27"
 }
