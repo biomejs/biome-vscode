@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.2.0 - 2024-02-18
+
+### <!-- 0 -->:rocket: New features
+
+- Add Yarn PnP support ([#134](https://github.com/biomejs/biome-vscode/pull/134))
+- Search for `biome` in PATH ([#129](https://github.com/biomejs/biome-vscode/pull/129))
+- Add `astro`, `vue`, and `svelte` support ([#141](https://github.com/biomejs/biome-vscode/pull/141))
+- Publish nightlies as pre-releases ([#145](https://github.com/biomejs/biome-vscode/pull/145))
+
+### <!-- 1 -->:bug: Bug fixes
+
+- Activation failure without a workspace ([#98](https://github.com/biomejs/biome-vscode/pull/98))
+- Scan workspace folders until biome is found ([#108](https://github.com/biomejs/biome-vscode/pull/108))
+- Ensure biome binary exists at path ([#128](https://github.com/biomejs/biome-vscode/pull/128))
+
 ## 2.1.2 - 2024-01-24
 
 ### Bug Fixes
