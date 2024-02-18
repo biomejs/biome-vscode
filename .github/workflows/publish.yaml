@@ -26,6 +26,7 @@ jobs:
   
   publish-vs-marketplace:
     name: Publish to Visual Studio Marketplace
+    if: github.ref == 'refs/heads/main'
     needs: [package]
     runs-on: ubuntu-latest
     environment: vscode
@@ -48,6 +49,7 @@ jobs:
 
   publish-ovsx-registry:
     name: Publish to Open VSX Registry
+    if: github.ref == 'refs/heads/main'
     needs: [package]
     runs-on: ubuntu-latest
     environment: vscode
@@ -70,6 +72,7 @@ jobs:
 
   publish-github-release:
     name: Publish to GitHub Releases
+    if: github.ref == 'refs/heads/main' && github.event.inputs.nightly == 'false'
     needs: [package]
     runs-on: ubuntu-latest
     permissions:
@@ -103,8 +106,7 @@ jobs:
       - name: Publish extension to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
-          name: "${{ format('v{0}', needs.package.outputs.version) }}${{ needs.package.outputs.nightly == 'true' && ' (nightly)' || '' }}"
+          name: "${{ format('v{0}', needs.package.outputs.version) }}"
           body_path: RELEASE_NOTES.md
-          prerelease: ${{ needs.package.outputs.nightly == 'true' }}
           files: biome.vsix
           tag_name: ${{ format('v{0}', needs.package.outputs.version) }}
