@@ -22,6 +22,17 @@ Please review the following guidelines before making your contribution.
 
 The extension can be started in debug mode by pressing <kbd>F5</kbd> in Visual Studio Code. This will start a watcher that automatically rebuilds the extension when you make changes and opens a new VS Code window with only the Biome extensione extension loaded.
 
+> [!TIP]
+> If the <kbd>F5</kbd> key does not work, you can start the extension in debug mode by running the `Debug: Start Debugging` command from the command palette.
+
+### Building the extension
+
+The following command will build the extension into a `.vsix` file that can be installed in Visual Studio Code.
+
+```shell
+bun run build
+```
+
 ## Making changes
 
 1. **Create a branch.** Before making any changes, create a branch to work on.
