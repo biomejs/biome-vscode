@@ -5,6 +5,13 @@ labels: ["Triage"]
 body:
   - type: input
     attributes:
+      label: "VS Code version"
+      description: Version of VS Code
+      placeholder: "1.86.1"
+    validations:
+      required: true
+  - type: input
+    attributes:
       label: "Extension version"
       description: Version of Biome VS Code extension.
       placeholder: "2.0.0"
