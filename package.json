@@ -79,6 +79,11 @@
     "configuration": {
       "title": "Biome",
       "properties": {
+		"biome.enabled": {
+			"type": "boolean",
+			"default": true,
+			"description": "Whether the Biome extension is enabled."
+		},
         "biome_lsp.trace.server": {
           "type": "string",
           "scope": "window",

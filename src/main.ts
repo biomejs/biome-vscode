@@ -33,6 +33,11 @@ let client: LanguageClient;
 const IN_BIOME_PROJECT = "inBiomeProject";
 
 export async function activate(context: ExtensionContext) {
+	// If the extension is disabled, abort the activation.
+	if (!workspace.getConfiguration("biome").get<boolean>("enabled", true)) {
+		return;
+	}
+
 	const outputChannel = window.createOutputChannel("Biome");
 	const traceOutputChannel = window.createOutputChannel("Biome Trace");
 
