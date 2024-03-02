@@ -135,7 +135,7 @@
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "^2.23.0",
 		"esbuild": "^0.20.0",
-		"git-cliff": "^1.4.0",
+		"git-cliff": "^2.0.4",
 		"lefthook": "^1.6.1",
 		"ovsx": "^0.8.3",
 		"typescript": "^5.3.3"
