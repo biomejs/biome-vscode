@@ -94,7 +94,7 @@ the following to your editor configuration.
 ```json
 {
   "editor.codeActionsOnSave": {
-	"quickfix.biome": true
+	"quickfix.biome": "explicit"
   }
 }
 ```
@@ -117,7 +117,7 @@ To automatically sort imports on save, add the following to your editor configur
 ```json
 {
   "editor.codeActionsOnSave": {
-	"source.organizeImports.biome": true
+	"source.organizeImports.biome": "explicit"
   }
 }
 ```
