@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.2.2 - 2024-03-07
+
+### <!-- 1 -->:bug: Bug fixes
+
+- Workspace-relative paths in `biome.lspBin` ([#163](https://github.com/biomejs/biome-vscode/pull/163))
+
 ## 2.2.1 - 2024-03-06
 
 ### <!-- 0 -->:rocket: New features
