@@ -339,11 +339,12 @@ async function getServerPath(
 	const config = workspace.getConfiguration();
 	const explicitPath: string = config.get("biome.lspBin");
 	if (explicitPath !== "") {
-		if (await fileExists(Uri.file(explicitPath))) {
+		const workspaceRelativePath = await getWorkspaceRelativePath(explicitPath);
+		if (workspaceRelativePath !== undefined) {
 			return {
 				bundled: false,
 				workspaceDependency: false,
-				command: await getWorkspaceRelativePath(explicitPath),
+				command: workspaceRelativePath,
 			};
 		}
 		outputChannel.appendLine(
