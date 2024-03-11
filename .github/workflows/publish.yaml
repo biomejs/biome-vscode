@@ -104,7 +104,7 @@ jobs:
         run: tail -n +3 < CHANGES.md > RELEASE_NOTES.md
 
       - name: Publish extension to GitHub Releases
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: "${{ format('v{0}', needs.package.outputs.version) }}"
           body_path: RELEASE_NOTES.md
