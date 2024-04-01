@@ -1,22 +1,22 @@
 import {
-	CancellationToken,
-	Disposable,
-	DocumentLink,
-	DocumentLinkProvider,
+	type CancellationToken,
+	type Disposable,
+	type DocumentLink,
+	type DocumentLinkProvider,
 	EventEmitter,
-	ProviderResult,
-	TextDocument,
-	TextDocumentChangeEvent,
-	TextDocumentContentProvider,
-	TextEditor,
+	type ProviderResult,
+	type TextDocument,
+	type TextDocumentChangeEvent,
+	type TextDocumentContentProvider,
+	type TextEditor,
 	Uri,
 	ViewColumn,
 	languages,
 	window,
 	workspace,
 } from "vscode";
-import { SyntaxTreeParams, syntaxTreeRequest } from "../lsp_requests";
-import { Command, Session } from "../session";
+import { type SyntaxTreeParams, syntaxTreeRequest } from "../lsp_requests";
+import type { Command, Session } from "../session";
 import { isBiomeEditor } from "../utils";
 import { SyntaxTreeDocument } from "./syntaxTreeDocument";
 

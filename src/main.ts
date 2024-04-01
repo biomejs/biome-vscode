@@ -1,12 +1,12 @@
-import { type ChildProcess, spawn } from "child_process";
-import { createRequire } from "module";
-import { type Socket, connect } from "net";
-import { delimiter, dirname, isAbsolute } from "path";
+import { type ChildProcess, spawn } from "node:child_process";
+import { createRequire } from "node:module";
+import { type Socket, connect } from "node:net";
+import { delimiter, dirname, isAbsolute } from "node:path";
 import {
-	ExtensionContext,
-	OutputChannel,
+	type ExtensionContext,
+	type OutputChannel,
 	RelativePattern,
-	TextEditor,
+	type TextEditor,
 	Uri,
 	commands,
 	extensions,
@@ -15,11 +15,11 @@ import {
 	workspace,
 } from "vscode";
 import {
-	DocumentFilter,
+	type DocumentFilter,
 	LanguageClient,
-	LanguageClientOptions,
-	ServerOptions,
-	StreamInfo,
+	type LanguageClientOptions,
+	type ServerOptions,
+	type StreamInfo,
 } from "vscode-languageclient/node";
 import { Commands } from "./commands";
 import { syntaxTree } from "./commands/syntaxTree";

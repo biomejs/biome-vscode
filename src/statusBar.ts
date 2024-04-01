@@ -1,14 +1,14 @@
 import { gt } from "semver";
 import {
-	ExtensionContext,
-	OutputChannel,
+	type ExtensionContext,
+	type OutputChannel,
 	StatusBarAlignment,
-	StatusBarItem,
+	type StatusBarItem,
 	ThemeColor,
 	window,
 } from "vscode";
 import { State } from "vscode-languageclient";
-import { LanguageClient } from "vscode-languageclient/node";
+import type { LanguageClient } from "vscode-languageclient/node";
 import { Commands } from "./commands";
 import { getVersions } from "./downloader";
 

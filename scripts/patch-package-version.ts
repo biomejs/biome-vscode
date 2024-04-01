@@ -1,4 +1,4 @@
-import { writeFileSync } from "fs";
+import { writeFileSync } from "node:fs";
 
 /**
  * Generates a nightly version identifier

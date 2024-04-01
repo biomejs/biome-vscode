@@ -1,9 +1,9 @@
 import { chmodSync } from "node:fs";
-import { SemVer, parse, rcompare } from "semver";
+import { type SemVer, parse, rcompare } from "semver";
 import { fetch } from "undici";
 import {
-	ExtensionContext,
-	OutputChannel,
+	type ExtensionContext,
+	type OutputChannel,
 	ProgressLocation,
 	Uri,
 	commands,
