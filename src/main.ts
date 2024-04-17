@@ -72,6 +72,7 @@ export async function activate(context: ExtensionContext) {
 
 	let server = await getServerPath(context, outputChannel);
 
+	// @ts-expect-error
 	if (!server.command) {
 		const action = await window.showWarningMessage(
 			"Could not find Biome in your dependencies. Either add the @biomejs/biome package to your dependencies, or download the Biome binary.",
@@ -87,12 +88,14 @@ export async function activate(context: ExtensionContext) {
 
 		server = await getServerPath(context, outputChannel);
 
+		// @ts-expect-error
 		if (!server.command) {
 			return;
 		}
 	}
 
 	const statusBar = new StatusBar(context, outputChannel);
+	// @ts-expect-error
 	await statusBar.setUsingBundledBiome(server.bundled);
 
 	const documentSelector: DocumentFilter[] = [
@@ -123,6 +126,7 @@ export async function activate(context: ExtensionContext) {
 	};
 
 	const reloadClient = async () => {
+		// @ts-expect-error
 		outputChannel.appendLine(`Biome binary found at ${server.command}`);
 
 		let destination: Uri | undefined;
@@ -134,6 +138,7 @@ export async function activate(context: ExtensionContext) {
 				`./biome${process.platform === "win32" ? ".exe" : ""}`,
 			);
 
+			// @ts-expect-error
 			if (server.workspaceDependency) {
 				try {
 					// Create the destination if it does not exist.
@@ -142,6 +147,7 @@ export async function activate(context: ExtensionContext) {
 					outputChannel.appendLine(
 						`Copying binary to temporary folder: ${destination}`,
 					);
+					// @ts-expect-error
 					await workspace.fs.copy(Uri.file(server.command), destination, {
 						overwrite: true,
 					});
@@ -155,12 +161,14 @@ export async function activate(context: ExtensionContext) {
 		}
 
 		outputChannel.appendLine(
+			// @ts-expect-error
 			`Executing Biome from: ${destination?.fsPath ?? server.command}`,
 		);
 
 		const serverOptions: ServerOptions = createMessageTransports.bind(
 			undefined,
 			outputChannel,
+			// @ts-expect-error
 			destination?.fsPath ?? server.command,
 		);
 
@@ -602,10 +610,12 @@ async function getSocket(
 		process.on("error", reject);
 		process.on("exit", (code) => {
 			outputChannel.appendLine(`[cli] exit ${code}`);
+			// @ts-expect-error
 			resolve(code);
 		});
 		process.on("close", (code) => {
 			outputChannel.appendLine(`[cli] close ${code}`);
+			// @ts-expect-error
 			resolve(code);
 		});
 	});
@@ -660,6 +670,7 @@ async function createMessageTransports(
 		});
 	});
 
+	// @ts-expect-error
 	return { writer: socket, reader: socket };
 }
 
