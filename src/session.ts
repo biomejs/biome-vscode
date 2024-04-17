@@ -1,7 +1,12 @@
-import { Disposable, ExtensionContext, commands, window } from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
-import { Commands } from "./commands";
-import { BiomeEditor, isBiomeEditor } from "./utils";
+import {
+	type Disposable,
+	type ExtensionContext,
+	commands,
+	window,
+} from "vscode";
+import type { LanguageClient } from "vscode-languageclient/node";
+import type { Commands } from "./commands";
+import { type BiomeEditor, isBiomeEditor } from "./utils";
 
 export type Command = (...args: unknown[]) => unknown;
 

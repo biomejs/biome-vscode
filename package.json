@@ -128,7 +128,7 @@
 		"changelog": "git-cliff --unreleased --prepend CHANGELOG.md"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.5.3",
+		"@biomejs/biome": "1.6.4",
 		"@types/node": "^18.19.15",
 		"@types/resolve": "^1.20.6",
 		"@types/semver": "^7.5.7",
@@ -137,7 +137,7 @@
 		"esbuild": "^0.20.0",
 		"git-cliff": "^1.4.0",
 		"lefthook": "^1.6.1",
-		"ovsx": "^0.8.3",
+		"ovsx": "^0.9.0",
 		"typescript": "^5.3.3"
 	},
 	"dependencies": {
