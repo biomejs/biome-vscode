@@ -1,9 +1,8 @@
 import { chmodSync } from "node:fs";
-import { SemVer, parse, rcompare } from "semver";
 import { fetch } from "undici";
 import {
-	ExtensionContext,
-	OutputChannel,
+	type ExtensionContext,
+	type OutputChannel,
 	ProgressLocation,
 	Uri,
 	commands,
@@ -11,6 +10,7 @@ import {
 	workspace,
 } from "vscode";
 import { Commands } from "./commands";
+import { getVersions } from "./version";
 
 export const selectAndDownload = async (
 	context: ExtensionContext,
@@ -48,29 +48,6 @@ export const selectAndDownload = async (
 			await download(version, context);
 			await commands.executeCommand(Commands.RestartLspServer);
 			return version;
-		},
-	);
-};
-
-export const updateToLatest = async (
-	context: ExtensionContext,
-	outputChannel?: OutputChannel,
-) => {
-	await window.withProgress(
-		{
-			location: ProgressLocation.Notification,
-			title: "Updating Biome version",
-			cancellable: false,
-		},
-		async () => {
-			const versions = await getVersions(context, outputChannel);
-			if (!versions) {
-				return;
-			}
-			const version = versions[0];
-			await commands.executeCommand(Commands.StopServer);
-			await download(version, context);
-			await commands.executeCommand(Commands.RestartLspServer);
 		},
 	);
 };
@@ -154,73 +131,4 @@ const askVersion = async (versions: string[]): Promise<string | undefined> => {
 	});
 
 	return result?.label;
-};
-
-/**
- * Retrieves the list of versions of the CLI.
- *
- * The calls to the API are cached for 1 hour to prevent hitting the rate limit.
- */
-export const getVersions = async (
-	context: ExtensionContext,
-	outputChannel?: OutputChannel,
-): Promise<string[] | undefined> => {
-	const cachedVersions = context.globalState.get<{
-		expires_at: Date;
-		versions: string[];
-	}>("biome_versions_cache");
-
-	// If the cache exists and is still valid, return it
-	if (cachedVersions && new Date(cachedVersions.expires_at) > new Date()) {
-		return cachedVersions.versions;
-	}
-
-	let releases = undefined;
-
-	const response = await fetch(
-		"https://api.github.com/repos/biomejs/biome/releases?per_page=100",
-	);
-
-	if (!response.ok) {
-		outputChannel?.appendLine(
-			`Failed to fetch Biome versions from GitHub API: ${response.statusText}`,
-		);
-		return undefined;
-	}
-
-	releases = (await response.json()) as { tag_name: string }[];
-
-	type Release = {
-		date: Date;
-		version: SemVer;
-	};
-
-	const allReleases = releases
-		.filter((release) => release.tag_name.startsWith("cli/"))
-		.map((release) => ({
-			date: new Date(release.published_at),
-			version: parse(release.tag_name.replace("cli/", "")),
-		}))
-		.filter((release: Release) => release.version?.version !== null);
-
-	const stableVersions = [...allReleases]
-		.filter((release: Release) => release.version?.prerelease?.length === 0)
-		.sort((a: Release, b: Release) => rcompare(a.version, b.version))
-		.map((release: Release) => release?.version.version);
-
-	const nightlyVersions = [...allReleases]
-		.filter((release: Release) => release.version?.prerelease?.length > 0)
-		.sort((a: Release, b: Release) => rcompare(a.version, b.version))
-		.sort((a: Release, b: Release) => b.date.getTime() - a.date.getTime())
-		.map((release: Release) => release?.version.version);
-
-	const versions = [...stableVersions, ...nightlyVersions];
-
-	// Cache the result for 1 hour
-	await context.globalState.update("biome_versions_cache", {
-		expires_at: new Date(Date.now() + 60 * 60 * 1000),
-		versions,
-	});
-
-	return versions;
 };
