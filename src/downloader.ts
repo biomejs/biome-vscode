@@ -52,6 +52,29 @@ export const selectAndDownload = async (
 	);
 };
 
+export const updateToLatest = async (
+	context: ExtensionContext,
+	outputChannel?: OutputChannel,
+) => {
+	await window.withProgress(
+		{
+			location: ProgressLocation.Notification,
+			title: "Updating Biome version",
+			cancellable: false,
+		},
+		async () => {
+			const versions = await getVersions(context, outputChannel);
+			if (!versions) {
+				return;
+			}
+			const version = versions[0];
+			await commands.executeCommand(Commands.StopServer);
+			await download(version, context);
+			await commands.executeCommand(Commands.RestartLspServer);
+		},
+	);
+};
+
 /**
  * Download the Biome CLI from GitHub
  *
