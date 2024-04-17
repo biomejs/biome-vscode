@@ -1,25 +1,24 @@
-import { type ChildProcess, spawn } from "child_process";
-import { createRequire } from "module";
-import { type Socket, connect } from "net";
-import { delimiter, dirname, isAbsolute } from "path";
+import { type ChildProcess, spawn } from "node:child_process";
+import { createRequire } from "node:module";
+import { type Socket, connect } from "node:net";
+import { delimiter, dirname, isAbsolute } from "node:path";
 import {
-	ExtensionContext,
-	OutputChannel,
+	type ExtensionContext,
+	type OutputChannel,
 	RelativePattern,
-	TextEditor,
+	type TextEditor,
 	Uri,
 	commands,
-	extensions,
 	languages,
 	window,
 	workspace,
 } from "vscode";
 import {
-	DocumentFilter,
+	type DocumentFilter,
 	LanguageClient,
-	LanguageClientOptions,
-	ServerOptions,
-	StreamInfo,
+	type LanguageClientOptions,
+	type ServerOptions,
+	type StreamInfo,
 } from "vscode-languageclient/node";
 import { Commands } from "./commands";
 import { syntaxTree } from "./commands/syntaxTree";
@@ -308,7 +307,11 @@ async function getServerPath(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
 ): Promise<
-	| { bundled: boolean; workspaceDependency: boolean; command: string }
+	| {
+			bundled: boolean;
+			workspaceDependency: boolean | undefined;
+			command: string | undefined;
+	  }
 	| undefined
 > {
 	// Only allow the bundled Biome binary in untrusted workspaces
@@ -337,8 +340,8 @@ async function getServerPath(
 	}
 
 	const config = workspace.getConfiguration();
-	const explicitPath: string = config.get("biome.lspBin");
-	if (explicitPath !== "") {
+	const explicitPath = config.get<string>("biome.lspBin");
+	if (explicitPath) {
 		const workspaceRelativePath = await getWorkspaceRelativePath(explicitPath);
 		if (workspaceRelativePath !== undefined) {
 			return {
@@ -410,6 +413,9 @@ async function findBiomeInPath(): Promise<Uri | undefined> {
 async function getWorkspaceRelativePath(path: string) {
 	if (isAbsolute(path)) {
 		return path;
+	}
+	if (!workspace.workspaceFolders) {
+		return undefined;
 	}
 	for (let i = 0; i < workspace.workspaceFolders.length; i++) {
 		const workspaceFolder = workspace.workspaceFolders[i];
@@ -520,6 +526,7 @@ async function fileExists(path: Uri) {
 		await workspace.fs.stat(path);
 		return true;
 	} catch (err) {
+		// @ts-expect-error
 		if (err.code === "ENOENT" || err.code === "FileNotFound") {
 			return false;
 		}
@@ -539,6 +546,11 @@ function collectStream(
 ) {
 	return new Promise<void>((resolve, reject) => {
 		const stream = process[key];
+		if (stream == null) {
+			reject(new Error(`Stream ${key} is null`));
+			return;
+		}
+
 		stream.setEncoding("utf-8");
 
 		stream.on("error", (err) => {
@@ -636,7 +648,9 @@ async function createMessageTransports(
 	try {
 		socket = connect(path);
 	} catch (err) {
-		throw wrapConnectionError(err, path);
+		if (err instanceof Error) {
+			throw wrapConnectionError(err, path);
+		}
 	}
 
 	await new Promise((resolve, reject) => {
