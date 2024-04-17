@@ -1,22 +1,22 @@
 import {
-	CancellationToken,
-	Disposable,
-	DocumentLink,
-	DocumentLinkProvider,
+	type CancellationToken,
+	type Disposable,
+	type DocumentLink,
+	type DocumentLinkProvider,
 	EventEmitter,
-	ProviderResult,
-	TextDocument,
-	TextDocumentChangeEvent,
-	TextDocumentContentProvider,
-	TextEditor,
+	type ProviderResult,
+	type TextDocument,
+	type TextDocumentChangeEvent,
+	type TextDocumentContentProvider,
+	type TextEditor,
 	Uri,
 	ViewColumn,
 	languages,
 	window,
 	workspace,
 } from "vscode";
-import { SyntaxTreeParams, syntaxTreeRequest } from "../lsp_requests";
-import { Command, Session } from "../session";
+import { type SyntaxTreeParams, syntaxTreeRequest } from "../lsp_requests";
+import type { Command, Session } from "../session";
 import { isBiomeEditor } from "../utils";
 import { SyntaxTreeDocument } from "./syntaxTreeDocument";
 
@@ -80,6 +80,10 @@ class SyntaxTreeProvider
 		uri: Uri,
 		token: CancellationToken,
 	): ProviderResult<string> {
+		if (!this.session.editor) {
+			return undefined;
+		}
+
 		const documentUri = this.session.editor.document.uri.toString();
 		// if the document is already cached, we show it
 		const document = this.documents.get(documentUri);
@@ -88,7 +92,7 @@ class SyntaxTreeProvider
 		}
 
 		const params: SyntaxTreeParams = {
-			textDocument: { uri: this.session.editor.document.uri.toString() },
+			textDocument: { uri: documentUri },
 		};
 
 		// send request to the server and store its content in the cache if successful
