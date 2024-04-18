@@ -10,7 +10,7 @@ import {
 import { State } from "vscode-languageclient";
 import type { LanguageClient } from "vscode-languageclient/node";
 import { Commands } from "./commands";
-import { getVersions } from "./downloader";
+import { getVersions } from "./version";
 
 /**
  * Enumeration of all the status the extension can display

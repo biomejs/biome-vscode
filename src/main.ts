@@ -9,7 +9,6 @@ import {
 	type TextEditor,
 	Uri,
 	commands,
-	extensions,
 	languages,
 	window,
 	workspace,
@@ -73,6 +72,7 @@ export async function activate(context: ExtensionContext) {
 
 	let server = await getServerPath(context, outputChannel);
 
+	// @ts-expect-error
 	if (!server.command) {
 		const action = await window.showWarningMessage(
 			"Could not find Biome in your dependencies. Either add the @biomejs/biome package to your dependencies, or download the Biome binary.",
@@ -88,12 +88,14 @@ export async function activate(context: ExtensionContext) {
 
 		server = await getServerPath(context, outputChannel);
 
+		// @ts-expect-error
 		if (!server.command) {
 			return;
 		}
 	}
 
 	const statusBar = new StatusBar(context, outputChannel);
+	// @ts-expect-error
 	await statusBar.setUsingBundledBiome(server.bundled);
 
 	const documentSelector: DocumentFilter[] = [
@@ -124,6 +126,7 @@ export async function activate(context: ExtensionContext) {
 	};
 
 	const reloadClient = async () => {
+		// @ts-expect-error
 		outputChannel.appendLine(`Biome binary found at ${server.command}`);
 
 		let destination: Uri | undefined;
@@ -135,6 +138,7 @@ export async function activate(context: ExtensionContext) {
 				`./biome${process.platform === "win32" ? ".exe" : ""}`,
 			);
 
+			// @ts-expect-error
 			if (server.workspaceDependency) {
 				try {
 					// Create the destination if it does not exist.
@@ -143,6 +147,7 @@ export async function activate(context: ExtensionContext) {
 					outputChannel.appendLine(
 						`Copying binary to temporary folder: ${destination}`,
 					);
+					// @ts-expect-error
 					await workspace.fs.copy(Uri.file(server.command), destination, {
 						overwrite: true,
 					});
@@ -156,12 +161,14 @@ export async function activate(context: ExtensionContext) {
 		}
 
 		outputChannel.appendLine(
+			// @ts-expect-error
 			`Executing Biome from: ${destination?.fsPath ?? server.command}`,
 		);
 
 		const serverOptions: ServerOptions = createMessageTransports.bind(
 			undefined,
 			outputChannel,
+			// @ts-expect-error
 			destination?.fsPath ?? server.command,
 		);
 
@@ -308,7 +315,11 @@ async function getServerPath(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
 ): Promise<
-	| { bundled: boolean; workspaceDependency: boolean; command: string }
+	| {
+			bundled: boolean;
+			workspaceDependency: boolean | undefined;
+			command: string | undefined;
+	  }
 	| undefined
 > {
 	// Only allow the bundled Biome binary in untrusted workspaces
@@ -337,8 +348,8 @@ async function getServerPath(
 	}
 
 	const config = workspace.getConfiguration();
-	const explicitPath: string = config.get("biome.lspBin");
-	if (explicitPath !== "") {
+	const explicitPath = config.get<string>("biome.lspBin");
+	if (explicitPath) {
 		const workspaceRelativePath = await getWorkspaceRelativePath(explicitPath);
 		if (workspaceRelativePath !== undefined) {
 			return {
@@ -410,6 +421,9 @@ async function findBiomeInPath(): Promise<Uri | undefined> {
 async function getWorkspaceRelativePath(path: string) {
 	if (isAbsolute(path)) {
 		return path;
+	}
+	if (!workspace.workspaceFolders) {
+		return undefined;
 	}
 	for (let i = 0; i < workspace.workspaceFolders.length; i++) {
 		const workspaceFolder = workspace.workspaceFolders[i];
@@ -520,6 +534,7 @@ async function fileExists(path: Uri) {
 		await workspace.fs.stat(path);
 		return true;
 	} catch (err) {
+		// @ts-expect-error
 		if (err.code === "ENOENT" || err.code === "FileNotFound") {
 			return false;
 		}
@@ -539,6 +554,11 @@ function collectStream(
 ) {
 	return new Promise<void>((resolve, reject) => {
 		const stream = process[key];
+		if (stream == null) {
+			reject(new Error(`Stream ${key} is null`));
+			return;
+		}
+
 		stream.setEncoding("utf-8");
 
 		stream.on("error", (err) => {
@@ -590,10 +610,12 @@ async function getSocket(
 		process.on("error", reject);
 		process.on("exit", (code) => {
 			outputChannel.appendLine(`[cli] exit ${code}`);
+			// @ts-expect-error
 			resolve(code);
 		});
 		process.on("close", (code) => {
 			outputChannel.appendLine(`[cli] close ${code}`);
+			// @ts-expect-error
 			resolve(code);
 		});
 	});
@@ -636,7 +658,9 @@ async function createMessageTransports(
 	try {
 		socket = connect(path);
 	} catch (err) {
-		throw wrapConnectionError(err, path);
+		if (err instanceof Error) {
+			throw wrapConnectionError(err, path);
+		}
 	}
 
 	await new Promise((resolve, reject) => {
@@ -646,6 +670,7 @@ async function createMessageTransports(
 		});
 	});
 
+	// @ts-expect-error
 	return { writer: socket, reader: socket };
 }
 

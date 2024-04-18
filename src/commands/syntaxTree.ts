@@ -80,6 +80,10 @@ class SyntaxTreeProvider
 		uri: Uri,
 		token: CancellationToken,
 	): ProviderResult<string> {
+		if (!this.session.editor) {
+			return undefined;
+		}
+
 		const documentUri = this.session.editor.document.uri.toString();
 		// if the document is already cached, we show it
 		const document = this.documents.get(documentUri);
@@ -88,7 +92,7 @@ class SyntaxTreeProvider
 		}
 
 		const params: SyntaxTreeParams = {
-			textDocument: { uri: this.session.editor.document.uri.toString() },
+			textDocument: { uri: documentUri },
 		};
 
 		// send request to the server and store its content in the cache if successful
