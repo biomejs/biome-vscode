@@ -1,0 +1,88 @@
+{
+	"name": "biome",
+	"version": "3.0.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/biomejs/biome-vscode.git"
+	},
+	"main": "./out/index.js",
+	"sponsor": {
+		"url": "https://github.com/sponsors/biomejs"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.7.0",
+		"@rollup/plugin-commonjs": "^25.0.7",
+		"@rollup/plugin-json": "^6.1.0",
+		"@rollup/plugin-node-resolve": "^15.2.3",
+		"@types/bun": "^1.1.0",
+		"@types/vscode": "1.80.0",
+		"@vscode/vsce": "^2.23.0",
+		"git-cliff": "^2.0.4",
+		"lefthook": "^1.6.1",
+		"ovsx": "^0.8.3",
+		"rollup": "^4.12.0",
+		"rollup-plugin-esbuild": "^6.1.1",
+		"typescript": "^5.3.3"
+	},
+	"activationEvents": [
+		"onLanguage:javascript",
+		"onLanguage:javascriptreact",
+		"onLanguage:typescript",
+		"onLanguage:typescriptreact",
+		"onLanguage:json",
+		"onLanguage:jsonc",
+		"onLanguage:vue",
+		"onLanguage:astro",
+		"onLanguage:svelte"
+	],
+	"bugs": {
+		"url": "https://github.com/biomejs/biome-vscode/issues"
+	},
+	"categories": ["Formatters", "Linters"],
+	"contributes": {
+		"configuration": {
+			"title": "Biome",
+			"properties": {}
+		},
+		"languages": [
+			{
+				"id": "biome_syntax_tree",
+				"extensions": [".rast"]
+			}
+		],
+		"grammars": [
+			{
+				"language": "biome_syntax_tree",
+				"scopeName": "source.biome_syntax_tree",
+				"path": "./resources/grammars/biome-syntax-tree.tmGrammar.json"
+			}
+		]
+	},
+	"description": "Toolchain of the web",
+	"displayName": "Biome",
+	"engines": {
+		"vscode": "^1.80.0"
+	},
+	"homepage": "https://github.com/biomejs/biome-vscode#readme",
+	"icon": "resources/icons/biome.png",
+	"keywords": ["formatter", "linter"],
+	"license": "MIT OR Apache-2.0",
+	"packageManager": "bun@1.1.4",
+	"publisher": "biomejs",
+	"readme": "https://github.com/biomejs/biome-vscode#readme",
+	"scripts": {
+		"build": "rollup --config rollup.config.ts --configPlugin esbuild",
+		"dev": "rollup --watch --config rollup.config.ts --configPlugin esbuild",
+		"package": "bun run build && vsce package --out git-reminder.vsix",
+		"typecheck": "tsc --noEmit",
+		"check": "biome check --apply ."
+	},
+	"vsce": {
+		"dependencies": false,
+		"skipLicense": true
+	},
+	"dependencies": {
+		"undici": "^5",
+		"vscode-languageclient": "^8.1.0"
+	}
+}
