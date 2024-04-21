@@ -1,4 +1,5 @@
 import type { ExtensionContext } from "vscode";
+import { Biome } from "./biome";
 import { logger } from "./logger";
 
 /**
@@ -6,4 +7,5 @@ import { logger } from "./logger";
  */
 export const activate = async (context: ExtensionContext) => {
 	logger.info("Activating Biome extension");
+	await new Biome(context).init();
 };
