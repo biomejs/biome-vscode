@@ -11,7 +11,7 @@
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
-			"preLaunchTask": "npm: watch",
+			"preLaunchTask": "bun: dev",
 			"sourceMapRenames": true
 		}
 	]
