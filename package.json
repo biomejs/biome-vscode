@@ -33,7 +33,8 @@
 		"onLanguage:jsonc",
 		"onLanguage:vue",
 		"onLanguage:astro",
-		"onLanguage:svelte"
+		"onLanguage:svelte",
+		"onLanguage:css"
 	],
 	"bugs": {
 		"url": "https://github.com/biomejs/biome-vscode/issues"

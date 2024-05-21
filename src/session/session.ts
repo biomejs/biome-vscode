@@ -110,6 +110,7 @@ export class Session extends EventEmitter {
 			"astro",
 			"vue",
 			"svelte",
+			"css",
 		].map((language) => ({
 			language,
 			scheme: "file",
