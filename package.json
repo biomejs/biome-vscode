@@ -3,7 +3,7 @@
 	"publisher": "biomejs",
 	"displayName": "Biome",
 	"description": "Biome LSP VS Code Extension",
-	"version": "2.2.2",
+	"version": "2.2.3",
 	"icon": "resources/icons/icon.png",
 	"activationEvents": [
 		"onLanguage:javascript",
@@ -14,7 +14,8 @@
 		"onLanguage:jsonc",
 		"onLanguage:vue",
 		"onLanguage:astro",
-		"onLanguage:svelte"
+		"onLanguage:svelte",
+		"onLanguage:css"
 	],
 	"main": "./out/main.js",
 	"homepage": "https://github.com/biomejs/biome-vscode",
