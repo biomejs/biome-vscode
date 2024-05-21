@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { delimiter } from "node:path";
 import { Uri, type WorkspaceFolder } from "vscode";
 import { logger } from "./logger";
-import { get } from "./settings";
+import { config } from "./utils";
 import { fileExists, withExtension } from "./utils";
 
 /**
@@ -12,7 +12,7 @@ import { fileExists, withExtension } from "./utils";
  * The finder provides method for finding the `biome` binary on the user's
  * system.
  */
-export class Finder {
+export class Locator {
 	/**
 	 * Finds the `biome` binary from a given workspace folder
 	 */
@@ -42,7 +42,7 @@ export class Finder {
 			`Attempting to resolve biome from the "biome.lsp.bin" setting for workspace folder ${folder.name}.`,
 		);
 
-		const bin = get<string>("lsp.bin", { default: "", scope: folder });
+		const bin = config<string>("lsp.bin", { default: "", scope: folder });
 
 		if (bin === "") {
 			logger.debug(

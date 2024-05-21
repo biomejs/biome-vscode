@@ -1,7 +1,9 @@
 import type { ExtensionContext } from "vscode";
-import { WorkspaceMonitor } from "./workspace";
+import { SessionManager } from "./session/manager";
+import { WorkspaceMonitor } from "./workspace/monitor";
 
 export class Biome {
+	public readonly sessionManager: SessionManager;
 	public readonly workspaceMonitor: WorkspaceMonitor;
 
 	/**
@@ -10,7 +12,8 @@ export class Biome {
 	 * @param context Extension context, as provided by VS Code's extension host.
 	 */
 	constructor(public readonly context: ExtensionContext) {
-		this.workspaceMonitor = new WorkspaceMonitor(this);
+		this.workspaceMonitor = new WorkspaceMonitor();
+		this.sessionManager = new SessionManager(this);
 	}
 
 	/**
@@ -18,5 +21,6 @@ export class Biome {
 	 */
 	public async init() {
 		await this.workspaceMonitor.init();
+		await this.sessionManager.init();
 	}
 }
