@@ -68,7 +68,7 @@
 	"icon": "resources/icons/biome.png",
 	"keywords": ["formatter", "linter"],
 	"license": "MIT OR Apache-2.0",
-	"packageManager": "bun@1.1.4",
+	"packageManager": "bun@1.1.9",
 	"publisher": "biomejs",
 	"readme": "https://github.com/biomejs/biome-vscode#readme",
 	"scripts": {
