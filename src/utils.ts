@@ -1,4 +1,5 @@
 import { type ConfigurationScope, type Uri, workspace } from "vscode";
+import { activationEvents } from "../package.json";
 
 /**
  * Returns the name of the Biome executable for the current platform
@@ -94,3 +95,13 @@ export type ConfigOptions<T> = Partial<{
 	 */
 	default: T;
 }>;
+
+/**
+ * Supported languages for the extension
+ *
+ * This array contains the supported languages for the extension. The languages
+ * are derived from the activation events in the `package.json` file.
+ */
+export const supportedLanguages = activationEvents
+	.filter((name) => name.startsWith("onLanguage:"))
+	.map((name) => name.replace("onLanguage:", "").trim());

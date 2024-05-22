@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { type WorkspaceFolder, workspace } from "vscode";
+import { type Uri, type WorkspaceFolder, workspace } from "vscode";
 import type { Biome } from "../biome";
 import { Locator } from "../locator";
 import { logger } from "../logger";
@@ -13,21 +13,23 @@ export class SessionManager extends EventEmitter {
 	private finder: Locator = new Locator();
 
 	/**
-	 * Biome LSP sessions
+	 * Global Biome LSP session
+	 *
+	 * The global Biome LSP session is used when the extension is loaded in a
+	 * single-file context, i.e. when there are no workspace folders. In a
+	 * workspace context, the global session is undefined, and each workspace
+	 * folder has its own session.
 	 */
-	private _sessions: Map<WorkspaceFolder, Session> = new Map([]);
+	private globalSession: Session | undefined;
 
 	/**
-	 * Currently active Biome LSP session
+	 * Workspace Biome LSP sessions
+	 *
+	 * This map contains the Biome LSP sessions for each workspace folder. The
+	 * key is the workspace folder, and the value is the session. In a single-file
+	 * context, this map is empty.
 	 */
-	private _activeSession: string | undefined;
-
-	/**
-	 * Active session
-	 */
-	public get activeSession(): string | undefined {
-		return this._activeSession;
-	}
+	private workspaceSessions: Map<WorkspaceFolder, Session> = new Map([]);
 
 	/**
 	 * Instantiates a new session manager
@@ -43,6 +45,12 @@ export class SessionManager extends EventEmitter {
 	 */
 	public async init() {
 		logger.debug("Initializing session manager");
+
+		// If we're in a single-file context, we create a global LSP session
+		if (workspace.workspaceFolders === undefined) {
+			await this.createGlobalSession();
+			return;
+		}
 
 		await this.synchronize(this.biome.workspaceMonitor.workspaceFolders);
 
@@ -62,7 +70,7 @@ export class SessionManager extends EventEmitter {
 	 * @param workspaceFolder The workspace folder for which to create the session
 	 */
 	private async createSessionForWorkspaceFolder(folder: WorkspaceFolder) {
-		const existingSession = this._sessions.get(folder);
+		const existingSession = this.workspaceSessions.get(folder);
 
 		if (existingSession) {
 			await this.destroySessionForWorkspaceFolder(folder);
@@ -78,7 +86,7 @@ export class SessionManager extends EventEmitter {
 			return;
 		}
 
-		const session = new Session(folder, binaryPath);
+		const session = new Session(binaryPath, folder);
 
 		session.addListener("stateChanged", (state) =>
 			this.emit("sessionStateChanged", folder, state),
@@ -96,6 +104,29 @@ export class SessionManager extends EventEmitter {
 	}
 
 	/**
+	 * Creates a new global LSP session.
+	 */
+	private async createGlobalSession() {
+		if (this.globalSession) {
+			await this.destroyGlobalSession();
+		}
+
+		const binaryPath = await this.finder.findGlobally();
+
+		if (!binaryPath) {
+			logger.error(
+				"Could not create a global LSP session because the Biome binary could not be found.",
+			);
+
+			return;
+		}
+
+		const session = new Session(binaryPath);
+
+		session.start();
+	}
+
+	/**
 	 * Destroys the LSP session for a given workspace folder.
 	 *
 	 * This method destroys the LSP session for a given workspace folder. If no
@@ -104,7 +135,7 @@ export class SessionManager extends EventEmitter {
 	 * @param folder The workspace folder for which to destroy the session
 	 */
 	private async destroySessionForWorkspaceFolder(folder: WorkspaceFolder) {
-		const existingSession = this._sessions.get(folder);
+		const existingSession = this.workspaceSessions.get(folder);
 
 		if (!existingSession) {
 			logger.debug(
@@ -116,10 +147,24 @@ export class SessionManager extends EventEmitter {
 	}
 
 	/**
+	 * Destroys the global LSP session
+	 */
+	private async destroyGlobalSession() {
+		if (!this.globalSession) {
+			logger.debug(
+				"Could not destroy global LSP session because it does not exist.",
+			);
+		}
+
+		await this.globalSession.destroy();
+	}
+
+	/**
 	 * Destroys all the LSP sessions.
 	 */
 	private async destroyAllSessions() {
-		for (const [folder, session] of this._sessions.entries()) {
+		await this.destroyGlobalSession();
+		for (const [folder, session] of this.workspaceSessions.entries()) {
 			await this.destroySessionForWorkspaceFolder(folder);
 		}
 	}
@@ -139,7 +184,7 @@ export class SessionManager extends EventEmitter {
 			return await this.destroyAllSessions();
 		}
 
-		const existing = new Set(this._sessions.keys());
+		const existing = new Set(this.workspaceSessions.keys());
 
 		// Start a new session for every new workspace folder
 		for (const folder of folders) {

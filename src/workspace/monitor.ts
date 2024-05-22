@@ -46,6 +46,17 @@ export class WorkspaceMonitor extends EventEmitter {
 	 * Initializes the workspace monitor
 	 */
 	public async init() {
+		// If we're in a single-file context, there are no workspace folders to
+		// monitor, so we can just return. When switching to a workspace context,
+		// VS Code will automatically reload the extension, so we'll get another
+		// chance to initialize the workspace monitor.
+		if (workspace.workspaceFolders === undefined) {
+			logger.info(
+				"Single-file context, skipping workspace monitor initialization.",
+			);
+			return;
+		}
+
 		await this.detectWorkspaceFolders();
 		workspace.onDidChangeWorkspaceFolders(() => this.detectWorkspaceFolders());
 

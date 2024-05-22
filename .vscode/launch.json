@@ -2,13 +2,28 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "🧩 Debug Extension",
+			"name": "🧩 Debug Extension (in Workspace)",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
 				"--disable-extensions",
 				"--extensionDevelopmentKind=node",
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/test/fixtures/workspace/test.code-workspace"
+			],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"preLaunchTask": "bun: dev",
+			"sourceMapRenames": true
+		},
+		{
+			"name": "🧩 Debug Extension (no Workspace)",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentKind=node",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/test/fixtures/no-workspace/test.js"
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "bun: dev",

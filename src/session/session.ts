@@ -13,6 +13,7 @@ import {
 	TransportKind,
 } from "vscode-languageclient/node";
 import { lspLogger } from "../logger";
+import { supportedLanguages } from "../utils";
 
 export class Session extends EventEmitter {
 	/**
@@ -29,13 +30,13 @@ export class Session extends EventEmitter {
 	 * Instantiates a new session
 	 */
 	constructor(
-		private readonly workspaceFolder: WorkspaceFolder,
 		private readonly biomeBinaryPath: Uri,
+		private readonly workspaceFolder?: WorkspaceFolder,
 	) {
 		super();
 
 		this.lspTraceLogger = window.createOutputChannel(
-			`Biome LSP trace / ${workspaceFolder.name}`,
+			`Biome LSP trace${workspaceFolder ? ` / ${workspaceFolder.name}` : ""}`,
 			{
 				log: true,
 			},
@@ -100,21 +101,14 @@ export class Session extends EventEmitter {
 	 * the workspace folder.
 	 */
 	private generateDocumentSelector(): DocumentSelector {
-		return [
-			"javascript",
-			"typescript",
-			"javascriptreact",
-			"typescriptreact",
-			"json",
-			"jsonc",
-			"astro",
-			"vue",
-			"svelte",
-			"css",
-		].map((language) => ({
-			language,
-			scheme: "file",
-			pattern: `${this.workspaceFolder.uri.fsPath}/**/*`,
-		}));
+		return supportedLanguages.map((language) => {
+			return {
+				language,
+				scheme: "file",
+				...(this.workspaceFolder && {
+					pattern: `${this.workspaceFolder.uri.fsPath}/**/*`,
+				}),
+			};
+		});
 	}
 }

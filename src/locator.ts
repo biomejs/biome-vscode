@@ -27,6 +27,16 @@ export class Locator {
 	}
 
 	/**
+	 * Finds the `biome` binary globally
+	 */
+	public async findGlobally(): Promise<Uri | undefined> {
+		return (
+			(await this.findInSettings()) ??
+			(await this.findInPathEnvironmentVariable())
+		);
+	}
+
+	/**
 	 * Resolves the location of the `biome` binary from the settings.
 	 *
 	 * This method will attempt to locate the `biome` binary at the path
@@ -36,18 +46,12 @@ export class Locator {
 	 * @param folder The workspace folder to search in.
 	 */
 	private async findInSettings(
-		folder: WorkspaceFolder,
+		folder?: WorkspaceFolder,
 	): Promise<Uri | undefined> {
-		logger.debug(
-			`Attempting to resolve biome from the "biome.lsp.bin" setting for workspace folder ${folder.name}.`,
-		);
-
 		const bin = config<string>("lsp.bin", { default: "", scope: folder });
 
 		if (bin === "") {
-			logger.debug(
-				`Setting "biome.lsp.bin" is not set in workspace folder ${folder.name}.`,
-			);
+			logger.debug(`Setting "biome.lsp.bin" is not set.`);
 			return undefined;
 		}
 
@@ -55,14 +59,14 @@ export class Locator {
 
 		if (!(await fileExists(binPath))) {
 			logger.warn(
-				`Could not resolve biome from "biome.lsp.bin" setting for workspace folder ${folder.name} because the path does not exist: ${binPath.fsPath}.`,
+				`Could not resolve biome from "biome.lsp.bin" setting because the path does not exist: ${binPath.fsPath}.`,
 			);
 
 			return undefined;
 		}
 
 		logger.info(
-			`Successfully resolved biome from "biome.lsp.bin" setting for workspace folder ${folder.name}: ${binPath.fsPath}.`,
+			`Successfully resolved biome from "biome.lsp.bin" setting: ${binPath.fsPath}.`,
 		);
 
 		return binPath;
@@ -131,11 +135,9 @@ export class Locator {
 	 * @param folder The workspace folder to search in.
 	 */
 	private async findInPathEnvironmentVariable(
-		folder: WorkspaceFolder,
+		folder?: WorkspaceFolder,
 	): Promise<Uri | undefined> {
-		logger.debug(
-			`Attempting to resolve biome from PATH environment variable for workspace folder ${folder.name}.`,
-		);
+		logger.debug("Attempting to resolve biome from PATH environment variable.");
 
 		const path = process.env.PATH;
 
@@ -151,15 +153,13 @@ export class Locator {
 			);
 			if (await fileExists(biome)) {
 				logger.info(
-					`Successfully resolved biome from PATH environment variable for workspace folder: ${folder.name}: ${biome.fsPath}.`,
+					`Successfully resolved biome from PATH environment variable: ${biome.fsPath}.`,
 				);
 				return biome;
 			}
 		}
 
-		logger.debug(
-			`Could not resolve biome from PATH environment variable for workspace folder ${folder.name}`,
-		);
+		logger.debug("Could not resolve biome from PATH environment variable.");
 
 		return undefined;
 	}
