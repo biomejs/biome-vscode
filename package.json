@@ -74,7 +74,7 @@
 	"scripts": {
 		"build": "rollup --config rollup.config.ts --configPlugin esbuild",
 		"dev": "rollup --watch --config rollup.config.ts --configPlugin esbuild",
-		"package": "bun run build && vsce package --out git-reminder.vsix",
+		"package": "bun run build && vsce package --out biome.vsix",
 		"typecheck": "tsc --noEmit",
 		"check": "biome check --apply ."
 	},
