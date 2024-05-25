@@ -25,7 +25,7 @@ import { syntaxTree } from "./commands/syntaxTree";
 import { selectAndDownload, updateToLatest } from "./downloader";
 import { Session } from "./session";
 import { StatusBar } from "./statusBar";
-import { setContextValue } from "./utils";
+import { isMusl, setContextValue } from "./utils";
 
 let client: LanguageClient;
 
@@ -395,6 +395,8 @@ async function getWorkspaceRelativePath(path: string) {
 async function getWorkspaceDependency(
 	outputChannel: OutputChannel,
 ): Promise<string | undefined> {
+	const wantsMuslBuild = isMusl();
+
 	for (const workspaceFolder of workspace.workspaceFolders ?? []) {
 		// Check for Yarn PnP and try resolving the Biome binary without a node_modules
 		// folder first.
@@ -419,9 +421,9 @@ async function getWorkspaceDependency(
 					throw new Error("No @biomejs/biome dependency configured");
 				}
 				return pnpApi.resolveRequest(
-					`@biomejs/cli-${process.platform}-${process.arch}/biome${
-						process.platform === "win32" ? ".exe" : ""
-					}`,
+					`@biomejs/cli-${process.platform}-${process.arch}${
+						wantsMuslBuild ? "-musl" : ""
+					}/biome${process.platform === "win32" ? ".exe" : ""}`,
 					pkgPath,
 				);
 			} catch (err) {
@@ -443,7 +445,9 @@ async function getWorkspaceDependency(
 			);
 			const binaryPackage = dirname(
 				requireFromBiome.resolve(
-					`@biomejs/cli-${process.platform}-${process.arch}/package.json`,
+					`@biomejs/cli-${process.platform}-${process.arch}${
+						wantsMuslBuild ? "-musl" : ""
+					}/package.json`,
 				),
 			);
 
