@@ -267,50 +267,6 @@ export async function activate(context: ExtensionContext) {
 	await client.start();
 }
 
-type Architecture = "x64" | "arm64";
-
-type PlatformTriplets = {
-	[P in NodeJS.Platform]?: {
-		[A in Architecture]: {
-			triplet: string;
-			package: string;
-		};
-	};
-};
-
-const PLATFORMS: PlatformTriplets = {
-	win32: {
-		x64: {
-			triplet: "x86_64-pc-windows-msvc",
-			package: "@biomejs/cli-win32-x64",
-		},
-		arm64: {
-			triplet: "aarch64-pc-windows-msvc",
-			package: "@biomejs/cli-win32-arm64",
-		},
-	},
-	darwin: {
-		x64: {
-			triplet: "x86_64-apple-darwin",
-			package: "@biomejs/cli-darwin-x64",
-		},
-		arm64: {
-			triplet: "aarch64-apple-darwin",
-			package: "@biomejs/cli-darwin-arm64",
-		},
-	},
-	linux: {
-		x64: {
-			triplet: "x86_64-unknown-linux-gnu",
-			package: "@biomejs/cli-linux-x64",
-		},
-		arm64: {
-			triplet: "aarch64-unknown-linux-gnu",
-			package: "@biomejs/cli-linux-arm64",
-		},
-	},
-};
-
 async function getServerPath(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
