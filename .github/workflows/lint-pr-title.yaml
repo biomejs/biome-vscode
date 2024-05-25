@@ -39,7 +39,6 @@ jobs:
           # and `ci(e2e,release): ...` (unknown scope) will be rejected.
           # These are regex patterns auto-wrapped in `^ $`.
           disallowScopes: |
-            release
             [A-Z]+
           # Configure additional validation for the subject based on a regex.
           # This example ensures the subject doesn't start with an uppercase character.
