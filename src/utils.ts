@@ -44,7 +44,7 @@ export const getPackageName = (): string => {
 		}
 	};
 
-	const libc = `-${isMusl() ? "musl" : ""}`;
+	const libc = `${isMusl() ? "-musl" : ""}`;
 
 	return `@biomejs/cli-${process.platform}-${process.arch}${libc}`;
 };

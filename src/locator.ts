@@ -16,15 +16,49 @@ export class Locator {
 	/**
 	 * Finds the `biome` binary from a given workspace folder
 	 */
-	public async findForWorkspaceFolder(
-		folder: WorkspaceFolder,
-	): Promise<Uri | undefined> {
-		return (
-			(await this.findInSettings(folder)) ??
-			(await this.findInNodeModules(folder)) ??
-			(await this.findInYarnPnP(folder)) ??
-			(await this.findInPathEnvironmentVariable())
-		);
+	public async findForWorkspaceFolder(folder: WorkspaceFolder): Promise<
+		| {
+				uri: Uri;
+				source:
+					| "settings"
+					| "node modules"
+					| "yarn pnp file"
+					| "path environment variable";
+		  }
+		| undefined
+	> {
+		const binPathInSettings = await this.findInSettings(folder);
+		if (binPathInSettings) {
+			return {
+				uri: binPathInSettings,
+				source: "settings",
+			};
+		}
+
+		const binPathInNodeModules = await this.findInNodeModules(folder);
+		if (binPathInNodeModules) {
+			return {
+				uri: binPathInNodeModules,
+				source: "node modules",
+			};
+		}
+
+		const binPathInYarnPnP = await this.findInYarnPnP(folder);
+		if (binPathInYarnPnP) {
+			return {
+				uri: binPathInYarnPnP,
+				source: "yarn pnp file",
+			};
+		}
+
+		const binPathInPathEnvironmentVariable =
+			await this.findInPathEnvironmentVariable();
+		if (binPathInPathEnvironmentVariable) {
+			return {
+				uri: binPathInPathEnvironmentVariable,
+				source: "path environment variable",
+			};
+		}
 	}
 
 	/**
@@ -115,7 +149,8 @@ export class Locator {
 			);
 
 			return binPath;
-		} catch {
+		} catch (error) {
+			console.error(error);
 			logger.debug(
 				`Could not resolve biome from node_modules for workspace folder ${folder.name}: unknown reason.`,
 			);

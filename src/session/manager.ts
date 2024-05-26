@@ -1,5 +1,6 @@
 import { EventEmitter } from "node:events";
-import { type Uri, type WorkspaceFolder, workspace } from "vscode";
+import { dirname } from "node:path";
+import { RelativePattern, Uri, type WorkspaceFolder, workspace } from "vscode";
 import type { Biome } from "../biome";
 import { Locator } from "../locator";
 import { logger } from "../logger";
@@ -76,9 +77,9 @@ export class SessionManager extends EventEmitter {
 			await this.destroySessionForWorkspaceFolder(folder);
 		}
 
-		const binaryPath = await this.finder.findForWorkspaceFolder(folder);
+		const biome = await this.finder.findForWorkspaceFolder(folder);
 
-		if (!binaryPath) {
+		if (!biome) {
 			logger.error(
 				`Could not create an LSP session for workspace folder ${folder.uri.fsPath} because the Biome binary could not be found.`,
 			);
@@ -86,7 +87,31 @@ export class SessionManager extends EventEmitter {
 			return;
 		}
 
-		const session = new Session(binaryPath, folder);
+		const session = new Session(biome.uri, folder);
+
+		// If Biome was found in node_modules, we listen for changes to the root
+		// @biomejs/biome package and recreate the session if it changes. This allows
+		// us to gracefully handle Biome being updated with a package manager.
+		if (biome.source === "node modules") {
+			const packageJsonPath = require.resolve("@biomejs/biome/package.json", {
+				paths: [folder.uri.fsPath],
+			});
+
+			console.log(Uri.file(dirname(packageJsonPath)));
+
+			const watcher = workspace.createFileSystemWatcher(
+				new RelativePattern(Uri.file(packageJsonPath), "*"),
+			);
+
+			watcher.onDidChange(async () => {
+				logger.info(
+					`Biome binary for workspace folder ${folder.uri.fsPath} has changed. Restarting session.`,
+				);
+
+				await this.createSessionForWorkspaceFolder(folder);
+				watcher.dispose();
+			});
+		}
 
 		session.addListener("stateChanged", (state) =>
 			this.emit("sessionStateChanged", folder, state),
