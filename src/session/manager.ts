@@ -97,8 +97,6 @@ export class SessionManager extends EventEmitter {
 				paths: [folder.uri.fsPath],
 			});
 
-			console.log(Uri.file(dirname(packageJsonPath)));
-
 			const watcher = workspace.createFileSystemWatcher(
 				new RelativePattern(Uri.file(packageJsonPath), "*"),
 			);
@@ -189,7 +187,7 @@ export class SessionManager extends EventEmitter {
 	 */
 	private async destroyAllSessions() {
 		await this.destroyGlobalSession();
-		for (const [folder, session] of this.workspaceSessions.entries()) {
+		for (const [folder] of this.workspaceSessions.entries()) {
 			await this.destroySessionForWorkspaceFolder(folder);
 		}
 	}

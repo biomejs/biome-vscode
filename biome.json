@@ -13,6 +13,9 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true,
+			"nursery": {
+				"noConsole": "warn"
+			},
 			"style": {
 				"noParameterAssign": "off"
 			},

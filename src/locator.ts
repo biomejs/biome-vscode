@@ -150,7 +150,6 @@ export class Locator {
 
 			return binPath;
 		} catch (error) {
-			console.error(error);
 			logger.debug(
 				`Could not resolve biome from node_modules for workspace folder ${folder.name}: unknown reason.`,
 			);
