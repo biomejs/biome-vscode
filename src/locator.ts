@@ -22,6 +22,7 @@ export class Locator {
 		return (
 			(await this.findInSettings(folder)) ??
 			(await this.findInNodeModules(folder)) ??
+			(await this.findInYarnPnP(folder)) ??
 			(await this.findInPathEnvironmentVariable())
 		);
 	}
@@ -119,6 +120,54 @@ export class Locator {
 				`Could not resolve biome from node_modules for workspace folder ${folder.name}: unknown reason.`,
 			);
 			return undefined;
+		}
+	}
+
+	/**
+	 * Resolves the location of the `biome` binary from the Yarn PnP dependencies.
+	 *
+	 * This method will attempt to locate the `biome` binary in the Yarn PnP
+	 * dependencies of the workspace folder by looking for the platform-specific
+	 * `@biomejs/cli-<platform>-<arch>-<libc>` package.
+	 *
+	 * @param folder The workspace folder to search in.
+	 */
+	private async findInYarnPnP(
+		folder: WorkspaceFolder,
+	): Promise<Uri | undefined> {
+		logger.debug(
+			`Attempting to resolve biome from Yarn PnP dependencies for workspace folder ${folder.name}.`,
+		);
+
+		for (const extension of ["cjs", "js"]) {
+			const yarnPnpFile = Uri.joinPath(folder.uri, `.pnp.${extension}`);
+
+			if (!(await fileExists(yarnPnpFile))) {
+				continue;
+			}
+
+			try {
+				const yarnPnpApi = require(yarnPnpFile.fsPath);
+
+				const biomePackage = yarnPnpApi.resolveRequest(
+					"@biomejs/biome/package.json",
+					folder.uri.fsPath,
+				);
+
+				if (!biomePackage) {
+					continue;
+				}
+
+				return yarnPnpApi.resolveRequest(
+					`${getPackageName()}/${withExtension("biome")}`,
+					biomePackage,
+				);
+			} catch {
+				logger.debug(
+					`Could not resolve biome from the Yarn PnP file for workspace folder ${folder.name}: unknown reason.`,
+				);
+				return undefined;
+			}
 		}
 	}
 
