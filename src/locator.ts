@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { delimiter } from "node:path";
 import { Uri, type WorkspaceFolder } from "vscode";
 import { logger } from "./logger";
-import { config } from "./utils";
+import { config, getPackageName } from "./utils";
 import { fileExists, withExtension } from "./utils";
 
 /**
@@ -78,7 +78,7 @@ export class Locator {
 	 *
 	 * This method will attempt to locate the `biome` binary in the `node_modules`
 	 * directory of the workspace folder by looking for the platform-specific
-	 * `@biomejs/cli-<platform>-<arch>` package.
+	 * `@biomejs/cli-<platform>-<arch>-<libc>` package.
 	 *
 	 * @param folder The workspace folder to search in.
 	 */
@@ -97,9 +97,7 @@ export class Locator {
 			);
 
 			const binPackage = dirname(
-				biomePackage.resolve(
-					`@biomejs/cli-${process.platform}-${process.arch}/package.json`,
-				),
+				biomePackage.resolve(`${getPackageName()}/package.json`),
 			);
 
 			const binPath = Uri.file(join(binPackage, withExtension("biome")));

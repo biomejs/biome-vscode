@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { type ConfigurationScope, type Uri, workspace } from "vscode";
 import { activationEvents } from "../package.json";
 
@@ -13,6 +14,39 @@ import { activationEvents } from "../package.json";
  */
 export const withExtension = (name: string) => {
 	return `${name}${process.platform === "win32" ? ".exe" : ""}`;
+};
+
+/**
+ * Returns the platform-specific NPM package name of the Biome CLI
+ *
+ * This function computes and returns the platform-specific NPM package name of
+ * the Biome CLI. The package name is computed based on the current platform and
+ * architecture, and whether the system's C library is musl.
+ *
+ * @example "@biomejs/cli-linux-x64"
+ * @example "@biomejs/cli-linux-x64-musl"
+ * @example "@biomejs/cli-darwin-x64"
+ * @example "@biomejs/cli-win32-x64"
+ *
+ * @returns The platform-specific NPM package name of the Biome CLI
+ */
+export const getPackageName = (): string => {
+	const isMusl = () => {
+		if (process.platform !== "linux") {
+			return false;
+		}
+
+		try {
+			const output = spawnSync("ldd", ["--version"], { encoding: "utf8" });
+			return output.stdout.includes("musl") || output.stderr.includes("musl");
+		} catch {
+			return false;
+		}
+	};
+
+	const libc = `-${isMusl() ? "musl" : ""}`;
+
+	return `@biomejs/cli-${process.platform}-${process.arch}${libc}`;
 };
 
 /**
