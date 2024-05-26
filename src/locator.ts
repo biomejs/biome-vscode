@@ -22,7 +22,7 @@ export class Locator {
 		return (
 			(await this.findInSettings(folder)) ??
 			(await this.findInNodeModules(folder)) ??
-			(await this.findInPathEnvironmentVariable(folder))
+			(await this.findInPathEnvironmentVariable())
 		);
 	}
 
@@ -132,9 +132,7 @@ export class Locator {
 	 *
 	 * @param folder The workspace folder to search in.
 	 */
-	private async findInPathEnvironmentVariable(
-		folder?: WorkspaceFolder,
-	): Promise<Uri | undefined> {
+	private async findInPathEnvironmentVariable(): Promise<Uri | undefined> {
 		logger.debug("Attempting to resolve biome from PATH environment variable.");
 
 		const path = process.env.PATH;
