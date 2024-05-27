@@ -21,7 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # Configure which types are allowed (newline-delimited).
-          # ref: CONTRIBUTING.md
+          # ref: biomejs/biome/CONTRIBUTING.md
           types: |
             build
             chore
