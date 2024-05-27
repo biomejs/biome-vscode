@@ -43,8 +43,7 @@ jobs:
           # - `release` because we have the `release` type
           # - UPPERCASE titles because we promote the use of lowercase
           disallowScopes: |
-            release
-            [A-Z_-]+
+            [A-Z]+
           # Configure additional validation for the subject based on a regex.
           # Ensures that the subject doesn't start with an uppercase character.
           subjectPattern: ^[^A-Z].*$

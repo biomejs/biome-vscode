@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.2.3 - 2024-05-25
+
+### <!-- 1 -->:bug: Bug fixes
+
+- Musl libc detection ([#224](https://github.com/biomejs/biome-vscode/pull/224))
+
 ## 2.2.2 - 2024-03-07
 
 ### <!-- 1 -->:bug: Bug fixes

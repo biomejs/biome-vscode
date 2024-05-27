@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { type TextDocument, type TextEditor, commands } from "vscode";
 
 const SUPPORTED_LANGUAGES = new Set(["javascript", "typescript"]);
@@ -23,4 +24,29 @@ export function isBiomeDocument(document: TextDocument) {
 
 export function isBiomeEditor(editor: TextEditor): editor is BiomeEditor {
 	return isBiomeDocument(editor.document);
+}
+
+/**
+ * Determines if the current system is using musl libc
+ *
+ * On Linux, the output of the `ldd --version` command will contain the string `musl`
+ * if the system is using musl libc.
+ *
+ * On non-Linux systems, the function will return false.
+ *
+ * @returns boolean
+ */
+export function isMusl() {
+	if (process.platform !== "linux") {
+		return false;
+	}
+
+	try {
+		const output = spawnSync("ldd", ["--version"], {
+			encoding: "utf8",
+		});
+		return output.stdout.includes("musl") || output.stderr.includes("musl");
+	} catch {
+		return false;
+	}
 }
