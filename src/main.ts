@@ -117,6 +117,8 @@ export async function activate(context: ExtensionContext) {
 		{ language: "vue", scheme: "untitled" },
 		{ language: "svelte", scheme: "file" },
 		{ language: "svelte", scheme: "untitled" },
+		{ language: "css", scheme: "file" },
+		{ language: "css", scheme: "untitled" },
 	];
 
 	const clientOptions: LanguageClientOptions = {
