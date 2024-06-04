@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.3.0 - 2024-06-04
+
+### <!-- 0 -->:rocket: New features
+
+- Enable extension for CSS files ([#222](https://github.com/biomejs/biome-vscode/pull/222))
+
 ## 2.2.3 - 2024-05-25
 
 ### <!-- 1 -->:bug: Bug fixes
