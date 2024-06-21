@@ -9,11 +9,10 @@ import { activationEvents } from "../package.json";
  * platform. On Windows, the executable name is suffixed with ".exe", and
  * on other platforms, the name is returned as-is.
  *
- * @param name Executable name (e.g. "biome")
  * @returns The executable name for the current platform
  */
-export const withExtension = (name: string) => {
-	return `${name}${process.platform === "win32" ? ".exe" : ""}`;
+export const getBinaryName = () => {
+	return `biome${process.platform === "win32" ? ".exe" : ""}`;
 };
 
 /**

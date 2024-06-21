@@ -4,13 +4,31 @@ import { delimiter } from "node:path";
 import { Uri, type WorkspaceFolder } from "vscode";
 import { logger } from "./logger";
 import { config, getPackageName } from "./utils";
-import { fileExists, withExtension } from "./utils";
+import { fileExists } from "./utils";
 
 /**
- * Finder
+ * Biome Executable Locator
  *
- * The finder provides method for finding the `biome` binary on the user's
- * system.
+ * The locator is responsible for finding a suitable `biome` binary to use on the
+ * the user's system. It will search in the following locations in order:
+ *
+ * 1. The `biome.lsp.bin.[$os-$arch-$libc]` setting in the workspace folder.
+ * 2. The `biome.lsp.bin` setting in the workspace folder.
+ * 3. The `node_modules` directory in the workspace folder.
+ * 4. The Yarn Plug'n'Play (PnP) file in the workspace folder.
+ * 5. The `PATH` environment variable.
+ *
+ * ```json
+ * {
+ *   "biome.lsp.bin": {
+ *     "darwin-x64": "/path/to/biome",
+ *     "linux-x64": "/path/to/biome",
+ *     "linux-arm64": "/path/to/biome",
+ *     "linux-arm64-musl": "/path/to/biome",
+ *     "win32-x64": "C:\\path\\to\\biome.exe"
+ *   }
+ * }
+ * ```
  */
 export class Locator {
 	/**
@@ -83,7 +101,15 @@ export class Locator {
 	private async findInSettings(
 		folder?: WorkspaceFolder,
 	): Promise<Uri | undefined> {
-		const bin = config<string>("lsp.bin", { default: "", scope: folder });
+		const bin = config<string | Record<string, string>>("lsp.bin", {
+			default: "",
+			scope: folder,
+		});
+
+		// If the setting is an object, try to find the correct binary for the
+		// current platform, architecture, and libc.
+		if (typeof bin === "object") {
+		}
 
 		if (bin === "") {
 			logger.debug(`Setting "biome.lsp.bin" is not set.`);
