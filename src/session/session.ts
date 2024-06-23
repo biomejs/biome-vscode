@@ -1,10 +1,5 @@
 import { EventEmitter } from "node:events";
-import {
-	type LogOutputChannel,
-	type Uri,
-	type WorkspaceFolder,
-	window,
-} from "vscode";
+import { type LogOutputChannel, type Uri, window } from "vscode";
 import {
 	type DocumentSelector,
 	LanguageClient,
@@ -13,6 +8,7 @@ import {
 	TransportKind,
 } from "vscode-languageclient/node";
 import { lspLogger } from "../logger";
+import type { Root } from "../root";
 import { supportedLanguages } from "../utils";
 
 export class Session extends EventEmitter {
@@ -30,13 +26,13 @@ export class Session extends EventEmitter {
 	 * Instantiates a new session
 	 */
 	constructor(
-		private readonly biomeBinaryPath: Uri,
-		private readonly workspaceFolder?: WorkspaceFolder,
+		private readonly bin: Uri,
+		private readonly root?: Root,
 	) {
 		super();
 
 		this.lspTraceLogger = window.createOutputChannel(
-			`Biome LSP trace${workspaceFolder ? ` / ${workspaceFolder.name}` : ""}`,
+			`Biome LSP trace${root.uri}`,
 			{
 				log: true,
 			},
@@ -80,9 +76,14 @@ export class Session extends EventEmitter {
 
 	private createLanguageClient() {
 		const serverOptions: ServerOptions = {
-			command: this.biomeBinaryPath.fsPath,
+			command: this.bin.fsPath,
 			transport: TransportKind.stdio,
-			args: ["lsp-proxy"],
+			args: [
+				"lsp-proxy",
+				...(this.root?.configPath?.fsPath
+					? ["--config-path", this.root.configPath.fsPath]
+					: []),
+			],
 		};
 
 		const clientOptions: LanguageClientOptions = {
@@ -91,7 +92,7 @@ export class Session extends EventEmitter {
 			documentSelector: this.generateDocumentSelector(),
 		};
 
-		this.client = new LanguageClient("biome_lsp", serverOptions, clientOptions);
+		this.client = new LanguageClient("biome", serverOptions, clientOptions);
 	}
 
 	/**
@@ -105,8 +106,8 @@ export class Session extends EventEmitter {
 			return {
 				language,
 				scheme: "file",
-				...(this.workspaceFolder && {
-					pattern: `${this.workspaceFolder.uri.fsPath}/**/*`,
+				...(this.root && {
+					pattern: `${this.root.uri.fsPath}/**/*`,
 				}),
 			};
 		});
