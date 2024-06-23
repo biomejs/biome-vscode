@@ -44,6 +44,39 @@
 		"configuration": {
 			"title": "Biome",
 			"properties": {
+				"biome.enable": {
+					"type": "boolean",
+					"description": "Whether to enable the Biome extension",
+					"default": true
+				},
+				"biome.requireConfig": {
+					"type": "boolean",
+					"description": "Require a Biome configuration file to be present in the Biome root in order to spawn a Biome Language Server instance.",
+					"default": false
+				},
+				"biome.roots": {
+					"description": "Subfolders of a workspace folder in which to spawn a Biome Language Server instance. If empty, the Biome Language Server will be spawned in the workspace folder.",
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": ["path"],
+						"properties": {
+							"enable": {
+								"type": "boolean",
+								"description": "Whether to enable the Biome extension for this root",
+								"default": true
+							},
+							"path": {
+								"type": "string",
+								"description": "Path to the folder in which to spawn a Biome Language Server instance. Relative to the parent workspace folder."
+							},
+							"config": {
+								"type": "string",
+								"description": "Path to the a Biome configuration file."
+							}
+						}
+					}
+				},
 				"biome.lsp.bin": {
 					"oneOf": [
 						{
@@ -66,15 +99,6 @@
 							]
 						}
 					]
-				},
-				"biome.lsp.roots": {
-					"scope": "resource",
-					"type": "array",
-					"description": "Subfolders of a workspace folder in which to spawn an independant Biome Language Server instance.",
-					"default": [],
-					"items": {
-						"type": "string"
-					}
 				}
 			}
 		},
