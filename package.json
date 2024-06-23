@@ -43,7 +43,40 @@
 	"contributes": {
 		"configuration": {
 			"title": "Biome",
-			"properties": {}
+			"properties": {
+				"biome.lsp.bin": {
+					"oneOf": [
+						{
+							"type": "string",
+							"description": "Path to the Biome Language Server binary",
+							"default": "",
+							"examples": ["/path/to/biome"]
+						},
+						{
+							"type": "object",
+							"uniqueItems": true,
+							"description": "Platform-specific paths to the Biome Language Server binary",
+							"examples": [
+								{
+									"linux-x64": "/path/to/biome",
+									"linux-arm64-musl": "/path/to/biome",
+									"darwin-arm64": "/path/to/biome",
+									"win32-x64": "/path/to/biome.exe"
+								}
+							]
+						}
+					]
+				},
+				"biome.lsp.roots": {
+					"scope": "resource",
+					"type": "array",
+					"description": "Subfolders of a workspace folder in which to spawn an independant Biome Language Server instance.",
+					"default": [],
+					"items": {
+						"type": "string"
+					}
+				}
+			}
 		},
 		"languages": [
 			{

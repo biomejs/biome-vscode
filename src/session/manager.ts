@@ -1,18 +1,12 @@
 import { EventEmitter } from "node:events";
-import { dirname } from "node:path";
 import { RelativePattern, Uri, type WorkspaceFolder, workspace } from "vscode";
 import type { Biome } from "../biome";
-import { Locator } from "../locator";
+import { findBiomeLocally } from "../locator/locator";
 import { logger } from "../logger";
 import { config } from "../utils";
 import { Session } from "./session";
 
 export class SessionManager extends EventEmitter {
-	/**
-	 * Biome binary finder
-	 */
-	private finder: Locator = new Locator();
-
 	/**
 	 * Global Biome LSP session
 	 *
@@ -77,7 +71,7 @@ export class SessionManager extends EventEmitter {
 			await this.destroySessionForWorkspaceFolder(folder);
 		}
 
-		const biome = await this.finder.findForWorkspaceFolder(folder);
+		const biome = await findBiomeLocally(folder.uri);
 
 		if (!biome) {
 			logger.error(

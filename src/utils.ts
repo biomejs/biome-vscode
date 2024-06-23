@@ -2,17 +2,17 @@ import { spawnSync } from "node:child_process";
 import { type ConfigurationScope, type Uri, workspace } from "vscode";
 import { activationEvents } from "../package.json";
 
-/**
- * Returns the name of the Biome executable for the current platform
- *
- * This function returns the name of the Biome executable for the current
- * platform. On Windows, the executable name is suffixed with ".exe", and
- * on other platforms, the name is returned as-is.
- *
- * @returns The executable name for the current platform
- */
-export const getBinaryName = () => {
-	return `biome${process.platform === "win32" ? ".exe" : ""}`;
+export const isMusl = () => {
+	if (process.platform !== "linux") {
+		return false;
+	}
+
+	try {
+		const output = spawnSync("ldd", ["--version"], { encoding: "utf8" });
+		return output.stdout.includes("musl") || output.stderr.includes("musl");
+	} catch {
+		return false;
+	}
 };
 
 /**
@@ -30,19 +30,6 @@ export const getBinaryName = () => {
  * @returns The platform-specific NPM package name of the Biome CLI
  */
 export const getPackageName = (): string => {
-	const isMusl = () => {
-		if (process.platform !== "linux") {
-			return false;
-		}
-
-		try {
-			const output = spawnSync("ldd", ["--version"], { encoding: "utf8" });
-			return output.stdout.includes("musl") || output.stderr.includes("musl");
-		} catch {
-			return false;
-		}
-	};
-
 	const libc = `${isMusl() ? "-musl" : ""}`;
 
 	return `@biomejs/cli-${process.platform}-${process.arch}${libc}`;
@@ -138,3 +125,23 @@ export type ConfigOptions<T> = Partial<{
 export const supportedLanguages = activationEvents
 	.filter((name) => name.startsWith("onLanguage:"))
 	.map((name) => name.replace("onLanguage:", "").trim());
+
+/**
+ * The name of the Biome executable
+ *
+ * This constant contains the name of the Biome executable. The name is suffixed
+ * with ".exe" on Windows, and is returned as-is on other platforms.
+ */
+export const binaryName = `biome${process.platform === "win32" ? ".exe" : ""}`;
+
+/**
+ * The NPM package name of the Biome CLI
+ */
+export const packageName = getPackageName();
+
+/**
+ * The platform identifier
+ */
+export const platform = `${process.platform}-${process.arch}${
+	isMusl() ? "-musl" : ""
+}`;

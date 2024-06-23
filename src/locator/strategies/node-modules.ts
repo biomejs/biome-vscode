@@ -1,16 +1,17 @@
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { Uri } from "vscode";
-import { Locator } from "../locator";
-import { fileExists, getBinaryName, getPackageName } from "../utils";
+import { binaryName, fileExists, getPackageName } from "../../utils";
+import { LocatorStrategy } from "../strategy";
 
 /**
- * Node Modules Locator
+ * Node Modules Locator Strategy
  *
- * The Node Modules Locator is responsible for finding a suitable Biome binary
- * from the project's dependencies in the `node_modules` directory by looking
- * for a `@biomejs/cli-{platform}-{arch}{libc}` package, which would usually
- * have been installed as an optional dependency by the user's package manager.
+ * The Node Modules Locator Strategy is responsible for finding a suitable
+ * Biome binary from the project's dependencies in the `node_modules` directory
+ * by looking for a `@biomejs/cli-{platform}-{arch}{libc}` package, which would
+ * usually have been installed as an optional dependency by the user's package
+ * manager.
  *
  * The locator is implemented in such a way that it should work with with most
  * if not all packages managers, including npm, pnpm, yarn and bun. Using node's
@@ -19,7 +20,7 @@ import { fileExists, getBinaryName, getPackageName } from "../utils";
  * `@biomejs/cli-{platform}-{arch}{libc}` package. We then resolve the path to the
  * `biome` binary by looking for the `biome` executable in the root of the package.
  */
-export class NodeModulesLocator extends Locator {
+export class NodeModulesStrategy extends LocatorStrategy {
 	async find(folder?: Uri): Promise<Uri | undefined> {
 		try {
 			const biomePackage = createRequire(
@@ -34,7 +35,7 @@ export class NodeModulesLocator extends Locator {
 				biomePackage.resolve(`${getPackageName()}/package.json`),
 			);
 
-			const binPath = Uri.file(join(binPackage, getBinaryName()));
+			const binPath = Uri.file(join(binPackage, binaryName));
 
 			if (!(await fileExists(binPath))) {
 				return undefined;
