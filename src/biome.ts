@@ -1,26 +1,28 @@
 import type { ExtensionContext } from "vscode";
-import { SessionManager } from "./session/manager";
-import { WorkspaceMonitor } from "./workspace/monitor";
+import { Orchestrator } from "./orchestrator";
 
+/**
+ * Biome Extension for Visual Studio Code
+ */
 export class Biome {
-	public readonly sessionManager: SessionManager;
-	public readonly workspaceMonitor: WorkspaceMonitor;
+	/**
+	 * Orchestrator
+	 *
+	 * The Biome LSP session orchestrator.
+	 */
+	private orchestrator: Orchestrator = new Orchestrator();
 
 	/**
 	 * Initializes the Biome extension
 	 *
 	 * @param context Extension context, as provided by VS Code's extension host.
 	 */
-	constructor(public readonly context: ExtensionContext) {
-		this.workspaceMonitor = new WorkspaceMonitor();
-		this.sessionManager = new SessionManager(this);
-	}
+	constructor(public readonly context: ExtensionContext) {}
 
 	/**
 	 * Initializes the Biome extension
 	 */
 	public async init() {
-		await this.workspaceMonitor.init();
-		await this.sessionManager.init();
+		await this.orchestrator.init();
 	}
 }
