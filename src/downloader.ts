@@ -28,7 +28,7 @@ export const selectAndDownload = async (
 	);
 
 	if (!versions) {
-		return;
+		return undefined;
 	}
 
 	const version = await askVersion(versions);
