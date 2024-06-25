@@ -1,5 +1,11 @@
 import { spawnSync } from "node:child_process";
-import { type ConfigurationScope, type Uri, workspace } from "vscode";
+import {
+	type ConfigurationScope,
+	ConfigurationTarget,
+	FileType,
+	type Uri,
+	workspace,
+} from "vscode";
 import { activationEvents } from "../package.json";
 
 export const isMusl = () => {
@@ -46,8 +52,26 @@ export const getPackageName = (): string => {
  */
 export const fileExists = async (uri: Uri): Promise<boolean> => {
 	try {
-		await workspace.fs.stat(uri);
-		return true;
+		const stat = await workspace.fs.stat(uri);
+		return stat.type === FileType.File;
+	} catch (err) {
+		return false;
+	}
+};
+
+/**
+ * Checks whether a directory exists
+ *
+ * This function checks whether a directory exists at the given URI using VS Code's
+ * FileSystem API.
+ *
+ * @param uri URI of the directory to check
+ * @returns Whether the directory exists
+ */
+export const directoryExists = async (uri: Uri): Promise<boolean> => {
+	try {
+		const stat = await workspace.fs.stat(uri);
+		return stat.type === FileType.Directory;
 	} catch (err) {
 		return false;
 	}
@@ -93,7 +117,9 @@ export const config = <T>(
 		? workspace
 				.getConfiguration(options?.prefix, options?.scope)
 				.get<T>(key, options?.default)
-		: workspace.getConfiguration(options?.prefix, options?.scope).get<T>(key);
+		: workspace
+				.getConfiguration(options?.prefix, options?.scope)
+				.get<T>(key);
 };
 
 /**
