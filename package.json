@@ -15,7 +15,8 @@
 		"onLanguage:vue",
 		"onLanguage:astro",
 		"onLanguage:svelte",
-		"onLanguage:css"
+		"onLanguage:css",
+		"onLanguage:graphql"
 	],
 	"main": "./out/main.js",
 	"homepage": "https://github.com/biomejs/biome-vscode",
@@ -121,8 +122,8 @@
 		"build": "bun run compile --minify && bun run package",
 		"install-extension": "code --install-extension biome_lsp.vsix --force",
 		"format": "biome format . --write",
-		"check": "biome check .",
-		"check:apply": "biome check . --apply-unsafe",
+		"check": "biome check",
+		"check:apply": "biome check --write --unsafe",
 		"pack:dev": "bun run compile && bun run package && bun run install-extension",
 		"tsc": "tsc",
 		"changelog": "git-cliff --unreleased --prepend CHANGELOG.md"
