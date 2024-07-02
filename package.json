@@ -28,7 +28,7 @@
 		"url": "https://github.com/biomejs/biome-vscode/issues"
 	},
 	"engines": {
-		"vscode": "^1.80.0"
+		"vscode": "1.90.2"
 	},
 	"capabilities": {
 		"untrustedWorkspaces": {
@@ -129,22 +129,22 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.8.1",
-		"@types/node": "^18.19.15",
-		"@types/resolve": "^1.20.6",
-		"@types/semver": "^7.5.7",
-		"@types/vscode": "^1.80.0",
-		"@vscode/vsce": "^2.23.0",
-		"esbuild": "^0.21.3",
-		"git-cliff": "^1.4.0",
-		"lefthook": "^1.6.1",
-		"ovsx": "^0.9.0",
-		"typescript": "^5.3.3"
+		"@types/node": "18.19.39",
+		"@types/resolve": "1.20.6",
+		"@types/semver": "7.5.8",
+		"@types/vscode": "1.90.0",
+		"@vscode/vsce": "2.29.0",
+		"esbuild": "0.21.5",
+		"git-cliff": "1.4.0",
+		"lefthook": "1.6.18",
+		"ovsx": "0.9.1",
+		"typescript": "5.5.3"
 	},
 	"dependencies": {
-		"resolve": "^1.22.8",
-		"semver": "^7.6.0",
-		"undici": "^5.28.3",
-		"vscode-languageclient": "^8.1.0"
+		"resolve": "1.22.8",
+		"semver": "7.6.2",
+		"undici": "5.28.4",
+		"vscode-languageclient": "8.1.0"
 	},
 	"vsce": {
 		"dependencies": false,

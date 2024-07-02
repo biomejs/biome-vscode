@@ -32,13 +32,13 @@ jobs:
     environment: vscode
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
       - name: Setup
         uses: ./.github/actions/setup
 
       - name: Download the artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4
         with:
           name: biome.vsix
 
@@ -55,13 +55,13 @@ jobs:
     environment: vscode
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
       - name: Setup
         uses: ./.github/actions/setup
 
       - name: Download the artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4
         with:
           name: biome.vsix
 
@@ -79,7 +79,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
         with:
           fetch-depth: 0
 
@@ -87,13 +87,13 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Download the artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4
         with:
           name: biome.vsix
 
       - name: Generate release notes
         id: release-notes
-        uses: orhun/git-cliff-action@v2
+        uses: orhun/git-cliff-action@b7913b664658dd091d9971658cb02a19047baa79 # v2
         with:
           config: cliff.toml
           args: -vv --latest --strip header
@@ -104,7 +104,7 @@ jobs:
         run: tail -n +3 < CHANGES.md > RELEASE_NOTES.md
 
       - name: Publish extension to GitHub Releases
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@a74c6b72af54cfa997e81df42d94703d6313a2d0 # v2
         with:
           name: "${{ format('v{0}', needs.package.outputs.version) }}"
           body_path: RELEASE_NOTES.md

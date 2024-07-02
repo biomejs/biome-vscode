@@ -23,10 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
       - name: Restore compiled extension from cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
         with:
           path: out/
           key: compiled-extension-${{ github.sha }}
@@ -51,7 +51,7 @@ jobs:
         run: bun vsce package --pre-release -o biome.vsix
 
       - name: Upload the artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
         with:
           name: biome.vsix
           path: biome.vsix
