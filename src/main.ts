@@ -4,6 +4,7 @@ import { type Socket, connect } from "node:net";
 import { delimiter, dirname, isAbsolute } from "node:path";
 import {
 	type ExtensionContext,
+	FileSystemError,
 	type OutputChannel,
 	RelativePattern,
 	type TextEditor,
@@ -72,30 +73,27 @@ export async function activate(context: ExtensionContext) {
 
 	let server = await getServerPath(context, outputChannel);
 
-	// @ts-expect-error
-	if (!server.command) {
+	// biome-ignore lint/suspicious/noDoubleEquals: more safety
+	if (server == undefined || !server.command) {
 		const action = await window.showWarningMessage(
 			"Could not find Biome in your dependencies. Either add the @biomejs/biome package to your dependencies, or download the Biome binary.",
 			"Ok",
 			"Download Biome",
 		);
-
 		if (action === "Download Biome") {
-			if (!(await selectAndDownload(context, outputChannel))) {
+			const ok = await selectAndDownload(context, outputChannel);
+			if (!ok) {
 				return;
 			}
 		}
-
 		server = await getServerPath(context, outputChannel);
-
-		// @ts-expect-error
-		if (!server.command) {
+		// biome-ignore lint/suspicious/noDoubleEquals: more safety
+		if (server == undefined || !server.command) {
 			return;
 		}
 	}
 
 	const statusBar = new StatusBar(context, outputChannel);
-	// @ts-expect-error
 	await statusBar.setUsingBundledBiome(server.bundled);
 
 	const documentSelector: DocumentFilter[] = [
@@ -128,7 +126,6 @@ export async function activate(context: ExtensionContext) {
 	};
 
 	const reloadClient = async () => {
-		// @ts-expect-error
 		outputChannel.appendLine(`Biome binary found at ${server.command}`);
 
 		let destination: Uri | undefined;
@@ -140,7 +137,6 @@ export async function activate(context: ExtensionContext) {
 				`./biome${process.platform === "win32" ? ".exe" : ""}`,
 			);
 
-			// @ts-expect-error
 			if (server.workspaceDependency) {
 				try {
 					// Create the destination if it does not exist.
@@ -163,7 +159,6 @@ export async function activate(context: ExtensionContext) {
 		}
 
 		outputChannel.appendLine(
-			// @ts-expect-error
 			`Executing Biome from: ${destination?.fsPath ?? server.command}`,
 		);
 
@@ -269,23 +264,23 @@ export async function activate(context: ExtensionContext) {
 	await client.start();
 }
 
+type ServerPath = {
+	bundled: boolean;
+	workspaceDependency: boolean;
+	command: string | undefined;
+};
+
 async function getServerPath(
 	context: ExtensionContext,
 	outputChannel: OutputChannel,
-): Promise<
-	| {
-			bundled: boolean;
-			workspaceDependency: boolean | undefined;
-			command: string | undefined;
-	  }
-	| undefined
-> {
+): Promise<ServerPath | undefined> {
 	// Only allow the bundled Biome binary in untrusted workspaces
 	if (!workspace.isTrusted) {
+		const bundledBinary = await getBundledBinary(context, outputChannel);
 		return {
 			bundled: true,
 			workspaceDependency: false,
-			command: await getBundledBinary(context, outputChannel),
+			command: bundledBinary,
 		};
 	}
 
@@ -344,10 +339,11 @@ async function getServerPath(
 	}
 
 	// Last resort
+	const bundledBinary = await getBundledBinary(context, outputChannel);
 	return {
 		bundled: true,
-		workspaceDependency: undefined,
-		command: await getBundledBinary(context, outputChannel),
+		workspaceDependency: false,
+		command: bundledBinary,
 	};
 }
 
@@ -496,9 +492,10 @@ async function fileExists(path: Uri) {
 		await workspace.fs.stat(path);
 		return true;
 	} catch (err) {
-		// @ts-expect-error
-		if (err.code === "ENOENT" || err.code === "FileNotFound") {
-			return false;
+		if (err instanceof FileSystemError) {
+			if (err.code === "FileNotFound" || err.code === "ENOENT") {
+				return false;
+			}
 		}
 		throw err;
 	}
@@ -568,16 +565,14 @@ async function getSocket(
 	const stdoutPromise = collectStream(outputChannel, process, "stdout", stdout);
 	const stderrPromise = collectStream(outputChannel, process, "stderr", stderr);
 
-	const exitCode = await new Promise<number>((resolve, reject) => {
+	const exitCode = await new Promise((resolve, reject) => {
 		process.on("error", reject);
 		process.on("exit", (code) => {
 			outputChannel.appendLine(`[cli] exit ${code}`);
-			// @ts-expect-error
 			resolve(code);
 		});
 		process.on("close", (code) => {
 			outputChannel.appendLine(`[cli] close ${code}`);
-			// @ts-expect-error
 			resolve(code);
 		});
 	});
