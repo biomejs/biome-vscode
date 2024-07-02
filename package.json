@@ -33,7 +33,9 @@
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": "limited",
-			"restrictedConfigurations": ["biome.lspBin"],
+			"restrictedConfigurations": [
+				"biome.lspBin"
+			],
 			"description": "The use of external binaries is disallowed in untrusted workspaces."
 		}
 	},
@@ -41,7 +43,9 @@
 		"languages": [
 			{
 				"id": "biome_syntax_tree",
-				"extensions": [".rast"]
+				"extensions": [
+					".rast"
+				]
 			}
 		],
 		"grammars": [
@@ -87,8 +91,16 @@
 				"biome_lsp.trace.server": {
 					"type": "string",
 					"scope": "window",
-					"enum": ["off", "messages", "verbose"],
-					"enumDescriptions": ["No traces", "Error only", "Full log"],
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"enumDescriptions": [
+						"No traces",
+						"Error only",
+						"Full log"
+					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				},
@@ -111,8 +123,14 @@
 			}
 		}
 	},
-	"categories": ["Formatters", "Linters"],
-	"keywords": ["Formatter", "Linter"],
+	"categories": [
+		"Formatters",
+		"Linters"
+	],
+	"keywords": [
+		"Formatter",
+		"Linter"
+	],
 	"license": "MIT OR Apache-2.0",
 	"scripts": {
 		"compile": "esbuild src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --target=node14",
@@ -125,7 +143,6 @@
 		"check:apply": "biome check . --apply-unsafe",
 		"pack:dev": "bun run compile && bun run package && bun run install-extension",
 		"tsc": "tsc",
-		"prepare": "lefthook install",
 		"changelog": "git-cliff --unreleased --prepend CHANGELOG.md"
 	},
 	"devDependencies": {
