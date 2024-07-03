@@ -1,7 +1,7 @@
 import { workspace } from "vscode";
+import type { Monitor } from "./monitor";
 import type { Root } from "./root";
 import type { Session } from "./session";
-import { WorkspaceMonitor } from "./workspace/monitor";
 
 export class Orchestrator {
 	/**
@@ -21,11 +21,11 @@ export class Orchestrator {
 	private sessions: Map<Root, Session> = new Map([]);
 
 	/**
-	 * Workspace Monitor
+	 * Monitor
 	 *
-	 * The workspace monitor, if the orchestrator is running in a workspace context.
+	 * The monitor, if the orchestrator is running in a workspace context.
 	 */
-	private workspaceMonitor?: WorkspaceMonitor;
+	private monitor?: Monitor;
 
 	/**
 	 * Initializes the orchestrator.
