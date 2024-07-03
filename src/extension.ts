@@ -4,18 +4,16 @@ import { Orchestrator } from "./orchestrator";
 /**
  * Biome Extension for Visual Studio Code
  */
-export class Biome {
+export class Extension {
 	/**
-	 * Orchestrator
-	 *
 	 * The Biome LSP session orchestrator.
 	 */
-	private orchestrator: Orchestrator = new Orchestrator();
+	public orchestrator: Orchestrator = new Orchestrator();
 
 	/**
 	 * Initializes the Biome extension
 	 *
-	 * @param context Extension context, as provided by VS Code's extension host.
+	 * @param context Extension context, as provided by VS Code.
 	 */
 	constructor(public readonly context: ExtensionContext) {}
 

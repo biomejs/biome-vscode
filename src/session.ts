@@ -7,9 +7,9 @@ import {
 	type ServerOptions,
 	TransportKind,
 } from "vscode-languageclient/node";
-import { lspLogger } from "../logger";
-import type { Root } from "../root";
-import { supportedLanguages } from "../utils";
+import type { Root } from "./root";
+import { lspLogger } from "./utils";
+import { supportedLanguages } from "./utils";
 
 export class Session extends EventEmitter {
 	/**
@@ -26,13 +26,20 @@ export class Session extends EventEmitter {
 	 * Instantiates a new session
 	 */
 	constructor(
+		/**
+		 * The URI of the Biome LSP binary
+		 */
 		private readonly bin: Uri,
+
+		/**
+		 * The Biome root for the session
+		 */
 		private readonly root?: Root,
 	) {
 		super();
 
 		this.lspTraceLogger = window.createOutputChannel(
-			`Biome LSP trace${root.uri}`,
+			`Biome LSP trace / ${root.uri}`,
 			{
 				log: true,
 			},

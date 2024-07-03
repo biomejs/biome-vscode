@@ -1,6 +1,6 @@
 import type { Uri } from "vscode";
 import { findBiomeLocally } from "./locator/locator";
-import { Session } from "./session/session";
+import { Session } from "./session";
 
 /**
  * Biome Root

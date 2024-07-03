@@ -1,6 +1,6 @@
-import { ConfigurationScope, Uri } from "vscode";
+import { Uri } from "vscode";
 import { Root } from "./root";
-import { config, directoryExists, fileExists } from "./utils";
+import { config, directoryExists } from "./utils";
 
 /**
  * Monitor

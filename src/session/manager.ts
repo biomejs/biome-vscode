@@ -1,10 +1,10 @@
 import { EventEmitter } from "node:events";
 import { RelativePattern, Uri, type WorkspaceFolder, workspace } from "vscode";
-import type { Biome } from "../biome";
+import type { Biome } from "../extension";
 import { findBiomeLocally } from "../locator/locator";
 import { logger } from "../logger";
+import { Session } from "../session";
 import { config } from "../utils";
-import { Session } from "./session";
 
 export class SessionManager extends EventEmitter {
 	/**
@@ -87,9 +87,12 @@ export class SessionManager extends EventEmitter {
 		// @biomejs/biome package and recreate the session if it changes. This allows
 		// us to gracefully handle Biome being updated with a package manager.
 		if (biome.source === "node modules") {
-			const packageJsonPath = require.resolve("@biomejs/biome/package.json", {
-				paths: [folder.uri.fsPath],
-			});
+			const packageJsonPath = require.resolve(
+				"@biomejs/biome/package.json",
+				{
+					paths: [folder.uri.fsPath],
+				},
+			);
 
 			const watcher = workspace.createFileSystemWatcher(
 				new RelativePattern(Uri.file(packageJsonPath), "*"),

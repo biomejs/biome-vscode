@@ -1,13 +1,16 @@
 import { spawnSync } from "node:child_process";
-import {
-	type ConfigurationScope,
-	ConfigurationTarget,
-	FileType,
-	type Uri,
-	workspace,
-} from "vscode";
-import { activationEvents } from "../package.json";
+import { type ConfigurationScope, FileType, type Uri, workspace } from "vscode";
+import { window } from "vscode";
+import { activationEvents, displayName } from "../package.json";
 
+/**
+ * Checks whether the system's C library is musl
+ *
+ * This function checks whether the system's C library is musl by running the
+ * `ldd --version` command and checking the output for the string "musl".
+ *
+ * @returns Whether the system's C library is musl
+ */
 export const isMusl = () => {
 	if (process.platform !== "linux") {
 		return false;
@@ -105,42 +108,17 @@ export const anyFileExists = async (uris: Uri[]): Promise<boolean> => {
  */
 export const config = <T>(
 	key: string,
-	options?: ConfigOptions<T>,
+	options?: Partial<{
+		scope: ConfigurationScope;
+		default: T;
+	}>,
 ): T | undefined => {
-	const defaultOptions: ConfigOptions<T> = {
-		prefix: "biome",
-	};
-
-	options = { ...defaultOptions, ...options };
-
 	return options?.default !== undefined
 		? workspace
-				.getConfiguration(options?.prefix, options?.scope)
+				.getConfiguration("biome", options?.scope)
 				.get<T>(key, options?.default)
-		: workspace
-				.getConfiguration(options?.prefix, options?.scope)
-				.get<T>(key);
+		: workspace.getConfiguration("biome", options?.scope).get<T>(key);
 };
-
-/**
- * Options for retrieving a setting
- */
-export type ConfigOptions<T> = Partial<{
-	/**
-	 * A prefix to add to the setting key
-	 */
-	prefix: string;
-
-	/**
-	 * The scope of the setting
-	 */
-	scope: ConfigurationScope;
-
-	/**
-	 * The default value to return if the setting is not found
-	 */
-	default: T;
-}>;
 
 /**
  * Supported languages for the extension
@@ -161,7 +139,7 @@ export const supportedLanguages = activationEvents
 export const binaryName = `biome${process.platform === "win32" ? ".exe" : ""}`;
 
 /**
- * The NPM package name of the Biome CLI
+ * Name of the Biome CLI NPM package
  */
 export const packageName = getPackageName();
 
@@ -171,3 +149,26 @@ export const packageName = getPackageName();
 export const platform = `${process.platform}-${process.arch}${
 	isMusl() ? "-musl" : ""
 }`;
+
+/**
+ * Logger
+ *
+ * A general-purpose logger instance that can be used throughout the extension.
+ *
+ * Messages logged to this logger will be displayed in the `Biome` output
+ * channel in the Output panel. This logger respects the user's settings for
+ * logging verbosity, so only messages with the appropriate log level will be
+ * displayed.
+ */
+export const logger = window.createOutputChannel(displayName, {
+	log: true,
+});
+
+/**
+ * LSP Logger
+ *
+ * This logger instance is meant to be used for logging messages from the LSP.
+ */
+export const lspLogger = window.createOutputChannel(`${displayName} LSP`, {
+	log: true,
+});
