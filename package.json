@@ -129,7 +129,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
-		"@types/node": "18.19.39",
+		"@types/node": "20.14.10",
 		"@types/resolve": "1.20.6",
 		"@types/semver": "7.5.8",
 		"@types/vscode": "1.90.0",
