@@ -12,7 +12,7 @@
 	},
 	"assignees": ["@biomejs/maintainers", "@biomejs/core-contributors"],
 	"ignoreScripts": true,
-	"packagesRules": [
+	"packageRules": [
 		{
 			"description": "Do not ping @types/vscode because it must follow the value set in engines.vscode.",
 			"matchPackageNames": ["@types/vscode"],
