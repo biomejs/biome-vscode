@@ -110,14 +110,6 @@ export class Session extends EventEmitter {
 	 */
 	private generateDocumentSelector(): DocumentSelector {
 		return supportedLanguages.map((language) => {
-			const x = {
-				language,
-				scheme: "file",
-				...(this.root && {
-					pattern: `${this.root.uri.fsPath}/**/*`,
-				}),
-			};
-
 			return {
 				language,
 				scheme: "file",
