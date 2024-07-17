@@ -133,7 +133,7 @@
 		"@types/node": "20.14.10",
 		"@types/resolve": "1.20.6",
 		"@types/semver": "7.5.8",
-		"@types/vscode": "1.90.0",
+		"@types/vscode": "1.91.0",
 		"@vscode/vsce": "2.30.0",
 		"esbuild": "0.21.5",
 		"git-cliff": "1.4.0",
