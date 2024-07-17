@@ -150,5 +150,5 @@
 		"dependencies": false,
 		"skipLicense": true
 	},
-	"packageManager": "bun@1.0.27"
+	"packageManager": "bun@1.1.20"
 }
