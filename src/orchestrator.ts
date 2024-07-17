@@ -1,4 +1,5 @@
 import { Uri, window, workspace } from "vscode";
+import { Utils } from "vscode-uri";
 import { findBiomeGlobally, findBiomeLocally } from "./locator/locator";
 import { Root } from "./root";
 import { Session } from "./session";
@@ -105,7 +106,7 @@ export class Orchestrator {
 		);
 		const allRoots = [];
 		for (const folder of workspace.workspaceFolders || []) {
-			const configRoots = config<{ uri: string; configFile: string }[]>(
+			const configRoots = config<{ uri: string; configFile?: string }[]>(
 				"roots",
 				{ scope: folder.uri },
 			);
@@ -113,23 +114,29 @@ export class Orchestrator {
 			// If no roots are defined, we create a root using
 			// the workspace folder
 			if (configRoots.length === 0) {
+				const hasConfigFile =
+					config("configFile", { scope: folder.uri }) !== null;
 				configRoots.push({
 					uri: folder.uri.fsPath,
-					configFile: Uri.joinPath(
-						folder.uri,
-						config("configFile", {
-							scope: folder.uri,
-							default: "biome.json",
-						}),
-					).fsPath,
+					// configFile: hasConfigFile
+					// 	? Uri.joinPath(
+					// 			folder.uri,
+					// 			config("configFile", { scope: folder.uri }),
+					// 		).fsPath
+					// 	: undefined,
 				});
 			}
 
 			const roots = configRoots
 				.map((rootDefinition) => {
 					return new Root(
-						Uri.joinPath(folder.uri, rootDefinition.uri),
-						Uri.joinPath(folder.uri, rootDefinition.configFile),
+						Utils.resolvePath(folder.uri, rootDefinition.uri),
+						// rootDefinition.configFile !== undefined
+						// 	? Uri.joinPath(
+						// 			folder.uri,
+						// 			rootDefinition.configFile,
+						// 		)
+						// 	: undefined,
 					);
 				})
 				.filter(async (root) => {

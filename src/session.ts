@@ -34,7 +34,7 @@ export class Session extends EventEmitter {
 		/**
 		 * The Biome root for the session
 		 */
-		private readonly root?: Root,
+		private readonly root: Root,
 	) {
 		super();
 
@@ -110,6 +110,14 @@ export class Session extends EventEmitter {
 	 */
 	private generateDocumentSelector(): DocumentSelector {
 		return supportedLanguages.map((language) => {
+			const x = {
+				language,
+				scheme: "file",
+				...(this.root && {
+					pattern: `${this.root.uri.fsPath}/**/*`,
+				}),
+			};
+
 			return {
 				language,
 				scheme: "file",

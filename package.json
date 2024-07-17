@@ -141,6 +141,7 @@
 	},
 	"dependencies": {
 		"undici": "^5",
-		"vscode-languageclient": "^8"
+		"vscode-languageclient": "^8",
+		"vscode-uri": "^3.0.8"
 	}
 }
