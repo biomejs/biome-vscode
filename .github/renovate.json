@@ -2,8 +2,11 @@
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"timezone": "Europe/Zurich",
 	"schedule": ["before 9am on monday"],
-	"extends": ["config:best-practices", ":semanticCommitTypeAll(chore)"],
-	"rangeStrategy": "pin",
+	"extends": [
+		"config:best-practices",
+		":semanticCommitTypeAll(chore)",
+		":pinAllExceptPeerDependencies"
+	],
 	"lockFileMaintenance": {
 		"enabled": false
 	},

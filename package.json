@@ -29,7 +29,7 @@
 		"url": "https://github.com/biomejs/biome-vscode/issues"
 	},
 	"engines": {
-		"vscode": "1.90.2"
+		"vscode": "^1.80.0"
 	},
 	"capabilities": {
 		"untrustedWorkspaces": {
