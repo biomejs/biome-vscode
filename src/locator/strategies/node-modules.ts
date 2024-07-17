@@ -21,11 +21,11 @@ import { LocatorStrategy } from "../strategy";
  * `biome` binary by looking for the `biome` executable in the root of the package.
  */
 export class NodeModulesStrategy extends LocatorStrategy {
-	async find(folder?: Uri): Promise<Uri | undefined> {
+	async find(): Promise<Uri | undefined> {
 		try {
 			const biomePackage = createRequire(
 				require.resolve("@biomejs/biome/package.json", {
-					paths: [folder.fsPath],
+					paths: [this.context.fsPath],
 				}),
 			);
 

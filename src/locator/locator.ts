@@ -12,11 +12,7 @@ export const findBiomeLocally = async (
 ): Promise<
 	| {
 			uri: Uri;
-			source:
-				| "settings"
-				| "node modules"
-				| "yarn pnp file"
-				| "path environment variable";
+			source: "settings" | "node modules" | "yarn pnp file" | "PATH";
 	  }
 	| undefined
 > => {
@@ -44,13 +40,12 @@ export const findBiomeLocally = async (
 		};
 	}
 
-	const binPathInPathEnvironmentVariable = await new VSCodeSettingsStrategy(
-		uri,
-	).find();
+	const binPathInPathEnvironmentVariable =
+		await new PathEnvironmentVariableStrategy().find();
 	if (binPathInPathEnvironmentVariable) {
 		return {
 			uri: binPathInPathEnvironmentVariable,
-			source: "path environment variable",
+			source: "PATH",
 		};
 	}
 };
@@ -58,9 +53,27 @@ export const findBiomeLocally = async (
 /**
  * Attempts to find a suitable Biome binary globally.
  */
-export const findBiomeGlobally = async (): Promise<Uri | undefined> => {
-	return (
-		(await new VSCodeSettingsStrategy().find()) ??
-		(await new PathEnvironmentVariableStrategy().find())
-	);
+export const findBiomeGlobally = async (): Promise<
+	| {
+			uri: Uri;
+			source: "settings" | "PATH";
+	  }
+	| undefined
+> => {
+	const binPathInSettings = await new VSCodeSettingsStrategy().find();
+	if (binPathInSettings) {
+		return {
+			uri: binPathInSettings,
+			source: "settings",
+		};
+	}
+
+	const binPathInPathEnvironmentVariable =
+		await new PathEnvironmentVariableStrategy().find();
+	if (binPathInPathEnvironmentVariable) {
+		return {
+			uri: binPathInPathEnvironmentVariable,
+			source: "PATH",
+		};
+	}
 };

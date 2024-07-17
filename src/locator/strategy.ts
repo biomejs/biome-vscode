@@ -19,7 +19,7 @@ export abstract class LocatorStrategy {
 	 *
 	 * @param context - The workspace folder or URI to search in.
 	 */
-	constructor(protected readonly context?: WorkspaceFolder | Uri) {}
+	constructor(protected readonly context?: Uri) {}
 
 	/**
 	 * Finds the `biome` binary using the locator's strategy.

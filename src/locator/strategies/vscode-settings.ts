@@ -1,5 +1,5 @@
 import { Uri } from "vscode";
-import { config, fileExists, platform } from "../../utils";
+import { config, fileExists, logger, platform } from "../../utils";
 import { LocatorStrategy } from "../strategy";
 
 /**
@@ -48,7 +48,7 @@ export class VSCodeSettingsStrategy extends LocatorStrategy {
 			return this.findBinary(bin);
 		}
 
-		if (typeof bin === "object") {
+		if (typeof bin === "object" && bin !== null) {
 			return this.findPlatformSpecificBinary(bin);
 		}
 

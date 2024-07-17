@@ -12,7 +12,7 @@ import { LocatorStrategy } from "../strategy";
 export class YarnPnPStrategy extends LocatorStrategy {
 	async find(): Promise<Uri | undefined> {
 		for (const extension of ["cjs", "js"]) {
-			const uri = this.context instanceof Uri ? this.context : this.context.uri;
+			const uri = this.context;
 
 			const yarnPnpFile = Uri.joinPath(uri, `.pnp.${extension}`);
 
