@@ -68,6 +68,9 @@ body:
   - type: textarea
     attributes:
       label: "Logs"
-      description: If applicable, include the biome trace logs. To find these logs, open the output panel and select the Biome Trace category. Try to only include the logs that are relevant to the issue.
+      description: | 
+        If applicable, include the biome trace logs. To find these logs, open the output panel and select the Biome Trace category. Try to only include the logs that are relevant to the issue.
+        
+        Alternatively, if you have the CLI installed, you can run `biome rage --daemon-logs` to retrieve the logs emitted by the daemon. Usually, these logs contain more information, but they are way more verbose.
       render: plain text
       placeholder: "Biome trace logs can be found in the output panel under the Biome Trace category"
