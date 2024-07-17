@@ -135,7 +135,7 @@
 		"@types/semver": "7.5.8",
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "2.30.0",
-		"esbuild": "0.21.5",
+		"esbuild": "0.23.0",
 		"git-cliff": "1.4.0",
 		"lefthook": "1.7.2",
 		"ovsx": "0.9.1",
