@@ -117,6 +117,8 @@ export async function activate(context: ExtensionContext) {
 		{ language: "svelte", scheme: "untitled" },
 		{ language: "css", scheme: "file" },
 		{ language: "css", scheme: "untitled" },
+		{ language: "graphql", scheme: "file" },
+		{ language: "graphql", scheme: "untitled" },
 	];
 
 	const clientOptions: LanguageClientOptions = {
