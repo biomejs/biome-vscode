@@ -1,4 +1,4 @@
-import type { Uri } from "vscode";
+import type { Uri, WorkspaceFolder } from "vscode";
 import { directoryExists } from "./utils";
 
 export class Root {
@@ -8,9 +8,24 @@ export class Root {
 	 * @param uri The URI of the Biome root's directory.
 	 */
 	constructor(
-		public readonly uri: Uri,
-		public readonly configPath?: Uri,
+		private readonly options: {
+			uri: Uri;
+			workspaceFolder?: WorkspaceFolder;
+			configFile?: Uri;
+		},
 	) {}
+
+	public get uri() {
+		return this.options.uri;
+	}
+
+	public get workspaceFolder() {
+		return this.options?.workspaceFolder;
+	}
+
+	public get configFile() {
+		return this.options.configFile;
+	}
 
 	/**
 	 * Whether the root exists on disk.

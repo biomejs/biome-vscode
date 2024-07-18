@@ -1,4 +1,4 @@
-import { Uri, window, workspace } from "vscode";
+import { window, workspace } from "vscode";
 import { Utils } from "vscode-uri";
 import { findBiomeGlobally, findBiomeLocally } from "./locator/locator";
 import { Root } from "./root";
@@ -93,7 +93,7 @@ export class Orchestrator {
 		if (state.context === "single-file") {
 			logger.debug("Detecting Biome root for single file context.");
 			const uri = window.activeTextEditor?.document.uri;
-			return uri ? [new Root(uri)] : [];
+			return uri ? [new Root({ uri })] : [];
 		}
 
 		// If we operate in a workspace context, we loop over all workspace folders
@@ -129,15 +129,10 @@ export class Orchestrator {
 
 			const roots = configRoots
 				.map((rootDefinition) => {
-					return new Root(
-						Utils.resolvePath(folder.uri, rootDefinition.uri),
-						// rootDefinition.configFile !== undefined
-						// 	? Uri.joinPath(
-						// 			folder.uri,
-						// 			rootDefinition.configFile,
-						// 		)
-						// 	: undefined,
-					);
+					return new Root({
+						uri: Utils.resolvePath(folder.uri, rootDefinition.uri),
+						workspaceFolder: folder,
+					});
 				})
 				.filter(async (root) => {
 					// Users may have specified roots that don't actually exist

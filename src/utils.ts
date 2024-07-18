@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { type ConfigurationScope, FileType, type Uri, workspace } from "vscode";
+import { type ConfigurationScope, FileType, Uri, workspace } from "vscode";
 import { window } from "vscode";
 import { activationEvents, displayName } from "../package.json";
 
@@ -172,3 +172,16 @@ export const logger = window.createOutputChannel(displayName, {
 export const lspLogger = window.createOutputChannel(`${displayName} LSP`, {
 	log: true,
 });
+
+/**
+ * Substracts the second string from the first string
+ */
+export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
+	const _original = original.fsPath;
+	const _subtract = subtract.fsPath;
+
+	let result = _original.replace(_subtract, "");
+	result = result === "" ? "/" : result;
+
+	return Uri.parse(result);
+};

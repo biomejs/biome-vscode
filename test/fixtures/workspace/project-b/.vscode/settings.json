@@ -1,0 +1,10 @@
+{
+	"biome.roots": [
+		{
+			"uri": "/root-1"
+		},
+		{
+			"uri": "/root-2"
+		}
+	]
+}

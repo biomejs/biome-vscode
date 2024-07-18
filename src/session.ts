@@ -7,8 +7,9 @@ import {
 	type ServerOptions,
 	TransportKind,
 } from "vscode-languageclient/node";
+import { Utils } from "vscode-uri";
 import type { Root } from "./root";
-import { lspLogger } from "./utils";
+import { lspLogger, subtractURI } from "./utils";
 import { supportedLanguages } from "./utils";
 
 export class Session extends EventEmitter {
@@ -39,7 +40,9 @@ export class Session extends EventEmitter {
 		super();
 
 		this.lspTraceLogger = window.createOutputChannel(
-			`Biome LSP trace / ${root.uri}`,
+			root.workspaceFolder
+				? `Biome LSP trace (${root.workspaceFolder.name}::${subtractURI(root.uri, root.workspaceFolder.uri).fsPath})`
+				: "Biome LSP trace",
 			{
 				log: true,
 			},
@@ -87,8 +90,8 @@ export class Session extends EventEmitter {
 			transport: TransportKind.stdio,
 			args: [
 				"lsp-proxy",
-				...(this.root?.configPath?.fsPath
-					? ["--config-path", this.root.configPath.fsPath]
+				...(this.root?.configFile?.fsPath
+					? ["--config-path", this.root.configFile.fsPath]
 					: []),
 			],
 		};
