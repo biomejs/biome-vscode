@@ -1,4 +1,5 @@
 import type { Uri, WorkspaceFolder } from "vscode";
+import type { Session } from "./session";
 import { directoryExists } from "./utils";
 
 export class Root {

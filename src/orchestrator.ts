@@ -1,4 +1,4 @@
-import { window, workspace } from "vscode";
+import { type Uri, window, workspace } from "vscode";
 import { Utils } from "vscode-uri";
 import { findBiomeGlobally, findBiomeLocally } from "./locator/locator";
 import { Root } from "./root";
@@ -28,7 +28,14 @@ export class Orchestrator {
 	async start() {
 		state.state = "starting";
 		logger.debug("Starting Biome LSP sessions.");
-		const roots = await this.detectBiomeRoots();
+
+		const detectedRoots = await this.detectBiomeRoots();
+
+		// Create a new Root instance for each detected root
+		for (const rootDefinition of detectedRoots) {
+			const root = new Root(rootDefinition);
+			this.sessions.set(root, new Session(root));
+		}
 
 		// Create a new session for each root
 		for (const root of roots) {
@@ -87,13 +94,20 @@ export class Orchestrator {
 	 *
 	 * This method will detect all the Biome roots in the workspace.
 	 */
-	public async detectBiomeRoots(): Promise<Root[]> {
+	public async detectBiomeRoots(): Promise<{ uri: Uri; configFile?: Uri }[]> {
 		// If we operate in a single-file context, we create a single root whose
 		// URI is the parent directory of the file.
 		if (state.context === "single-file") {
 			logger.debug("Detecting Biome root for single file context.");
 			const uri = window.activeTextEditor?.document.uri;
-			return uri ? [new Root({ uri })] : [];
+			return uri
+				? [
+						{
+							uri: Utils.resolvePath(uri, ".."),
+							// configFile: config("configFile", { scope: uri }),
+						},
+					]
+				: [];
 		}
 
 		// If we operate in a workspace context, we loop over all workspace folders
@@ -104,41 +118,21 @@ export class Orchestrator {
 			"Detecting Biome roots for workspace context.",
 			workspace.workspaceFolders.map((folder) => folder.uri.fsPath),
 		);
+
 		const allRoots = [];
 		for (const folder of workspace.workspaceFolders || []) {
-			const configRoots = config<{ uri: string; configFile?: string }[]>(
+			const roots = config<{ uri: string; configFile?: string }[]>(
 				"roots",
 				{ scope: folder.uri },
 			);
 
 			// If no roots are defined, we create a root using
 			// the workspace folder
-			if (configRoots.length === 0) {
-				const hasConfigFile =
-					config("configFile", { scope: folder.uri }) !== null;
-				configRoots.push({
+			if (roots.length === 0) {
+				roots.push({
 					uri: folder.uri.fsPath,
-					// configFile: hasConfigFile
-					// 	? Uri.joinPath(
-					// 			folder.uri,
-					// 			config("configFile", { scope: folder.uri }),
-					// 		).fsPath
-					// 	: undefined,
 				});
 			}
-
-			const roots = configRoots
-				.map((rootDefinition) => {
-					return new Root({
-						uri: Utils.resolvePath(folder.uri, rootDefinition.uri),
-						workspaceFolder: folder,
-					});
-				})
-				.filter(async (root) => {
-					// Users may have specified roots that don't actually exist
-					// on disk, so we'll filter them out just to be safe.
-					return await root.existsOnDisk();
-				});
 
 			allRoots.push(...roots);
 		}

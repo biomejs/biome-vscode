@@ -2,7 +2,7 @@ import { EventEmitter } from "node:events";
 import { workspace } from "vscode";
 import type { Root } from "./root";
 
-class State extends EventEmitter {
+export class State extends EventEmitter {
 	/**
 	 * The current state of the extension
 	 */
@@ -43,7 +43,7 @@ class State extends EventEmitter {
 	 */
 	public set state(state) {
 		this._state = state;
-		this.emit("stateChanged", state);
+		this.emit("state-changed", this);
 	}
 
 	/**
@@ -58,7 +58,7 @@ class State extends EventEmitter {
 	 */
 	public set activeRoot(root: Root | undefined) {
 		this._activeRoot = root;
-		this.emit("activeRootChanged", root);
+		this.emit("state-changed", this);
 	}
 }
 

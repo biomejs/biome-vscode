@@ -41,6 +41,15 @@
 	},
 	"categories": ["Formatters", "Linters"],
 	"contributes": {
+		"icons": {
+			"my-icon-id": {
+				"description": "my icon",
+				"default": {
+					"fontPath": "myiconfont.woff",
+					"fontCharacter": "\\E001"
+				}
+			}
+		},
 		"configuration": {
 			"title": "Biome",
 			"properties": {

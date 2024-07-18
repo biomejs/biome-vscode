@@ -7,7 +7,7 @@ import {
 	type ServerOptions,
 	TransportKind,
 } from "vscode-languageclient/node";
-import { Utils } from "vscode-uri";
+import { findBiomeLocally } from "./locator/locator";
 import type { Root } from "./root";
 import { lspLogger, subtractURI } from "./utils";
 import { supportedLanguages } from "./utils";
@@ -24,14 +24,14 @@ export class Session extends EventEmitter {
 	private lspTraceLogger: LogOutputChannel;
 
 	/**
+	 * The Biome binary for the session
+	 */
+	private bin: Uri;
+
+	/**
 	 * Instantiates a new session
 	 */
 	constructor(
-		/**
-		 * The URI of the Biome LSP binary
-		 */
-		private readonly bin: Uri,
-
 		/**
 		 * The Biome root for the session
 		 */
@@ -53,6 +53,8 @@ export class Session extends EventEmitter {
 	 * Starts the LSP session
 	 */
 	public async start() {
+		this.bin = (await findBiomeLocally(this.root.uri)).uri;
+
 		if (this.client === undefined) {
 			this.createLanguageClient();
 		}
