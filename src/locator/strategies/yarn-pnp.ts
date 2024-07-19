@@ -1,5 +1,5 @@
 import { Uri } from "vscode";
-import { binaryName, fileExists, packageName } from "../../utils";
+import { binaryName, fileExists, logger, packageName } from "../../utils";
 import { LocatorStrategy } from "../strategy";
 
 /**
@@ -11,10 +11,9 @@ import { LocatorStrategy } from "../strategy";
  */
 export class YarnPnPStrategy extends LocatorStrategy {
 	async find(): Promise<Uri | undefined> {
+		const uri = this.context;
 		for (const extension of ["cjs", "js"]) {
-			const uri = this.context;
-
-			const yarnPnpFile = Uri.joinPath(uri, `.pnp.${extension}`);
+			const yarnPnpFile = Uri.file(`${uri}.pnp.${extension}`);
 
 			if (!(await fileExists(yarnPnpFile))) {
 				continue;

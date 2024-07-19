@@ -9,7 +9,7 @@ import {
 } from "vscode-languageclient/node";
 import { findBiomeLocally } from "./locator/locator";
 import type { Root } from "./root";
-import { lspLogger, subtractURI } from "./utils";
+import { logger, lspLogger, subtractURI } from "./utils";
 import { supportedLanguages } from "./utils";
 
 export class Session extends EventEmitter {
@@ -39,9 +39,12 @@ export class Session extends EventEmitter {
 	) {
 		super();
 
+		logger.debug(`workspaceFolder.uri: ${root.workspaceFolder.uri}`);
+		// ${subtractURI(root.uri, root.workspaceFolder.uri).fsPath}
+
 		this.lspTraceLogger = window.createOutputChannel(
 			root.workspaceFolder
-				? `Biome LSP trace (${root.workspaceFolder.name}::${subtractURI(root.uri, root.workspaceFolder.uri).fsPath})`
+				? `Biome LSP trace (${root.workspaceFolder.name}::)`
 				: "Biome LSP trace",
 			{
 				log: true,

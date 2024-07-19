@@ -1,6 +1,7 @@
 import { StatusBarAlignment, type StatusBarItem, window } from "vscode";
 import type { Extension } from "../../extension";
 import { type State, state } from "../../state";
+import { logger } from "../../utils";
 
 export class StatusBar {
 	private item: StatusBarItem;
@@ -8,6 +9,8 @@ export class StatusBar {
 	constructor(private readonly extension: Extension) {}
 
 	public async init(): Promise<void> {
+		logger.debug("Initializing status bar");
+
 		this.item = window.createStatusBarItem(
 			"biome",
 			StatusBarAlignment.Right,
@@ -19,10 +22,12 @@ export class StatusBar {
 		});
 
 		this.update(state);
+
+		logger.debug("Status bar initialized");
 	}
 
 	private update(state: State): void {
-		this.item.text = `${this.getStateIcon(state)} Biome (${state.activeRoot.session})`;
+		this.item.text = `${this.getStateIcon(state)} Biome (${state.activeRoot?.session})`;
 		this.item.tooltip = `Biome is ${state.state}`;
 		this.item.show();
 	}

@@ -1,6 +1,5 @@
-import { type Uri, window, workspace } from "vscode";
+import { type Uri, type WorkspaceFolder, window, workspace } from "vscode";
 import { Utils } from "vscode-uri";
-import { findBiomeGlobally, findBiomeLocally } from "./locator/locator";
 import { Root } from "./root";
 import { Session } from "./session";
 import { state } from "./state";
@@ -8,15 +7,19 @@ import { config, logger } from "./utils";
 
 export class Orchestrator {
 	/**
-	 * The LSP sessions managed by the orchestrator.
+	 * The Biome roots currently being tracked by the orchestrator.
 	 */
-	private sessions: Map<Root, Session> = new Map([]);
+	private roots: Root[] = [];
 
 	/**
 	 * Initializes the orchestrator.
 	 */
 	async init() {
+		logger.debug("Initializing Biome LSP orchestrator.");
+
 		await this.start();
+
+		logger.debug("Biome LSP orchestrator initialized.");
 	}
 
 	/**
@@ -27,36 +30,33 @@ export class Orchestrator {
 	 */
 	async start() {
 		state.state = "starting";
-		logger.debug("Starting Biome LSP sessions.");
 
+		logger.debug("Detecting Biome roots.");
 		const detectedRoots = await this.detectBiomeRoots();
+
+		logger.debug(
+			`Detected ${detectedRoots.length} Biome roots:`,
+			detectedRoots,
+		);
 
 		// Create a new Root instance for each detected root
 		for (const rootDefinition of detectedRoots) {
-			const root = new Root(rootDefinition);
-			this.sessions.set(root, new Session(root));
+			this.roots.push(
+				new Root({
+					uri: rootDefinition.uri,
+					workspaceFolder: rootDefinition.workspaceFolder,
+					configFile: rootDefinition.configFile,
+				}),
+			);
 		}
 
-		// Create a new session for each root
-		for (const root of roots) {
-			const biome =
-				state.context === "single-file"
-					? await findBiomeGlobally()
-					: await findBiomeLocally(root.uri);
-			const session = new Session(biome.uri, root);
-			this.sessions.set(root, session);
-		}
-
-		// Start all sessions
-		for (const session of this.sessions.values()) {
-			await session.start();
+		// Initialize all roots
+		logger.debug("Initializing Biome roots.");
+		for (const root of this.roots) {
+			await root.init();
 		}
 
 		state.state = "started";
-		logger.debug(
-			"Biome LSP sessions started.",
-			[...this.sessions.keys()].length,
-		);
 	}
 
 	/**
@@ -67,13 +67,13 @@ export class Orchestrator {
 	async stop() {
 		state.state = "stopping";
 
-		// Destroy all sessions
-		for (const session of this.sessions.values()) {
-			await session.destroy();
+		// Destroy all roots
+		for (const root of this.roots) {
+			await root.destroy();
 		}
 
 		// Clear the sessions map
-		this.sessions.clear();
+		this.roots = [];
 
 		state.state = "stopped";
 	}
@@ -94,11 +94,12 @@ export class Orchestrator {
 	 *
 	 * This method will detect all the Biome roots in the workspace.
 	 */
-	public async detectBiomeRoots(): Promise<{ uri: Uri; configFile?: Uri }[]> {
+	public async detectBiomeRoots(): Promise<
+		{ uri: Uri; configFile?: Uri; workspaceFolder?: WorkspaceFolder }[]
+	> {
 		// If we operate in a single-file context, we create a single root whose
 		// URI is the parent directory of the file.
 		if (state.context === "single-file") {
-			logger.debug("Detecting Biome root for single file context.");
 			const uri = window.activeTextEditor?.document.uri;
 			return uri
 				? [
@@ -114,23 +115,26 @@ export class Orchestrator {
 		// and check if they have explicitly declared roots in their configuration.
 		// If they have, we use those, otherwise we use the workspace folder itself
 		// as a the root.
-		logger.debug(
-			"Detecting Biome roots for workspace context.",
-			workspace.workspaceFolders.map((folder) => folder.uri.fsPath),
-		);
 
 		const allRoots = [];
 		for (const folder of workspace.workspaceFolders || []) {
-			const roots = config<{ uri: string; configFile?: string }[]>(
-				"roots",
-				{ scope: folder.uri },
-			);
+			const roots = config<
+				{
+					uri: string;
+					configFile?: string;
+					workspaceFolder?: WorkspaceFolder;
+				}[]
+			>("roots", { scope: folder.uri });
 
 			// If no roots are defined, we create a root using
 			// the workspace folder
 			if (roots.length === 0) {
+				logger.debug(
+					`No roots defined for workspace folder ${folder.uri.fsPath}.`,
+				);
 				roots.push({
 					uri: folder.uri.fsPath,
+					workspaceFolder: folder,
 				});
 			}
 

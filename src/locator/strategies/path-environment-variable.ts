@@ -1,6 +1,6 @@
 import { delimiter } from "node:path";
 import { Uri } from "vscode";
-import { binaryName, fileExists } from "../../utils";
+import { binaryName, fileExists, logger } from "../../utils";
 import { LocatorStrategy } from "../strategy";
 
 /**

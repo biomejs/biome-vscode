@@ -56,7 +56,10 @@ export const getPackageName = (): string => {
 export const fileExists = async (uri: Uri): Promise<boolean> => {
 	try {
 		const stat = await workspace.fs.stat(uri);
-		return stat.type === FileType.File;
+		return (
+			stat.type === FileType.File ||
+			stat.type === (FileType.File | FileType.SymbolicLink)
+		);
 	} catch (err) {
 		return false;
 	}
@@ -180,6 +183,7 @@ export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
 	const _original = original.fsPath;
 	const _subtract = subtract.fsPath;
 
+	logger.debug(`Subtracting ${_subtract} from ${_original}`);
 	let result = _original.replace(_subtract, "");
 	result = result === "" ? "/" : result;
 
