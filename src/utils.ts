@@ -51,6 +51,10 @@ export function isMusl() {
 	}
 }
 
+/**
+ * Checks if the current workspace has a biome.json file
+ * @returns boolean
+ */
 export async function checkForBiomeJson(): Promise<boolean> {
 	const folders = workspace.workspaceFolders;
 	if (!folders) return false;
