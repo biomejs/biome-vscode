@@ -52,7 +52,7 @@ export function isMusl() {
 }
 
 /**
- * Checks if the current workspace has a biome.json file
+ * Checks if the current workspace has a biome.json or biome.jsonc file
  * @returns boolean
  */
 export async function checkForBiomeJson(): Promise<boolean> {
@@ -61,7 +61,12 @@ export async function checkForBiomeJson(): Promise<boolean> {
 
 	for (const folder of folders) {
 		const biomeJsonPath = Uri.joinPath(folder.uri, "biome.json");
-		if (await workspace.fs.stat(biomeJsonPath.fsPath).then(() => true).catch(() => false)) {
+		const biomeJsoncPath = Uri.joinPath(folder.uri, "biome.jsonc");
+
+		const biomeJsonExists = await workspace.fs.stat(biomeJsonPath.fsPath).then(() => true).catch(() => false);
+		const biomeJsoncExists = await workspace.fs.stat(biomeJsoncPath.fsPath).then(() => true).catch(() => false);
+
+		if (biomeJsonExists || biomeJsoncExists) {
 			return true;
 		}
 	}
