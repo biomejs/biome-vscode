@@ -7,7 +7,7 @@ export class Root {
 	/**
 	 * Biome LSP session for this root.
 	 */
-	private session: Session;
+	public readonly session: Session;
 
 	/**
 	 * The URI of the original Biome binary for this root.

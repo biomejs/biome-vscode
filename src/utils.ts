@@ -168,23 +168,14 @@ export const logger = window.createOutputChannel(displayName, {
 });
 
 /**
- * LSP Logger
- *
- * This logger instance is meant to be used for logging messages from the LSP.
- */
-export const lspLogger = window.createOutputChannel(`${displayName} LSP`, {
-	log: true,
-});
-
-/**
  * Substracts the second string from the first string
  */
 export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
 	const _original = original.fsPath;
 	const _subtract = subtract.fsPath;
 
-	logger.debug(`Subtracting ${_subtract} from ${_original}`);
 	let result = _original.replace(_subtract, "");
+
 	result = result === "" ? "/" : result;
 
 	return Uri.parse(result);

@@ -115,10 +115,9 @@ export class Orchestrator {
 		// and check if they have explicitly declared roots in their configuration.
 		// If they have, we use those, otherwise we use the workspace folder itself
 		// as a the root.
-
 		const allRoots = [];
 		for (const folder of workspace.workspaceFolders || []) {
-			const roots = config<
+			const rootsFromConfig = config<
 				{
 					uri: string;
 					configFile?: string;
@@ -126,14 +125,20 @@ export class Orchestrator {
 				}[]
 			>("roots", { scope: folder.uri });
 
+			const roots: {
+				uri: Uri;
+				configFile?: Uri;
+				workspaceFolder?: WorkspaceFolder;
+			}[] = [];
+
 			// If no roots are defined, we create a root using
 			// the workspace folder
-			if (roots.length === 0) {
+			if (rootsFromConfig.length === 0) {
 				logger.debug(
 					`No roots defined for workspace folder ${folder.uri.fsPath}.`,
 				);
 				roots.push({
-					uri: folder.uri.fsPath,
+					uri: folder.uri,
 					workspaceFolder: folder,
 				});
 			}

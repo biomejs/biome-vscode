@@ -1,5 +1,7 @@
 import { EventEmitter } from "node:events";
 import { type LogOutputChannel, type Uri, window } from "vscode";
+import { displayName } from "../package.json";
+
 import {
 	type DocumentSelector,
 	LanguageClient,
@@ -9,7 +11,7 @@ import {
 } from "vscode-languageclient/node";
 import { findBiomeLocally } from "./locator/locator";
 import type { Root } from "./root";
-import { logger, lspLogger, subtractURI } from "./utils";
+import { subtractURI } from "./utils";
 import { supportedLanguages } from "./utils";
 
 export class Session extends EventEmitter {
@@ -20,6 +22,11 @@ export class Session extends EventEmitter {
 
 	/**
 	 * The logger for the session
+	 */
+	private lspLogger: LogOutputChannel;
+
+	/**
+	 * The trace logger for the session
 	 */
 	private lspTraceLogger: LogOutputChannel;
 
@@ -39,13 +46,17 @@ export class Session extends EventEmitter {
 	) {
 		super();
 
-		logger.debug(`workspaceFolder.uri: ${root.workspaceFolder.uri}`);
-		// ${subtractURI(root.uri, root.workspaceFolder.uri).fsPath}
+		this.lspLogger = window.createOutputChannel(
+			`${displayName} LSP (${root.workspaceFolder.name}::${subtractURI(root.uri, root.workspaceFolder.uri).fsPath})`,
+			{
+				log: true,
+			},
+		);
 
 		this.lspTraceLogger = window.createOutputChannel(
 			root.workspaceFolder
-				? `Biome LSP trace (${root.workspaceFolder.name}::)`
-				: "Biome LSP trace",
+				? `${displayName} LSP trace (${root.workspaceFolder.name}::${subtractURI(root.uri, root.workspaceFolder.uri).fsPath})`
+				: "${displayName} LSP trace",
 			{
 				log: true,
 			},
@@ -102,12 +113,17 @@ export class Session extends EventEmitter {
 		};
 
 		const clientOptions: LanguageClientOptions = {
-			outputChannel: lspLogger,
+			outputChannel: this.lspLogger,
 			traceOutputChannel: this.lspTraceLogger,
 			documentSelector: this.generateDocumentSelector(),
 		};
 
-		this.client = new LanguageClient("biome", serverOptions, clientOptions);
+		this.client = new LanguageClient(
+			`biome-${this.root.uri}`,
+			"biome",
+			serverOptions,
+			clientOptions,
+		);
 	}
 
 	/**
