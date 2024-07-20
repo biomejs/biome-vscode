@@ -1,7 +1,12 @@
-import { type Uri, type WorkspaceFolder, window, workspace } from "vscode";
+import {
+	ProgressLocation,
+	type Uri,
+	type WorkspaceFolder,
+	window,
+	workspace,
+} from "vscode";
 import { Utils } from "vscode-uri";
 import { Root } from "./root";
-import { Session } from "./session";
 import { state } from "./state";
 import { config, logger } from "./utils";
 
@@ -18,6 +23,20 @@ export class Orchestrator {
 		logger.debug("Initializing Biome LSP orchestrator.");
 
 		await this.start();
+
+		workspace.onDidChangeConfiguration(async (event) => {
+			if (event.affectsConfiguration("biome")) {
+				logger.info("Biome configuration changed. Restarting...");
+				window.withProgress(
+					{
+						title: "Configuration changed. Restarting Biome extension...",
+						cancellable: false,
+						location: ProgressLocation.Notification,
+					},
+					async () => await this.restart(),
+				);
+			}
+		});
 
 		logger.debug("Biome LSP orchestrator initialized.");
 	}
@@ -36,7 +55,7 @@ export class Orchestrator {
 
 		logger.debug(
 			`Detected ${detectedRoots.length} Biome roots:`,
-			detectedRoots,
+			detectedRoots.map((root) => root.uri.fsPath),
 		);
 
 		// Create a new Root instance for each detected root
@@ -67,12 +86,11 @@ export class Orchestrator {
 	async stop() {
 		state.state = "stopping";
 
-		// Destroy all roots
+		// Stop all roots
 		for (const root of this.roots) {
 			await root.destroy();
 		}
 
-		// Clear the sessions map
 		this.roots = [];
 
 		state.state = "stopped";

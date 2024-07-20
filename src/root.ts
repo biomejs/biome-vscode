@@ -7,7 +7,7 @@ export class Root {
 	/**
 	 * Biome LSP session for this root.
 	 */
-	public readonly session: Session;
+	public session: Session;
 
 	/**
 	 * The URI of the original Biome binary for this root.
@@ -59,12 +59,13 @@ export class Root {
 
 	public async destroy() {
 		// Stop the session
-		await this.session.stop();
+		await this.session.destroy();
+		this.session = undefined;
 
 		// Delete the temporary binary
-		if (this.bin) {
-			workspace.fs.delete(this.bin);
-		}
+		// if (this.bin) {
+		// 	workspace.fs.delete(this.bin);
+		// }
 	}
 
 	public get uri() {
