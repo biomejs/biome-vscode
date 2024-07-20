@@ -34,6 +34,7 @@ const IN_BIOME_PROJECT = "inBiomeProject";
 
 export async function activate(context: ExtensionContext) {
 
+	// Check if biome.json exists in the workspace.
 	const biomeJsonExists = await checkForBiomeJson();
 	if (!biomeJsonExists) {
 		window.showWarningMessage("Biome extension is disabled because biome.json is not found in the working directory.");
