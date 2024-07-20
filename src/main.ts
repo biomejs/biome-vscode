@@ -26,13 +26,20 @@ import { syntaxTree } from "./commands/syntaxTree";
 import { selectAndDownload, updateToLatest } from "./downloader";
 import { Session } from "./session";
 import { StatusBar } from "./statusBar";
-import { isMusl, setContextValue } from "./utils";
+import { checkForBiomeJson, isMusl, setContextValue } from "./utils";
 
 let client: LanguageClient;
 
 const IN_BIOME_PROJECT = "inBiomeProject";
 
 export async function activate(context: ExtensionContext) {
+
+	const biomeJsonExists = await checkForBiomeJson();
+	if (!biomeJsonExists) {
+		window.showWarningMessage("Biome extension is disabled because biome.json is not found in the working directory.");
+		return;
+	}
+
 	// If the extension is disabled, abort the activation.
 	if (!workspace.getConfiguration("biome").get<boolean>("enabled", true)) {
 		return;

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { type TextDocument, type TextEditor, commands } from "vscode";
+import { type TextDocument, type TextEditor, commands, workspace, Uri } from "vscode";
 
 const SUPPORTED_LANGUAGES = new Set(["javascript", "typescript"]);
 
@@ -49,4 +49,17 @@ export function isMusl() {
 	} catch {
 		return false;
 	}
+}
+
+export async function checkForBiomeJson(): Promise<boolean> {
+	const folders = workspace.workspaceFolders;
+	if (!folders) return false;
+
+	for (const folder of folders) {
+		const biomeJsonPath = Uri.joinPath(folder.uri, "biome.json");
+		if (await workspace.fs.stat(biomeJsonPath.fsPath).then(() => true).catch(() => false)) {
+			return true; // File exists
+		}
+	}
+	return false; // biome.json not found in any workspace folder
 }
