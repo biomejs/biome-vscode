@@ -58,8 +58,8 @@ export async function checkForBiomeJson(): Promise<boolean> {
 	for (const folder of folders) {
 		const biomeJsonPath = Uri.joinPath(folder.uri, "biome.json");
 		if (await workspace.fs.stat(biomeJsonPath.fsPath).then(() => true).catch(() => false)) {
-			return true; // File exists
+			return true;
 		}
 	}
-	return false; // biome.json not found in any workspace folder
+	return false;
 }
