@@ -1,7 +1,7 @@
 import {
 	ProgressLocation,
 	type TextEditor,
-	type Uri,
+	Uri,
 	type WorkspaceFolder,
 	window,
 	workspace,
@@ -10,7 +10,13 @@ import { Utils } from "vscode-uri";
 import { Root } from "./root";
 import { Session } from "./session";
 import { state } from "./state";
-import { config, logger } from "./utils";
+import { config, fileExists, logger } from "./utils";
+
+type RootDefinition = {
+	uri: Uri;
+	configFile?: Uri;
+	workspaceFolder?: WorkspaceFolder;
+};
 
 export class Orchestrator {
 	/**
@@ -36,8 +42,6 @@ export class Orchestrator {
 	async init() {
 		logger.debug("Initializing Biome LSP orchestrator.");
 
-		await this.start();
-
 		workspace.onDidChangeConfiguration(async (event) => {
 			if (event.affectsConfiguration("biome")) {
 				logger.info("Biome configuration changed. Restarting...");
@@ -51,6 +55,14 @@ export class Orchestrator {
 				);
 			}
 		});
+
+		// If the extension is disabled, do not start the orchestrator
+		if (!config("enabled", { default: true })) {
+			return;
+		}
+
+		// Start the orchestrator
+		await this.start();
 
 		// Listen for the opening of untitled files to create a global session
 		if (window.activeTextEditor?.document.uri.scheme === "untitled") {
@@ -155,21 +167,16 @@ export class Orchestrator {
 		// and check if they have explicitly declared roots in their configuration.
 		// If they have, we use those, otherwise we use the workspace folder itself
 		// as a the root.
-		const allRoots = [];
+		const allRoots: RootDefinition[] = [];
 		for (const folder of workspace.workspaceFolders || []) {
 			const rootsFromConfig = config<
 				{
 					uri: string;
 					configFile?: string;
-					workspaceFolder?: WorkspaceFolder;
 				}[]
 			>("roots", { scope: folder.uri });
 
-			const roots: {
-				uri: Uri;
-				configFile?: Uri;
-				workspaceFolder?: WorkspaceFolder;
-			}[] = [];
+			const roots: RootDefinition[] = [];
 
 			// If no roots are defined, we create a root using
 			// the workspace folder
@@ -186,7 +193,42 @@ export class Orchestrator {
 			allRoots.push(...roots);
 		}
 
-		return allRoots;
+		const configFileExistsIfRequired = async (root: RootDefinition) => {
+			const requireConfig = config("requireConfig", {
+				default: false,
+				scope: root.workspaceFolder.uri,
+			});
+
+			// Check if any of the accepted configuration files exist
+			// in the order they are defined in the array.
+			const acceptedConfigFiles = [
+				...([root.configFile] ?? []),
+				Uri.joinPath(root.uri, "biome.json"),
+				Uri.joinPath(root.uri, "biome.jsonc"),
+			];
+
+			let configFileExists = false;
+			for (const configFile of acceptedConfigFiles) {
+				if (await fileExists(configFile)) {
+					configFileExists = true;
+					break;
+				}
+			}
+
+			return !requireConfig || configFileExists;
+		};
+
+		// If a Biome configuration file is required, filter out roots
+		// that do not have a configuration file.
+		const hasConfigFileIfRequired = await Promise.all(
+			allRoots.map(configFileExistsIfRequired),
+		);
+
+		const x = allRoots.filter(
+			(value, index) => hasConfigFileIfRequired[index],
+		);
+
+		return x;
 	}
 
 	private async manageGlobalSessionLifecycle(editor?: TextEditor) {

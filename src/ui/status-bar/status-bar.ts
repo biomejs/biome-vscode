@@ -1,7 +1,7 @@
 import { StatusBarAlignment, type StatusBarItem, window } from "vscode";
 import type { Extension } from "../../extension";
 import { type State, state } from "../../state";
-import { logger } from "../../utils";
+import { config, logger } from "../../utils";
 
 export class StatusBar {
 	private item: StatusBarItem;
@@ -27,6 +27,12 @@ export class StatusBar {
 	}
 
 	private update(state: State): void {
+		// If the extension is disabled in the current context, hide the status bar.
+		if (!config("enable", { default: true })) {
+			this.item.hide();
+			return;
+		}
+
 		const { text, tooltip } = this.getStateTextAndTooltip(state);
 
 		this.item.text = `${this.getStateIcon(state)} ${text}`.trim();
