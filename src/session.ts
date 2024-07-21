@@ -9,7 +9,7 @@ import {
 	type ServerOptions,
 	TransportKind,
 } from "vscode-languageclient/node";
-import { findBiomeLocally } from "./locator/locator";
+import { findBiomeGlobally, findBiomeLocally } from "./locator/locator";
 import type { Root } from "./root";
 import { subtractURI } from "./utils";
 import { supportedLanguages } from "./utils";
@@ -42,21 +42,23 @@ export class Session extends EventEmitter {
 		/**
 		 * The Biome root for the session
 		 */
-		private readonly root: Root,
+		private readonly root?: Root,
 	) {
 		super();
 
 		this.lspLogger = window.createOutputChannel(
-			`${displayName} LSP (${root.workspaceFolder.name}::${subtractURI(root.uri, root.workspaceFolder.uri).fsPath})`,
+			root?.workspaceFolder
+				? `${displayName} LSP (${root.workspaceFolder.name}::${subtractURI(root.uri, root.workspaceFolder.uri).fsPath})`
+				: `${displayName} LSP ${this.isGlobal ? "(global)" : ""}`.trim(),
 			{
 				log: true,
 			},
 		);
 
 		this.lspTraceLogger = window.createOutputChannel(
-			root.workspaceFolder
+			root?.workspaceFolder
 				? `${displayName} LSP trace (${root.workspaceFolder.name}::${subtractURI(root.uri, root.workspaceFolder.uri).fsPath})`
-				: "${displayName} LSP trace",
+				: `${displayName} LSP trace ${this.isGlobal ? "(global)" : ""}`.trim(),
 			{
 				log: true,
 			},
@@ -64,10 +66,19 @@ export class Session extends EventEmitter {
 	}
 
 	/**
+	 * Returns whether the session is global
+	 */
+	public get isGlobal(): boolean {
+		return this.root === undefined;
+	}
+
+	/**
 	 * Starts the LSP session
 	 */
 	public async start() {
-		this.bin = (await findBiomeLocally(this.root.uri)).uri;
+		this.bin = this.root
+			? (await findBiomeLocally(this.root.uri)).uri
+			: (await findBiomeGlobally()).uri;
 
 		if (this.client === undefined) {
 			this.createLanguageClient();
@@ -115,11 +126,13 @@ export class Session extends EventEmitter {
 		const clientOptions: LanguageClientOptions = {
 			outputChannel: this.lspLogger,
 			traceOutputChannel: this.lspTraceLogger,
-			documentSelector: this.generateDocumentSelector(),
+			documentSelector: this.root
+				? this.generateDocumentSelector()
+				: this.generateGlobalDocumentSelector(),
 		};
 
 		this.client = new LanguageClient(
-			`biome-${this.root.uri}`,
+			"biome.lsp",
 			"biome",
 			serverOptions,
 			clientOptions,
@@ -140,6 +153,15 @@ export class Session extends EventEmitter {
 				...(this.root && {
 					pattern: `${this.root.uri.fsPath}/**/*`,
 				}),
+			};
+		});
+	}
+
+	private generateGlobalDocumentSelector(): DocumentSelector {
+		return supportedLanguages.map((language) => {
+			return {
+				language,
+				scheme: "untitled",
 			};
 		});
 	}

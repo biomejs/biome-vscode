@@ -1,5 +1,6 @@
 import {
 	ProgressLocation,
+	type TextEditor,
 	type Uri,
 	type WorkspaceFolder,
 	window,
@@ -7,10 +8,23 @@ import {
 } from "vscode";
 import { Utils } from "vscode-uri";
 import { Root } from "./root";
+import { Session } from "./session";
 import { state } from "./state";
 import { config, logger } from "./utils";
 
 export class Orchestrator {
+	/**
+	 * Global Biome LSP session
+	 *
+	 * The global Biome session is used to provide LSP features to files that
+	 * do not yet exist on disk, and thus do not have an associated root, or
+	 * configuration file.
+	 *
+	 * This session is created on-demand when a so-called "untitled" file is
+	 * opened.
+	 */
+	private globalSession: Session | undefined;
+
 	/**
 	 * The Biome roots currently being tracked by the orchestrator.
 	 */
@@ -37,6 +51,14 @@ export class Orchestrator {
 				);
 			}
 		});
+
+		// Listen for the opening of untitled files to create a global session
+		if (window.activeTextEditor?.document.uri.scheme === "untitled") {
+			this.manageGlobalSessionLifecycle(window.activeTextEditor);
+		}
+		window.onDidChangeActiveTextEditor(async (editor) =>
+			this.manageGlobalSessionLifecycle(editor),
+		);
 
 		logger.debug("Biome LSP orchestrator initialized.");
 	}
@@ -165,5 +187,28 @@ export class Orchestrator {
 		}
 
 		return allRoots;
+	}
+
+	private async manageGlobalSessionLifecycle(editor?: TextEditor) {
+		if (!editor) return;
+
+		const uri = editor.document.uri;
+		if (uri.scheme === "untitled") {
+			await this.startGlobalSession();
+		} else {
+			await this.stopGlobalSession();
+		}
+	}
+
+	private async startGlobalSession() {
+		if (this.globalSession) return;
+		this.globalSession = new Session();
+		await this.globalSession.start();
+	}
+
+	private async stopGlobalSession() {
+		if (!this.globalSession) return;
+		await this.globalSession.destroy();
+		this.globalSession = undefined;
 	}
 }

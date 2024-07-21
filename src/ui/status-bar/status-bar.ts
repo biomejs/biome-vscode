@@ -27,9 +27,52 @@ export class StatusBar {
 	}
 
 	private update(state: State): void {
-		this.item.text = `${this.getStateIcon(state)} Biome (${state.activeRoot?.session})`;
-		this.item.tooltip = `Biome is ${state.state}`;
+		const { text, tooltip } = this.getStateTextAndTooltip(state);
+
+		this.item.text = `${this.getStateIcon(state)} ${text}`.trim();
+		this.item.tooltip = tooltip;
 		this.item.show();
+	}
+
+	/**
+	 * Returns the text to display for the given state.
+	 */
+	private getStateTextAndTooltip(state: State): {
+		text: string;
+		tooltip: string;
+	} {
+		switch (state.state) {
+			case "initializing":
+				return {
+					text: "Biome",
+					tooltip: "Initializing",
+				};
+			case "starting":
+				return {
+					text: "Biome",
+					tooltip: "Starting",
+				};
+			case "started":
+				return {
+					text: "Biome",
+					tooltip: "Up and running",
+				};
+			case "stopping":
+				return {
+					text: "Biome",
+					tooltip: "Stopping",
+				};
+			case "stopped":
+				return {
+					text: "Biome",
+					tooltip: "Stopped",
+				};
+			default:
+				return {
+					text: "Biome",
+					tooltip: "Biome",
+				};
+		}
 	}
 
 	/**
