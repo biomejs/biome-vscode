@@ -1,4 +1,10 @@
-import { type Uri, type WorkspaceFolder, workspace } from "vscode";
+import {
+	RelativePattern,
+	type Uri,
+	type WorkspaceFolder,
+	workspace,
+} from "vscode";
+import { Utils } from "vscode-uri";
 import { findBiomeLocally } from "./locator/locator";
 import { Session } from "./session";
 import { directoryExists, logger } from "./utils";
@@ -55,6 +61,27 @@ export class Root {
 
 		// Start the session
 		await this.session.start();
+
+		// Register a watcher for the path of the original binary so that we
+		// can restart the session when the binary is updated.
+		logger.debug(
+			"Registering watcher for Biome binary at",
+			this.originalBin,
+		);
+		const pattern = new RelativePattern(this.uri, "*lock*");
+		const watcher = workspace.createFileSystemWatcher(pattern);
+
+		watcher.onDidChange(() => {
+			logger.debug(
+				"Biome binary updated, restarting session",
+				this.uri.fsPath,
+			);
+
+			// Restart the session
+			this.session.restart();
+		});
+
+		logger.debug("Watcher registered", watcher);
 	}
 
 	public async destroy() {

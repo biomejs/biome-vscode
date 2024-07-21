@@ -91,13 +91,9 @@ export class Session extends EventEmitter {
 		});
 	}
 
-	/**
-	 * Stops the LSP session
-	 */
-	public async stop() {
-		if (this.client?.isRunning) {
-			await this.client?.stop();
-		}
+	public async restart() {
+		await this.destroy();
+		await this.start();
 	}
 
 	/**
