@@ -28,7 +28,10 @@ export class StatusBar {
 
 	private update(state: State): void {
 		// If the extension is disabled in the current context, hide the status bar.
-		if (!config("enable", { default: true })) {
+		if (
+			!config("enable", { default: true }) ||
+			state.state === "disabled"
+		) {
 			this.item.hide();
 			return;
 		}

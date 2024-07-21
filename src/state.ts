@@ -7,6 +7,7 @@ export class State extends EventEmitter {
 	 * The current state of the extension
 	 */
 	private _state:
+		| "disabled"
 		| "initializing"
 		| "starting"
 		| "started"

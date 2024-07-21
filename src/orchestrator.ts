@@ -103,6 +103,11 @@ export class Orchestrator {
 			);
 		}
 
+		if (this.roots.length === 0) {
+			state.state = "disabled";
+			return;
+		}
+
 		// Initialize all roots
 		logger.debug("Initializing Biome roots.");
 		for (const root of this.roots) {
@@ -202,7 +207,7 @@ export class Orchestrator {
 			// Check if any of the accepted configuration files exist
 			// in the order they are defined in the array.
 			const acceptedConfigFiles = [
-				...([root.configFile] ?? []),
+				...(root.configFile ? [root.configFile] : []),
 				Uri.joinPath(root.uri, "biome.json"),
 				Uri.joinPath(root.uri, "biome.jsonc"),
 			];
@@ -224,11 +229,9 @@ export class Orchestrator {
 			allRoots.map(configFileExistsIfRequired),
 		);
 
-		const x = allRoots.filter(
+		return allRoots.filter(
 			(value, index) => hasConfigFileIfRequired[index],
 		);
-
-		return x;
 	}
 
 	private async manageGlobalSessionLifecycle(editor?: TextEditor) {

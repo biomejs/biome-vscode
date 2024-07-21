@@ -128,7 +128,6 @@
 	"icon": "resources/icons/biome.png",
 	"keywords": ["formatter", "linter"],
 	"license": "MIT OR Apache-2.0",
-	"packageManager": "bun@1.1.9",
 	"publisher": "biomejs",
 	"readme": "https://github.com/biomejs/biome-vscode#readme",
 	"scripts": {
@@ -146,5 +145,6 @@
 		"undici": "^5",
 		"vscode-languageclient": "^8",
 		"vscode-uri": "^3.0.8"
-	}
+	},
+	"packageManager": "pnpm@9.5.0"
 }
