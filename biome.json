@@ -5,6 +5,9 @@
 		"clientKind": "git",
 		"useIgnoreFile": true
 	},
+	"files": {
+		"ignore": ["test/fixtures/**/*"]
+	},
 	"formatter": {
 		"enabled": true,
 		"lineWidth": 80,

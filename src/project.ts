@@ -4,21 +4,20 @@ import {
 	type WorkspaceFolder,
 	workspace,
 } from "vscode";
-import { Utils } from "vscode-uri";
 import { findBiomeLocally } from "./locator/locator";
 import { Session } from "./session";
 import { directoryExists, logger } from "./utils";
 
-export class Root {
+export class Project {
 	/**
-	 * Biome LSP session for this root.
+	 * Biome LSP session for this project.
 	 */
 	public session: Session;
 
 	/**
-	 * The URI of the original Biome binary for this root.
+	 * The URI of the original Biome binary for this project.
 	 *
-	 * This is the Biome binary that was found when the root was initialized.
+	 * This is the Biome binary that was found when the project was initialized.
 	 * When the extension finds the binary, it creates a temporary copy of it
 	 * so that the original binary is not locked by the extension. This allows
 	 * users to update the binary without restarting the extension.
@@ -29,34 +28,34 @@ export class Root {
 	private originalBin?: Uri;
 
 	/**
-	 * The URI of the Biome binary for this root.
+	 * The URI of the Biome binary for this project.
 	 */
 	private bin?: Uri;
 
 	/**
-	 * Create a new Biome root.
+	 * Create a new Biome project.
 	 *
-	 * @param uri The URI of the Biome root's directory.
+	 * @param uri The URI of the Biome project's directory.
 	 */
 	constructor(
 		private readonly options: {
-			uri: Uri;
-			workspaceFolder?: WorkspaceFolder;
+			path: Uri;
+			folder?: WorkspaceFolder;
 			configFile?: Uri;
 		},
 	) {}
 
 	/**
-	 * Initialize the Biome root
+	 * Initialize the Biome project
 	 */
 	public async init(): Promise<void> {
-		// Find the Biome binary in for the root
-		logger.debug(`Finding Biome binary for root: ${this.uri}`);
+		// Find the Biome binary in for the project
+		logger.debug(`Finding Biome binary for project: ${this.uri}`);
 
 		this.originalBin = (await findBiomeLocally(this.uri)).uri;
 		logger.debug(`Found Biome binary at: ${this.originalBin}`);
 
-		// Create a new session for the root
+		// Create a new session for the project
 		this.session = new Session(this);
 
 		// Start the session
@@ -96,11 +95,11 @@ export class Root {
 	}
 
 	public get uri() {
-		return this.options.uri;
+		return this.options.path;
 	}
 
 	public get workspaceFolder() {
-		return this.options?.workspaceFolder;
+		return this.options?.folder;
 	}
 
 	public get configFile() {
@@ -108,7 +107,7 @@ export class Root {
 	}
 
 	/**
-	 * Whether the root exists on disk.
+	 * Whether the project exists on disk.
 	 */
 	public async existsOnDisk() {
 		return await directoryExists(this.uri);

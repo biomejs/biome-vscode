@@ -44,35 +44,60 @@
 		"configuration": {
 			"title": "Biome",
 			"properties": {
-				"biome.enable": {
+				"biome.enabled": {
 					"type": "boolean",
 					"description": "Whether to enable the Biome extension",
 					"default": true
 				},
-				"biome.requireConfig": {
+				"biome.requireConfigFile": {
 					"type": "boolean",
 					"description": "Require a Biome configuration file to be present for the extension to start.",
 					"markdownDescription": "If enabled, the extension will only start a Biome LSP session if a Biome configuration file is present at the root of a given Biome root. This can used to automatically prevent Biome from interfering with projects that do not use Biome.",
 					"default": false
 				},
-				"biome.roots": {
-					"markdownDescription": "**This setting should only be set at workspace folder level. It will be ignored in other cases.**\n\nBiome Roots are folders for which the extension will spawn an independent Biome LSP session. This is especially helpful for monorepos where the projects that use Biome may not necessarily be in the root of the workspace folder.",
-					"description": "Subfolders of a workspace folder in which to spawn a Biome Language Server instance. If empty, the Biome Language Server will be spawned in the workspace folder.",
-					"type": "array",
-					"items": {
-						"type": "object",
-						"required": ["uri"],
-						"properties": {
-							"uri": {
-								"type": "string",
-								"description": "Path to the folder in which to spawn a Biome Language Server instance. Relative to the parent workspace folder."
-							},
-							"configFile": {
-								"type": "string",
-								"description": "Path to the a Biome configuration file."
+				"biome.projects": {
+					"anyOf": [
+						{
+							"type": "array",
+							"description": "List of projects in which an independent Biome Language Server should be started in a multi-root workspace.",
+							"items": {
+								"type": "object",
+								"properties": {
+									"folder": {
+										"type": "string",
+										"description": "Name of the workspace folder in which the project is located."
+									},
+									"path": {
+										"type": "string",
+										"description": "Path (relative to the workspace folder) to the root of the project in which an independent Biome Language Server should be started. The root of the workspace folder is used if left unspecified."
+									},
+									"configFile": {
+										"type": "string",
+										"description": "Path (relative to the workspace folder) to the Biome configuration file. Biome will use the default biome.json(c) or fallback to defaults if left unspecified."
+									}
+								},
+								"required": ["folder"]
+							}
+						},
+						{
+							"type": "array",
+							"description": "List of projects in which an independent Biome Language Server should be started in a single-root workspace.",
+							"items": {
+								"type": "object",
+								"properties": {
+									"path": {
+										"type": "string",
+										"description": "Path to the root of the project in which an independent Biome Language Server should be started."
+									},
+									"configFile": {
+										"type": "string",
+										"description": "Path to the Biome configuration file. Biome will use the default biome.json(c) or fallback to defaults if left unspecified."
+									}
+								},
+								"required": ["path"]
 							}
 						}
-					}
+					]
 				},
 				"biome.lsp.bin": {
 					"oneOf": [

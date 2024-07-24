@@ -2,28 +2,56 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "🧩 Debug Extension (in Workspace)",
+			"name": "🧩 Debug Extension (multi-root workspace)",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
 				"--disable-extensions",
 				"--extensionDevelopmentKind=node",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"${workspaceFolder}/test/fixtures/workspace/test.code-workspace"
+				"${workspaceFolder}/test/fixtures/multi-root-workspace/multi-root.code-workspace"
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: dev",
 			"sourceMapRenames": true
 		},
 		{
-			"name": "🧩 Debug Extension (no Workspace)",
+			"name": "🧩 Debug Extension (single-file)",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
 				"--disable-extensions",
 				"--extensionDevelopmentKind=node",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"${workspaceFolder}/test/fixtures/no-workspace/test.js"
+				"${workspaceFolder}/test/fixtures/single-file/index.js"
+			],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"preLaunchTask": "npm: dev",
+			"sourceMapRenames": true
+		},
+		{
+			"name": "🧩 Debug Extension (single-root workspace)",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentKind=node",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/test/fixtures/single-root-workspace"
+			],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"preLaunchTask": "npm: dev",
+			"sourceMapRenames": true
+		},
+		{
+			"name": "🧩 Debug Extension (single-root workspace - monorepo)",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentKind=node",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/test/fixtures/single-root-workspace-monorepo"
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: dev",

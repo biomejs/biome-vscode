@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { workspace } from "vscode";
-import type { Root } from "./root";
+import type { Project } from "./project";
 
 export class State extends EventEmitter {
 	/**
@@ -18,7 +18,7 @@ export class State extends EventEmitter {
 	/**
 	 * The currently active Biome root
 	 */
-	private _activeRoot?: Root;
+	private _activeRoot?: Project;
 
 	/**
 	 * The current context of the extension
@@ -28,7 +28,7 @@ export class State extends EventEmitter {
 	 * would fully reload, so we don't need to track this value. We merely use
 	 * it to provide context to the user in other parts of the extension.
 	 */
-	public get context(): "single-file" | "workspace" {
+	public get mode(): "single-file" | "workspace" {
 		return workspace.workspaceFolders ? "workspace" : "single-file";
 	}
 
@@ -57,7 +57,7 @@ export class State extends EventEmitter {
 	/**
 	 * Sets the currently active Biome root
 	 */
-	public set activeRoot(root: Root | undefined) {
+	public set activeRoot(root: Project | undefined) {
 		this._activeRoot = root;
 		this.emit("state-changed", this);
 	}

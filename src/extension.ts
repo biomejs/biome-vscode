@@ -1,7 +1,6 @@
 import type { ExtensionContext } from "vscode";
 import { Orchestrator } from "./orchestrator";
 import { StatusBar } from "./ui/status-bar/status-bar";
-import { logger } from "./utils";
 
 /**
  * Biome Extension for Visual Studio Code

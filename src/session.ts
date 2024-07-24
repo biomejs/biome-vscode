@@ -10,7 +10,7 @@ import {
 	TransportKind,
 } from "vscode-languageclient/node";
 import { findBiomeGlobally, findBiomeLocally } from "./locator/locator";
-import type { Root } from "./root";
+import type { Project } from "./project";
 import { subtractURI } from "./utils";
 import { supportedLanguages } from "./utils";
 
@@ -42,7 +42,7 @@ export class Session extends EventEmitter {
 		/**
 		 * The Biome root for the session
 		 */
-		private readonly root?: Root,
+		private readonly root?: Project,
 	) {
 		super();
 

@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"name": "bar",
+			"path": "bar"
+		},
+		{
+			"name": "foo",
+			"path": "foo"
+		}
+	],
+	"settings": {
+		"biome.roots": [
+			{
+				"folder": "bar",
+				"path": "packages/backend"
+			},
+			{
+				"folder": "foo",
+				"path": "packages/frontend"
+			}
+		]
+	}
+}
