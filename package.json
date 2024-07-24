@@ -134,7 +134,7 @@
 		"@types/resolve": "1.20.6",
 		"@types/semver": "7.5.8",
 		"@types/vscode": "^1.80.0",
-		"@vscode/vsce": "2.30.0",
+		"@vscode/vsce": "2.31.1",
 		"esbuild": "0.23.0",
 		"git-cliff": "1.4.0",
 		"lefthook": "1.7.6",
