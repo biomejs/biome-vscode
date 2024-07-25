@@ -1,115 +1,176 @@
-import {
-	RelativePattern,
-	type Uri,
-	type WorkspaceFolder,
-	workspace,
-} from "vscode";
+import { Uri, type WorkspaceFolder, window, workspace } from "vscode";
+import { Utils } from "vscode-uri";
 import { findBiomeLocally } from "./locator/locator";
-import { Session } from "./session";
-import { directoryExists, logger } from "./utils";
+import { config, directoryExists, fileExists, logger, mode } from "./utils";
 
-export class Project {
-	/**
-	 * Biome LSP session for this project.
-	 */
-	public session: Session;
+export type Project = {
+	folder?: WorkspaceFolder;
+	path: Uri;
+	configFile?: Uri;
+	bin: Uri;
+};
 
-	/**
-	 * The URI of the original Biome binary for this project.
-	 *
-	 * This is the Biome binary that was found when the project was initialized.
-	 * When the extension finds the binary, it creates a temporary copy of it
-	 * so that the original binary is not locked by the extension. This allows
-	 * users to update the binary without restarting the extension.
-	 *
-	 * The extension listens for changes to the original binary creates a new
-	 * copy and restarts the LSP session when it happens.
-	 */
-	private originalBin?: Uri;
+export type ProjectConfig = {
+	folder?: string;
+	path?: string;
+	configFile?: string;
+};
 
-	/**
-	 * The URI of the Biome binary for this project.
-	 */
-	private bin?: Uri;
+export const createProjects = async () => {
+	return mode === "single-file"
+		? [await createSingleFileProject()]
+		: await createWorkspaceProjects();
+};
 
-	/**
-	 * Create a new Biome project.
-	 *
-	 * @param uri The URI of the Biome project's directory.
-	 */
-	constructor(
-		private readonly options: {
-			path: Uri;
-			folder?: WorkspaceFolder;
-			configFile?: Uri;
-		},
-	) {}
+/**
+ * Creates a new Biome project
+ *
+ * This function creates a new Biome project and automatically resolves the
+ * path to the Biome binary in the context of the project.
+ *
+ * @param folder The parent workspace folder of the project
+ * @param path The URI of the project directory, relative to the workspace folder
+ * @param configFile The URI of the project's Biome configuration file
+ */
+const createProject = async ({
+	folder,
+	path,
+	configFile,
+}: {
+	folder?: WorkspaceFolder;
+	path: Uri;
+	configFile?: Uri;
+}): Promise<Project | undefined> => {
+	// Resolve the path to the Biome binary
+	const bin = await findBiomeLocally(path);
 
-	/**
-	 * Initialize the Biome project
-	 */
-	public async init(): Promise<void> {
-		// Find the Biome binary in for the project
-		logger.debug(`Finding Biome binary for project: ${this.uri}`);
+	// If the Biome binary could not be found, error out
+	if (!bin) {
+		logger.error("Could not find the Biome binary");
+		return;
+	}
 
-		this.originalBin = (await findBiomeLocally(this.uri)).uri;
-		logger.debug(`Found Biome binary at: ${this.originalBin}`);
+	return {
+		folder: folder,
+		path: path,
+		configFile: configFile,
+		bin: bin.uri,
+	};
+};
 
-		// Create a new session for the project
-		this.session = new Session(this);
+const createSingleFileProject = async (): Promise<Project> => {
+	// Retrieve the URI of the document currently present in the active
+	// text editor. We need this information to determine the parent
+	// directory of the file.
+	const singleFileURI = window.activeTextEditor?.document.uri;
 
-		// Start the session
-		await this.session.start();
+	if (!singleFileURI) {
+		return;
+	}
 
-		// Register a watcher for the path of the original binary so that we
-		// can restart the session when the binary is updated.
-		logger.debug(
-			"Registering watcher for Biome binary at",
-			this.originalBin,
+	const parentFolderURI = Uri.parse(
+		Utils.resolvePath(singleFileURI, "..").fsPath,
+	);
+
+	return await createProject({
+		path: parentFolderURI,
+		folder: undefined,
+		configFile: undefined,
+	});
+};
+
+const createWorkspaceProjects = async (): Promise<Project[]> => {
+	const projects: Project[] = [];
+
+	for (const folder of workspace.workspaceFolders ?? []) {
+		projects.push(...(await createWorkspaceFolderProjects(folder)));
+	}
+
+	return projects;
+};
+
+const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
+	const projects: Project[] = [];
+
+	// Retrieve the list of explicitly declared project definitions in the
+	// workspace folder's configuration.
+	const projectConfigs = config<ProjectConfig[]>("projects", {
+		scope: folder.uri,
+	});
+
+	// If there are no project definitions in the configuration, we create
+	// a single project for the workspace folder itself.
+	if ((projectConfigs ?? []).length === 0) {
+		projects.push(
+			await createProject({
+				folder,
+				path: folder.uri,
+				configFile: undefined,
+			}),
 		);
-		const pattern = new RelativePattern(this.uri, "*lock*");
-		const watcher = workspace.createFileSystemWatcher(pattern);
 
-		watcher.onDidChange(() => {
-			logger.debug(
-				"Biome binary updated, restarting session",
-				this.uri.fsPath,
-			);
-
-			// Restart the session
-			this.session.restart();
-		});
-
-		logger.debug("Watcher registered", watcher);
+		return projects;
 	}
 
-	public async destroy() {
-		// Stop the session
-		await this.session.destroy();
-		this.session = undefined;
+	// If there are project definitions in the configuration, we create a
+	// project for each of them, but we'll igore projects that point to
+	// non-existent directories on the filesystem, as well as projects
+	// that do not have an associated configuration file (if required).
+	for (const projectConfig of projectConfigs) {
+		const fullPath = Uri.joinPath(folder.uri, projectConfig.path);
 
-		// Delete the temporary binary
-		// if (this.bin) {
-		// 	workspace.fs.delete(this.bin);
-		// }
+		if (!(await directoryExists(fullPath))) {
+			continue;
+		}
+
+		const configFileURI = projectConfig.configFile
+			? Uri.joinPath(folder.uri, projectConfig.configFile)
+			: undefined;
+
+		if (!(await configFileExistsIfRequired(folder, projectConfig))) {
+			continue;
+		}
+
+		projects.push(
+			await createProject({
+				folder: folder,
+				path: fullPath,
+				configFile: configFileURI,
+			}),
+		);
 	}
 
-	public get uri() {
-		return this.options.path;
+	return projects;
+};
+
+const configFileExistsIfRequired = async (
+	folder: WorkspaceFolder,
+	project: ProjectConfig,
+): Promise<boolean> => {
+	const requireConfig = config("requireConfig", {
+		default: false,
+		scope: Uri.joinPath(folder.uri, project.path),
+	});
+
+	if (!requireConfig) {
+		return true;
 	}
 
-	public get workspaceFolder() {
-		return this.options?.folder;
+	const acceptedConfigFiles = [
+		...(project.configFile
+			? [Uri.joinPath(folder.uri, project.path, project.configFile)]
+			: []),
+		Uri.joinPath(folder.uri, project.path, "biome.json"),
+		Uri.joinPath(folder.uri, project.path, "biome.jsonc"),
+	];
+
+	let configFileExists = false;
+	for (const configFile of acceptedConfigFiles) {
+		if (await fileExists(configFile)) {
+			configFileExists = true;
+			break;
+		}
 	}
 
-	public get configFile() {
-		return this.options.configFile;
-	}
-
-	/**
-	 * Whether the project exists on disk.
-	 */
-	public async existsOnDisk() {
-		return await directoryExists(this.uri);
-	}
-}
+	return !requireConfig || configFileExists;
+};

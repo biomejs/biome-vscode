@@ -1,19 +1,8 @@
-import {
-	type ConfigurationChangeEvent,
-	ProgressLocation,
-	type TextEditor,
-	Uri,
-	type WorkspaceFolder,
-	window,
-	workspace,
-} from "vscode";
-import { Utils } from "vscode-uri";
+import { ProgressLocation, type TextEditor, window, workspace } from "vscode";
 import type { Project } from "./project";
-import { ProjectManager } from "./project-manager";
 import { Session } from "./session";
 import { state } from "./state";
-import type { ProjectDefinition, ProjectDefinitionFromConfig } from "./types";
-import { config, fileExists, logger } from "./utils";
+import { config, logger } from "./utils";
 
 export class Orchestrator {
 	/**
@@ -25,8 +14,6 @@ export class Orchestrator {
 	 * the user opens a new file that has not yet been saved to disk.
 	 */
 	private globalSession: Session | undefined;
-
-	private projectManager: ProjectManager = new ProjectManager();
 
 	/**
 	 * The list of Biome projects managed by the orchestrator.

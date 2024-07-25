@@ -180,3 +180,20 @@ export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
 
 	return Uri.parse(result);
 };
+
+export const determineMode = ():
+	| "single-file"
+	| "single-root"
+	| "multi-root" => {
+	if (workspace.workspaceFolders === undefined) {
+		return "single-file";
+	}
+
+	if (workspace.workspaceFolders.length > 1) {
+		return "multi-root";
+	}
+
+	return "single-root";
+};
+
+export const mode = determineMode();

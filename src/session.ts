@@ -1,164 +1,139 @@
-import { EventEmitter } from "node:events";
 import { type LogOutputChannel, type Uri, window } from "vscode";
-import { displayName } from "../package.json";
-
 import {
-	type DocumentSelector,
 	LanguageClient,
 	type LanguageClientOptions,
 	type ServerOptions,
 	TransportKind,
 } from "vscode-languageclient/node";
+import { displayName } from "../package.json";
 import { findBiomeGlobally, findBiomeLocally } from "./locator/locator";
-import type { Project } from "./project";
-import { subtractURI } from "./utils";
-import { supportedLanguages } from "./utils";
+import type { Project } from "./project.bak";
+import { logger, mode, subtractURI, supportedLanguages } from "./utils";
 
-export class Session extends EventEmitter {
-	/**
-	 * The language client for the session
-	 */
-	private client: LanguageClient | undefined;
+export type Session = {
+	bin: Uri;
+	project: Project;
+	client: LanguageClient;
+};
 
-	/**
-	 * The logger for the session
-	 */
-	private lspLogger: LogOutputChannel;
+/**
+ * Creates a new Biome LSP session
+ */
+export const createSession = async (project?: Project): Promise<Session> => {
+	// Find the Biome binary
+	const bin = project
+		? (await findBiomeLocally(project.uri)).uri
+		: (await findBiomeGlobally()).uri;
 
-	/**
-	 * The trace logger for the session
-	 */
-	private lspTraceLogger: LogOutputChannel;
-
-	/**
-	 * The Biome binary for the session
-	 */
-	private bin: Uri;
-
-	/**
-	 * Instantiates a new session
-	 */
-	constructor(
-		/**
-		 * The Biome root for the session
-		 */
-		private readonly root?: Project,
-	) {
-		super();
-
-		this.lspLogger = window.createOutputChannel(
-			root?.workspaceFolder
-				? `${displayName} LSP (${root.workspaceFolder.name}::${subtractURI(root.uri, root.workspaceFolder.uri).fsPath})`
-				: `${displayName} LSP ${this.isGlobal ? "(global)" : ""}`.trim(),
-			{
-				log: true,
-			},
-		);
-
-		this.lspTraceLogger = window.createOutputChannel(
-			root?.workspaceFolder
-				? `${displayName} LSP trace (${root.workspaceFolder.name}::${subtractURI(root.uri, root.workspaceFolder.uri).fsPath})`
-				: `${displayName} LSP trace ${this.isGlobal ? "(global)" : ""}`.trim(),
-			{
-				log: true,
-			},
-		);
+	// If the Biome binary could not be found, error out
+	if (!bin) {
+		logger.error("Could not find the Biome binary");
 	}
 
-	/**
-	 * Returns whether the session is global
-	 */
-	public get isGlobal(): boolean {
-		return this.root === undefined;
-	}
+	return {
+		bin: bin,
+		project: project,
+		client: createLanguageClient(bin, project),
+	};
+};
 
-	/**
-	 * Starts the LSP session
-	 */
-	public async start() {
-		this.bin = this.root
-			? (await findBiomeLocally(this.root.uri)).uri
-			: (await findBiomeGlobally()).uri;
+/**
+ * Creates a new Biome LSP client
+ */
+const createLanguageClient = (bin: Uri, project?: Project) => {
+	const serverOptions: ServerOptions = {
+		command: bin.fsPath,
+		transport: TransportKind.stdio,
+		args: [
+			"lsp-proxy",
+			// If a custom config file was specified, pass it to Biome
+			...(project?.configFile
+				? ["--config", project.configFile.fsPath]
+				: []),
+		],
+	};
 
-		if (this.client === undefined) {
-			this.createLanguageClient();
-		}
+	const clientOptions: LanguageClientOptions = {
+		outputChannel: createLspLogger(project),
+		traceOutputChannel: createLspTraceLogger(project),
+		documentSelector: createDocumentSelector(project),
+	};
 
-		await this.client.start();
+	return new LanguageClient(
+		"biome.lsp",
+		"biome",
+		serverOptions,
+		clientOptions,
+	);
+};
 
-		this.client.onDidChangeState((event) => {
-			this.emit("stateChanged", event.newState);
+/**
+ * Creates a new Biome LSP logger
+ */
+const createLspLogger = (project?: Project): LogOutputChannel => {
+	// If the project is missing, we're creating a logger for the global LSP
+	// session. In this case, we don't have a workspace folder to display in the
+	// logger name, so we just use the display name of the extension.
+	if (!project?.workspaceFolder) {
+		return window.createOutputChannel(`${displayName} LSP`, {
+			log: true,
 		});
 	}
 
-	public async restart() {
-		await this.destroy();
-		await this.start();
-	}
+	// If the project is present, we're creating a logger for a specific project.
+	// In this case, we display the name of the project and the relative path to
+	// the project root in the logger name. Additionally, when in a multi-root
+	// workspace, we prefix the path with the name of the workspace folder.
+	const prefix =
+		mode === "multi-root" ? `${project.workspaceFolder.name}::` : "";
+	const path = subtractURI(project.uri, project.workspaceFolder.uri).fsPath;
 
-	/**
-	 * Destroys the LSP session
-	 */
-	public async destroy() {
-		if (this.client?.isRunning) {
-			await this.client?.stop();
-			this.client?.dispose();
-		}
-		this.removeAllListeners();
-	}
+	return window.createOutputChannel(`${displayName} LSP (${prefix}${path})`, {
+		log: true,
+	});
+};
 
-	private createLanguageClient() {
-		const serverOptions: ServerOptions = {
-			command: this.bin.fsPath,
-			transport: TransportKind.stdio,
-			args: [
-				"lsp-proxy",
-				...(this.root?.configFile?.fsPath
-					? ["--config-path", this.root.configFile.fsPath]
-					: []),
-			],
-		};
-
-		const clientOptions: LanguageClientOptions = {
-			outputChannel: this.lspLogger,
-			traceOutputChannel: this.lspTraceLogger,
-			documentSelector: this.root
-				? this.generateDocumentSelector()
-				: this.generateGlobalDocumentSelector(),
-		};
-
-		this.client = new LanguageClient(
-			"biome.lsp",
-			"biome",
-			serverOptions,
-			clientOptions,
-		);
-	}
-
-	/**
-	 * Generates a document selector for the LSP session
-	 *
-	 * This function generates a document selector that matches all files supported by Biome within
-	 * the workspace folder.
-	 */
-	private generateDocumentSelector(): DocumentSelector {
-		return supportedLanguages.map((language) => {
-			return {
-				language,
-				scheme: "file",
-				...(this.root && {
-					pattern: `${this.root.uri.fsPath}/**/*`,
-				}),
-			};
+/**
+ * Creates a new Biome LSP logger
+ */
+const createLspTraceLogger = (project?: Project): LogOutputChannel => {
+	// If the project is missing, we're creating a logger for the global LSP
+	// session. In this case, we don't have a workspace folder to display in the
+	// logger name, so we just use the display name of the extension.
+	if (!project?.workspaceFolder) {
+		return window.createOutputChannel(`${displayName} LSP trace`, {
+			log: true,
 		});
 	}
 
-	private generateGlobalDocumentSelector(): DocumentSelector {
-		return supportedLanguages.map((language) => {
-			return {
-				language,
-				scheme: "untitled",
-			};
-		});
-	}
-}
+	// If the project is present, we're creating a logger for a specific project.
+	// In this case, we display the name of the project and the relative path to
+	// the project root in the logger name. Additionally, when in a multi-root
+	// workspace, we prefix the path with the name of the workspace folder.
+	const prefix =
+		mode === "multi-root" ? `${project.workspaceFolder.name}::` : "";
+	const path = subtractURI(project.uri, project.workspaceFolder.uri).fsPath;
+
+	return window.createOutputChannel(
+		`${displayName} LSP trace (${prefix}${path})`,
+		{
+			log: true,
+		},
+	);
+};
+
+/**
+ * Creates a new document selector
+ *
+ * This function will create a document selector scoped to the given project,
+ * which will only match files within the project's root directory. If no
+ * project is specified, the document selector will match files that have
+ * not yet been saved to disk (untitled).
+ */
+const createDocumentSelector = (project?: Project) => {
+	return supportedLanguages.map((language) => ({
+		language,
+		scheme: project ? "file" : "untitled",
+		...(project && { pattern: `${project.uri.fsPath}/**/*` }),
+	}));
+};

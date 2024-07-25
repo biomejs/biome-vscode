@@ -1,66 +1,32 @@
-import { EventEmitter } from "node:events";
-import { workspace } from "vscode";
 import type { Project } from "./project";
 
-export class State extends EventEmitter {
+export type State = {
 	/**
 	 * The current state of the extension
+	 *
+	 * The state of the extension is used to determine what the extension is
+	 * currently doing. This is used to provide context to the user in other
+	 * parts of the extension.
 	 */
-	private _state:
-		| "disabled"
+	state:
 		| "initializing"
+		| "disabled"
 		| "starting"
 		| "started"
 		| "running"
 		| "stopping"
-		| "stopped" = "initializing";
+		| "stopped";
 
 	/**
-	 * The currently active Biome root
-	 */
-	private _activeRoot?: Project;
-
-	/**
-	 * The current context of the extension
+	 * The Biome project that is currently active
 	 *
-	 * When VS Code is running in a single-file context, there won't be any
-	 * workspace folders. Additionally, if the context was to change, VS Code
-	 * would fully reload, so we don't need to track this value. We merely use
-	 * it to provide context to the user in other parts of the extension.
+	 * This is the project that is currently being worked on by the user in the
+	 * text editor. This is used to provide context to the user in other parts
+	 * of the extension.
 	 */
-	public get mode(): "single-file" | "workspace" {
-		return workspace.workspaceFolders ? "workspace" : "single-file";
-	}
+	activeProject?: Project;
+};
 
-	/**
-	 * The current state of the extension
-	 */
-	public get state() {
-		return this._state;
-	}
-
-	/**
-	 * Sets the current state of the extension
-	 */
-	public set state(state) {
-		this._state = state;
-		this.emit("state-changed", this);
-	}
-
-	/**
-	 * The currently active Biome root
-	 */
-	public get activeRoot() {
-		return this._activeRoot;
-	}
-
-	/**
-	 * Sets the currently active Biome root
-	 */
-	public set activeRoot(root: Project | undefined) {
-		this._activeRoot = root;
-		this.emit("state-changed", this);
-	}
-}
-
-export const state = new State();
+export const state: State = {
+	state: "initializing",
+} as State;
