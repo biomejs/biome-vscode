@@ -197,3 +197,6 @@ export const determineMode = ():
 };
 
 export const mode = determineMode();
+
+export const hasUntitledDocuments = (): boolean =>
+	workspace.textDocuments.find((doc) => doc.isUntitled) !== undefined;
