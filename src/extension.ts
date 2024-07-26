@@ -1,13 +1,11 @@
-import { workspace } from "vscode";
-import { type Project, createProjects } from "./project";
-import { type Session, createSession } from "./session";
-import type { StatusBar } from "./ui/status-bar/status-bar";
+import { createProjects } from "./project";
+import { createSession } from "./session";
+import { state } from "./state";
 import { hasUntitledDocuments } from "./utils";
 
 export type Extension = {
-	sessions: Map<Project, Session>;
-	globalSession?: Session;
-	statusBar: StatusBar;
+	cleanup: () => Promise<void>;
+	restart: () => Promise<Extension>;
 };
 
 /**
@@ -17,28 +15,44 @@ export type Extension = {
  * components.
  */
 export const createExtension = async () => {
-	// Create all projects
 	const projects = await createProjects();
 
-	// Create a new session for each project and store them in the map
-	const sessions = new Map<Project, Session>();
 	for (const project of projects) {
 		const session = await createSession(project);
 		if (session) {
-			sessions.set(project, session);
+			state.sessions.set(project, session);
 		}
 	}
 
 	// Create a global session if an untitled file is open
 	if (hasUntitledDocuments()) {
-		const globalSession = await createSession();
+		state.globalSession = await createSession();
 	}
 
+	// Register listeners for updating the status bar
+
 	// Return a function that shuts down the extension, and cleans up resources
-	return async () => {
-		for (const session of sessions.values()) {
+	const cleanup = async () => {
+		// Stop global session, if it exists
+		if (state.globalSession) {
+			await state.globalSession?.client.stop();
+			state.globalSession = undefined;
+		}
+
+		// Stop all project sessions
+		for (const session of state.sessions.values()) {
 			await session.client.stop();
 		}
-		sessions.clear();
+		state.sessions.clear();
+	};
+
+	const restart = async (): Promise<Extension> => {
+		await cleanup();
+		return await createExtension();
+	};
+
+	return {
+		cleanup,
+		restart,
 	};
 };

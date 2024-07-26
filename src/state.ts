@@ -1,4 +1,5 @@
 import type { Project } from "./project";
+import type { Session } from "./session";
 
 export type State = {
 	/**
@@ -25,6 +26,10 @@ export type State = {
 	 * of the extension.
 	 */
 	activeProject?: Project;
+
+	sessions: Map<Project, Session>;
+
+	globalSession?: Session;
 };
 
 export const state: State = {

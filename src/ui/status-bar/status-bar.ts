@@ -1,104 +1,85 @@
 import { StatusBarAlignment, type StatusBarItem, window } from "vscode";
-import type { Extension } from "../../extension";
 import { type State, state } from "../../state";
-import { config, logger } from "../../utils";
+import { config } from "../../utils";
 
-export class StatusBar {
-	private item: StatusBarItem;
+export type StatusBar = {
+	item: StatusBarItem;
+};
 
-	constructor(private readonly extension: Extension) {}
+const createStatusBar = () => {
+	const item = window.createStatusBarItem(
+		"biome",
+		StatusBarAlignment.Right,
+		1,
+	);
 
-	public async init(): Promise<void> {
-		logger.debug("Initializing status bar");
+	return { item };
+};
 
-		this.item = window.createStatusBarItem(
-			"biome",
-			StatusBarAlignment.Right,
-			1,
-		);
-
-		state.addListener("state-changed", (state) => {
-			this.update(state);
-		});
-
-		this.update(state);
-
-		logger.debug("Status bar initialized");
+export const updateStatusBar = () => {
+	if (!config("enable", { default: true }) || state.state === "disabled") {
+		statusBar.item.hide();
+		return;
 	}
 
-	private update(state: State): void {
-		// If the extension is disabled in the current context, hide the status bar.
-		if (
-			!config("enable", { default: true }) ||
-			state.state === "disabled"
-		) {
-			this.item.hide();
-			return;
-		}
+	const icon = getStateIcon(state);
+	const text = getStateText();
+	const tooltip = getStateTooltip();
 
-		const { text, tooltip } = this.getStateTextAndTooltip(state);
+	statusBar.item.text = `${icon} ${text}`.trim();
+	statusBar.item.tooltip = tooltip;
+	statusBar.item.show();
+};
 
-		this.item.text = `${this.getStateIcon(state)} ${text}`.trim();
-		this.item.tooltip = tooltip;
-		this.item.show();
+const getStateText = (): string => {
+	switch (state.state) {
+		case "initializing":
+			return "Biome";
+		case "starting":
+			return "Biome";
+		case "started":
+			return "Biome";
+		case "stopping":
+			return "Biome";
+		case "stopped":
+			return "Biome";
+		default:
+			return "Biome";
 	}
+};
 
-	/**
-	 * Returns the text to display for the given state.
-	 */
-	private getStateTextAndTooltip(state: State): {
-		text: string;
-		tooltip: string;
-	} {
-		switch (state.state) {
-			case "initializing":
-				return {
-					text: "Biome",
-					tooltip: "Initializing",
-				};
-			case "starting":
-				return {
-					text: "Biome",
-					tooltip: "Starting",
-				};
-			case "started":
-				return {
-					text: "Biome",
-					tooltip: "Up and running",
-				};
-			case "stopping":
-				return {
-					text: "Biome",
-					tooltip: "Stopping",
-				};
-			case "stopped":
-				return {
-					text: "Biome",
-					tooltip: "Stopped",
-				};
-			default:
-				return {
-					text: "Biome",
-					tooltip: "Biome",
-				};
-		}
+const getStateTooltip = () => {
+	switch (state.state) {
+		case "initializing":
+			return "Initializing";
+		case "starting":
+			return "Starting";
+		case "started":
+			return "Up and running";
+		case "stopping":
+			return "Stopping";
+		case "stopped":
+			return "Stopped";
+		default:
+			return "Biome";
 	}
+};
 
-	/**
-	 * Returns the icon for the given state.
-	 */
-	private getStateIcon(state: State): string {
-		switch (state.state) {
-			case "initializing":
-				return "$(sync~spin)";
-			case "starting":
-				return "$(sync~spin)";
-			case "started":
-				return "$(check)";
-			case "stopping":
-				return "$(sync~spin)";
-			case "stopped":
-				return "$(x)";
-		}
+const getStateIcon = (state: State): string => {
+	switch (state.state) {
+		case "initializing":
+			return "$(sync~spin)";
+		case "starting":
+			return "$(sync~spin)";
+		case "started":
+			return "$(check)";
+		case "stopping":
+			return "$(sync~spin)";
+		case "stopped":
+			return "$(x)";
+		default:
+			return "$(question)";
 	}
-}
+};
+
+export const statusBar = createStatusBar();
