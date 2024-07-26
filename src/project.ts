@@ -1,7 +1,8 @@
 import { Uri, type WorkspaceFolder, window, workspace } from "vscode";
 import { Utils } from "vscode-uri";
 import { findBiomeLocally } from "./locator/locator";
-import { config, directoryExists, fileExists, logger, mode } from "./utils";
+import { error, info, warn } from "./logger";
+import { config, directoryExists, fileExists, mode } from "./utils";
 
 export type Project = {
 	folder?: WorkspaceFolder;
@@ -17,6 +18,7 @@ export type ProjectConfig = {
 };
 
 export const createProjects = async () => {
+	info("=== Creating projects ===");
 	return mode === "single-file"
 		? [await createSingleFileProject()]
 		: await createWorkspaceProjects();
@@ -46,7 +48,7 @@ const createProject = async ({
 
 	// If the Biome binary could not be found, error out
 	if (!bin) {
-		logger.error("Could not find the Biome binary");
+		error("Could not find the Biome binary");
 		return;
 	}
 
@@ -72,6 +74,10 @@ const createSingleFileProject = async (): Promise<Project> => {
 		Utils.resolvePath(singleFileURI, "..").fsPath,
 	);
 
+	info(
+		`Creating project for single file at ${singleFileURI.fsPath} in parent folder ${parentFolderURI.fsPath}`,
+	);
+
 	return await createProject({
 		path: parentFolderURI,
 		folder: undefined,
@@ -90,6 +96,8 @@ const createWorkspaceProjects = async (): Promise<Project[]> => {
 };
 
 const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
+	info(`Creating projects for workspace folder ${folder.name}`);
+
 	const projects: Project[] = [];
 
 	// Retrieve the list of explicitly declared project definitions in the
@@ -101,6 +109,9 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 	// If there are no project definitions in the configuration, we create
 	// a single project for the workspace folder itself.
 	if ((projectConfigs ?? []).length === 0) {
+		info(
+			`No project definitions found in workspace folder ${folder.name}, creating project for workspace folder itself`,
+		);
 		projects.push(
 			await createProject({
 				folder,
@@ -112,6 +123,10 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 		return projects;
 	}
 
+	info(
+		"Found project definitions in workspace folder configuration. Creating projects.",
+	);
+
 	// If there are project definitions in the configuration, we create a
 	// project for each of them, but we'll igore projects that point to
 	// non-existent directories on the filesystem, as well as projects
@@ -120,6 +135,9 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 		const fullPath = Uri.joinPath(folder.uri, projectConfig.path);
 
 		if (!(await directoryExists(fullPath))) {
+			warn(
+				`Project directory ${fullPath.fsPath} does not exist on disk, skipping project creation`,
+			);
 			continue;
 		}
 
@@ -128,6 +146,9 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 			: undefined;
 
 		if (!(await configFileExistsIfRequired(folder, projectConfig))) {
+			warn(
+				`Project ${fullPath.fsPath} requires a configuration file that does not exist, skipping project creation`,
+			);
 			continue;
 		}
 
@@ -137,6 +158,10 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 				path: fullPath,
 				configFile: configFileURI,
 			}),
+		);
+
+		info(
+			`Created project for directory ${fullPath.fsPath} in workspace folder ${folder.name}`,
 		);
 	}
 
@@ -153,8 +178,11 @@ const configFileExistsIfRequired = async (
 	});
 
 	if (!requireConfig) {
+		info("Project does not require a configuration file.");
 		return true;
 	}
+
+	info("Project requires a configuration file.");
 
 	const acceptedConfigFiles = [
 		...(project.configFile
@@ -165,12 +193,19 @@ const configFileExistsIfRequired = async (
 	];
 
 	let configFileExists = false;
+	info("Checking for existence of configuration files");
 	for (const configFile of acceptedConfigFiles) {
+		info(`Checking for existence of ${configFile.fsPath}`);
 		if (await fileExists(configFile)) {
+			info(`Found ${configFile.fsPath}. Configuration file exists.`);
 			configFileExists = true;
 			break;
 		}
 	}
 
-	return !requireConfig || configFileExists;
+	if (!configFileExists) {
+		warn("No configuration file found.");
+	}
+
+	return configFileExists;
 };

@@ -34,4 +34,6 @@ export type State = {
 
 export const state: State = {
 	state: "initializing",
+	sessions: new Map<Project, Session>([]),
+	globalSession: undefined,
 } as State;

@@ -1,7 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { type ConfigurationScope, FileType, Uri, workspace } from "vscode";
-import { window } from "vscode";
-import { activationEvents, displayName } from "../package.json";
+import { activationEvents } from "../package.json";
 
 /**
  * Checks whether the system's C library is musl
@@ -114,8 +113,24 @@ export const config = <T>(
 	options?: Partial<{
 		scope: ConfigurationScope;
 		default: T;
+		level?: "global" | "workspace" | "workspaceFolder";
 	}>,
 ): T | undefined => {
+	if (options.level) {
+		const { globalValue, workspaceValue, workspaceFolderValue } = workspace
+			.getConfiguration("biome", options?.scope)
+			.inspect<T>(key);
+
+		switch (options.level) {
+			case "global":
+				return globalValue || options?.default;
+			case "workspace":
+				return workspaceValue || options?.default;
+			case "workspaceFolder":
+				return workspaceFolderValue || options?.default;
+		}
+	}
+
 	return options?.default !== undefined
 		? workspace
 				.getConfiguration("biome", options?.scope)
@@ -152,20 +167,6 @@ export const packageName = getPackageName();
 export const platform = `${process.platform}-${process.arch}${
 	isMusl() ? "-musl" : ""
 }`;
-
-/**
- * Logger
- *
- * A general-purpose logger instance that can be used throughout the extension.
- *
- * Messages logged to this logger will be displayed in the `Biome` output
- * channel in the Output panel. This logger respects the user's settings for
- * logging verbosity, so only messages with the appropriate log level will be
- * displayed.
- */
-export const logger = window.createOutputChannel(displayName, {
-	log: true,
-});
 
 /**
  * Substracts the second string from the first string

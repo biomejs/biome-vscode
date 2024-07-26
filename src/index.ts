@@ -1,11 +1,15 @@
-import type { ExtensionContext } from "vscode";
-import { type Extension, createExtension } from "./extension";
-
-let cleanup: Extension;
+import { createExtension, destroyExtension } from "./extension";
 
 /**
- * Entry point of the Biome extension
+ * Activates the Biome extension
  */
-export const activate = async (context: ExtensionContext) => {
-	cleanup = await createExtension();
+export const activate = async () => {
+	await createExtension();
+};
+
+/**
+ * Deactivates the Biome extension
+ */
+export const deactivate = async () => {
+	await destroyExtension();
 };

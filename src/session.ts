@@ -7,8 +7,9 @@ import {
 } from "vscode-languageclient/node";
 import { displayName } from "../package.json";
 import { findBiomeGlobally, findBiomeLocally } from "./locator/locator";
-import type { Project } from "./project.bak";
-import { logger, mode, subtractURI, supportedLanguages } from "./utils";
+import { debug, error, info } from "./logger";
+import type { Project } from "./project";
+import { mode, subtractURI, supportedLanguages } from "./utils";
 
 export type Session = {
 	bin: Uri;
@@ -19,21 +20,28 @@ export type Session = {
 /**
  * Creates a new Biome LSP session
  */
-export const createSession = async (project?: Project): Promise<Session> => {
-	// Find the Biome binary
+export const createSession = async (
+	project?: Project,
+): Promise<Session | undefined> => {
 	const bin = project
-		? (await findBiomeLocally(project.uri)).uri
-		: (await findBiomeGlobally()).uri;
+		? await findBiomeLocally(project.path)
+		: await findBiomeGlobally();
 
-	// If the Biome binary could not be found, error out
 	if (!bin) {
-		logger.error("Could not find the Biome binary");
+		error("Could not find the Biome binary");
+		return;
 	}
 
+	info(
+		`Found Biome binary at ${bin.uri.fsPath} using strategy ${bin.source}`,
+	);
+
+	info("Creating new Biome LSP session");
+
 	return {
-		bin: bin,
+		bin: bin.uri,
 		project: project,
-		client: createLanguageClient(bin, project),
+		client: createLanguageClient(bin.uri, project),
 	};
 };
 
@@ -41,17 +49,24 @@ export const createSession = async (project?: Project): Promise<Session> => {
  * Creates a new Biome LSP client
  */
 const createLanguageClient = (bin: Uri, project?: Project) => {
+	info("Creating new Biome LSP client");
+
+	let args = ["lsp-proxy"];
+	if (project.configFile) {
+		info(`Using custom config file: ${project.configFile.fsPath}`);
+		args = [...args, "--config", project.configFile.fsPath];
+	}
+
 	const serverOptions: ServerOptions = {
 		command: bin.fsPath,
 		transport: TransportKind.stdio,
-		args: [
-			"lsp-proxy",
-			// If a custom config file was specified, pass it to Biome
-			...(project?.configFile
-				? ["--config", project.configFile.fsPath]
-				: []),
-		],
+		args,
 	};
+
+	debug(
+		`Starting LSP with command: ${serverOptions.command} ${args.join(" ")}`,
+		serverOptions,
+	);
 
 	const clientOptions: LanguageClientOptions = {
 		outputChannel: createLspLogger(project),
@@ -74,7 +89,7 @@ const createLspLogger = (project?: Project): LogOutputChannel => {
 	// If the project is missing, we're creating a logger for the global LSP
 	// session. In this case, we don't have a workspace folder to display in the
 	// logger name, so we just use the display name of the extension.
-	if (!project?.workspaceFolder) {
+	if (!project?.folder) {
 		return window.createOutputChannel(`${displayName} LSP`, {
 			log: true,
 		});
@@ -84,9 +99,8 @@ const createLspLogger = (project?: Project): LogOutputChannel => {
 	// In this case, we display the name of the project and the relative path to
 	// the project root in the logger name. Additionally, when in a multi-root
 	// workspace, we prefix the path with the name of the workspace folder.
-	const prefix =
-		mode === "multi-root" ? `${project.workspaceFolder.name}::` : "";
-	const path = subtractURI(project.uri, project.workspaceFolder.uri).fsPath;
+	const prefix = mode === "multi-root" ? `${project.folder.name}::` : "";
+	const path = subtractURI(project.path, project.folder.uri).fsPath;
 
 	return window.createOutputChannel(`${displayName} LSP (${prefix}${path})`, {
 		log: true,
@@ -100,7 +114,7 @@ const createLspTraceLogger = (project?: Project): LogOutputChannel => {
 	// If the project is missing, we're creating a logger for the global LSP
 	// session. In this case, we don't have a workspace folder to display in the
 	// logger name, so we just use the display name of the extension.
-	if (!project?.workspaceFolder) {
+	if (!project?.folder) {
 		return window.createOutputChannel(`${displayName} LSP trace`, {
 			log: true,
 		});
@@ -110,9 +124,8 @@ const createLspTraceLogger = (project?: Project): LogOutputChannel => {
 	// In this case, we display the name of the project and the relative path to
 	// the project root in the logger name. Additionally, when in a multi-root
 	// workspace, we prefix the path with the name of the workspace folder.
-	const prefix =
-		mode === "multi-root" ? `${project.workspaceFolder.name}::` : "";
-	const path = subtractURI(project.uri, project.workspaceFolder.uri).fsPath;
+	const prefix = mode === "multi-root" ? `${project.folder.name}::` : "";
+	const path = subtractURI(project.path, project.folder.uri).fsPath;
 
 	return window.createOutputChannel(
 		`${displayName} LSP trace (${prefix}${path})`,
@@ -134,6 +147,6 @@ const createDocumentSelector = (project?: Project) => {
 	return supportedLanguages.map((language) => ({
 		language,
 		scheme: project ? "file" : "untitled",
-		...(project && { pattern: `${project.uri.fsPath}/**/*` }),
+		...(project && { pattern: `${project.path.fsPath}/**/*` }),
 	}));
 };
