@@ -96,6 +96,13 @@ const createWorkspaceProjects = async (): Promise<Project[]> => {
 };
 
 const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
+	if (!config("enabled", { default: true, level: "workspaceFolder" })) {
+		info(
+			`Biome is disabled (by config) in workspace folder ${folder.name}. Skipping project creation.`,
+		);
+		return [];
+	}
+
 	info(`Creating projects for workspace folder ${folder.name}`);
 
 	const projects: Project[] = [];
