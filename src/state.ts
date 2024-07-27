@@ -1,5 +1,7 @@
+import { workspace } from "vscode";
 import type { Project } from "./project";
 import type { Session } from "./session";
+import { updateStatusBar } from "./ui/status-bar/status-bar";
 
 export type State = {
 	/**
@@ -16,7 +18,8 @@ export type State = {
 		| "started"
 		| "running"
 		| "stopping"
-		| "stopped";
+		| "stopped"
+		| "error";
 
 	/**
 	 * The Biome project that is currently active
@@ -32,8 +35,25 @@ export type State = {
 	globalSession?: Session;
 };
 
-export const state: State = {
+const _state: State = {
 	state: "initializing",
 	sessions: new Map<Project, Session>([]),
 	globalSession: undefined,
 } as State;
+
+/**
+ * The state of the extension
+ *
+ * This state is a proxy to the actual state of the extension, which allows us
+ * to listen for changes to the state and update the status bar accordingly.
+ */
+export const state = new Proxy(_state, {
+	get: (target, prop) => Reflect.get(target, prop),
+	set: (target, prop, value): boolean => {
+		if (Reflect.set(target, prop, value)) {
+			updateStatusBar();
+			return true;
+		}
+		return false;
+	},
+});

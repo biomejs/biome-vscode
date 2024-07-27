@@ -1,5 +1,6 @@
 import { type LogOutputChannel, type Uri, window } from "vscode";
 import {
+	type DocumentFilter,
 	LanguageClient,
 	type LanguageClientOptions,
 	type ServerOptions,
@@ -60,6 +61,9 @@ const createLanguageClient = (bin: Uri, project?: Project) => {
 	const serverOptions: ServerOptions = {
 		command: bin.fsPath,
 		transport: TransportKind.stdio,
+		options: {
+			cwd: project.path.fsPath,
+		},
 		args,
 	};
 
@@ -143,7 +147,7 @@ const createLspTraceLogger = (project?: Project): LogOutputChannel => {
  * project is specified, the document selector will match files that have
  * not yet been saved to disk (untitled).
  */
-const createDocumentSelector = (project?: Project) => {
+const createDocumentSelector = (project?: Project): DocumentFilter[] => {
 	return supportedLanguages.map((language) => ({
 		language,
 		scheme: project ? "file" : "untitled",

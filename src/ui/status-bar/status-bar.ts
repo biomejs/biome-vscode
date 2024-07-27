@@ -1,4 +1,9 @@
-import { StatusBarAlignment, type StatusBarItem, window } from "vscode";
+import {
+	StatusBarAlignment,
+	type StatusBarItem,
+	window,
+	workspace,
+} from "vscode";
 import { type State, state } from "../../state";
 import { config } from "../../utils";
 
@@ -6,7 +11,7 @@ export type StatusBar = {
 	item: StatusBarItem;
 };
 
-const createStatusBar = () => {
+const createStatusBar = (): StatusBar => {
 	const item = window.createStatusBarItem(
 		"biome",
 		StatusBarAlignment.Right,
@@ -17,6 +22,10 @@ const createStatusBar = () => {
 };
 
 export const updateStatusBar = () => {
+	if (!state) {
+		return;
+	}
+
 	if (!config("enable", { default: true }) || state.state === "disabled") {
 		statusBar.item.hide();
 		return;
@@ -60,6 +69,8 @@ const getStateTooltip = () => {
 			return "Stopping";
 		case "stopped":
 			return "Stopped";
+		case "error":
+			return "Error";
 		default:
 			return "Biome";
 	}
@@ -77,6 +88,8 @@ const getStateIcon = (state: State): string => {
 			return "$(sync~spin)";
 		case "stopped":
 			return "$(x)";
+		case "error":
+			return "$(error)";
 		default:
 			return "$(question)";
 	}

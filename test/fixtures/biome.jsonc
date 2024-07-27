@@ -1,0 +1,20 @@
+/**
+ * This file exists as a stopgap to ensure that Biome does not attempt
+ * resolve the configuration files in parent directories for the test
+ * fixtures that do not have their own configuration files.
+ *
+ * This is necessary because some configuration options may have an
+ * impact on the behavior of the test fixtures, notably, in the root
+ * of this repo we ignore files in the `test/fixtures` directory to
+ * ensure we don't format them accidentally. Unfortunately, this
+ * means that when opening test fixtures that do not have their own
+ * configuration file as workspace folders, the configuration options
+ * in the root of the repo will be applied to them, prevent us from
+ * running the tests reliably.
+ *
+ * Test fixtures that do have their own configuration files will be
+ * resolved as expected.
+ *
+ * Keep this configuration empty.
+ */
+{}

@@ -5,7 +5,7 @@ import {
 	window,
 	workspace,
 } from "vscode";
-import { restartCommand, startCommand, stopCommand } from "./commands/start";
+import { restartCommand, startCommand, stopCommand } from "./commands";
 import { error, info } from "./logger";
 import { type Project, createProjects } from "./project";
 import { createSession } from "./session";
@@ -48,6 +48,8 @@ export const createExtension = async (
 		return;
 	}
 
+	state.state = "initializing";
+
 	// Start the extension
 	await start();
 };
@@ -79,6 +81,7 @@ const setupGlobalSession = async () => {
 		if (hasUntitledDocuments() && !state.globalSession) {
 			info("Found untitle files, creating global session.");
 			state.globalSession = await createSession();
+			state.globalSession?.client.start();
 		}
 	});
 
@@ -108,6 +111,8 @@ const setupProjectSessions = async (projects: Project[]) => {
 				`Created session for project ${project.path} in workspace ${project.folder.name}.`,
 			);
 			state.sessions.set(project, session);
+
+			await session.client.start();
 		} else {
 			error(
 				`Failed to create session for project ${project.path} in workspace ${project.folder.name}.`,
@@ -121,17 +126,24 @@ const setupProjectSessions = async (projects: Project[]) => {
  */
 export const start = async () => {
 	info("🚀 Starting Biome extension");
+	state.state = "starting";
 	window.withProgress(
 		{
 			title: "Starting Biome extension",
 			location: ProgressLocation.Notification,
 		},
 		async () => {
-			await setupGlobalSession();
-			const projects = await createProjects();
-			await setupProjectSessions(projects);
+			try {
+				await setupGlobalSession();
+				const projects = await createProjects();
+				await setupProjectSessions(projects);
+			} catch (e) {
+				error("Failed to start Biome extension", error);
+				state.state = "error";
+			}
 		},
 	);
+	state.state = "started";
 };
 
 /**
@@ -139,6 +151,7 @@ export const start = async () => {
  */
 export const stop = async () => {
 	info("Stopping Biome extension");
+	state.state = "stopping";
 	window.withProgress(
 		{
 			title: "Stopping Biome extension",
@@ -152,6 +165,7 @@ export const stop = async () => {
 			state.sessions.clear();
 		},
 	);
+	state.state = "stopped";
 };
 
 /**
