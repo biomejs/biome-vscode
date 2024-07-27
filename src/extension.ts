@@ -1,4 +1,11 @@
-import { ProgressLocation, window, workspace } from "vscode";
+import {
+	type ExtensionContext,
+	ProgressLocation,
+	commands,
+	window,
+	workspace,
+} from "vscode";
+import { restartCommand, startCommand, stopCommand } from "./commands/start";
 import { error, info } from "./logger";
 import { type Project, createProjects } from "./project";
 import { createSession } from "./session";
@@ -11,16 +18,27 @@ import { config, hasUntitledDocuments } from "./utils";
  * This function creates a new Biome extension and initializes all of its
  * components.
  */
-export const createExtension = async (): Promise<void> => {
+export const createExtension = async (
+	context: ExtensionContext,
+): Promise<void> => {
 	// Listen for configuration changes, so we can restart the extension
 	// when the configuration changes. This is the first thing we do to ensure
 	// that we can restart the extension even when the user had it disabled
 	// initially.
-	workspace.onDidChangeConfiguration(async (event) => {
-		if (event.affectsConfiguration("biome")) {
-			await restart();
-		}
-	});
+	context.subscriptions.push(
+		workspace.onDidChangeConfiguration(async (event) => {
+			if (event.affectsConfiguration("biome")) {
+				await restart();
+			}
+		}),
+	);
+
+	// Register commands
+	context.subscriptions.push(
+		commands.registerCommand("biome.start", startCommand),
+		commands.registerCommand("biome.stop", stopCommand),
+		commands.registerCommand("biome.restart", restartCommand),
+	);
 
 	// If the extension is or became disabled globally, stop it now.
 	if (
@@ -64,7 +82,7 @@ const setupGlobalSession = async () => {
 		}
 	});
 
-	workspace.onDidCloseTextDocument(async (document) => {
+	workspace.onDidCloseTextDocument(async () => {
 		// If the workspace has no untitled files open and there is a global session
 		// stop and destroy the global session
 		if (!hasUntitledDocuments() && state.globalSession) {
@@ -101,7 +119,7 @@ const setupProjectSessions = async (projects: Project[]) => {
 /**
  * Starts the Biome extension
  */
-const start = async () => {
+export const start = async () => {
 	info("🚀 Starting Biome extension");
 	window.withProgress(
 		{
@@ -119,7 +137,7 @@ const start = async () => {
 /**
  * Stops the biome extension
  */
-const stop = async () => {
+export const stop = async () => {
 	info("Stopping Biome extension");
 	window.withProgress(
 		{
@@ -139,7 +157,7 @@ const stop = async () => {
 /**
  * Restarts the Biome extension
  */
-const restart = async () => {
+export const restart = async () => {
 	await stop();
 	await start();
 };

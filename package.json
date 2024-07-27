@@ -41,6 +41,14 @@
 	},
 	"categories": ["Formatters", "Linters"],
 	"contributes": {
+		"commands": [
+			{ "title": "Biome: Start", "command": "biome.start" },
+			{ "title": "Biome: Stop", "command": "biome.stop" },
+			{
+				"title": "Biome: Restart",
+				"command": "biome.restart"
+			}
+		],
 		"configuration": {
 			"title": "Biome",
 			"properties": {
