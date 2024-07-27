@@ -1,4 +1,4 @@
-import { workspace } from "vscode";
+import { window, workspace } from "vscode";
 import type { Project } from "./project";
 import type { Session } from "./session";
 import { updateStatusBar } from "./ui/status-bar/status-bar";

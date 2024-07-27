@@ -35,7 +35,7 @@ export const updateStatusBar = () => {
 	const text = getStateText();
 	const tooltip = getStateTooltip();
 
-	statusBar.item.text = `${icon} ${text}`.trim();
+	statusBar.item.text = `${icon} ${text} ${state.activeProject?.path}`.trim();
 	statusBar.item.tooltip = tooltip;
 	statusBar.item.show();
 };

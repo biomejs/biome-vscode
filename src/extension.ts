@@ -10,7 +10,7 @@ import { error, info } from "./logger";
 import { type Project, createProjects } from "./project";
 import { createSession } from "./session";
 import { state } from "./state";
-import { config, hasUntitledDocuments } from "./utils";
+import { config, hasUntitledDocuments, supportedLanguages } from "./utils";
 
 /**
  * Creates a new Biome extension
@@ -48,10 +48,35 @@ export const createExtension = async (
 		return;
 	}
 
+	window.onDidChangeActiveTextEditor((editor) => {
+		if (!editor) {
+			state.state = "disabled";
+			return;
+		}
+
+		if (!supportedLanguages.includes(editor.document.languageId)) {
+			state.state = "disabled";
+			return;
+		}
+
+		const project = [...state.sessions.keys()].find((project) =>
+			editor.document.uri.fsPath.startsWith(project.path),
+		);
+
+		if (project) {
+			state.activeProject = project;
+		}
+	});
+
 	state.state = "initializing";
 
 	// Start the extension
 	await start();
+
+	// Set the active project, if any
+	state.activeProject = [...state.sessions.keys()].find((project) =>
+		window.activeTextEditor?.document.uri.fsPath.startsWith(project.path),
+	);
 };
 
 /**
