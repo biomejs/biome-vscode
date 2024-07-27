@@ -10,7 +10,7 @@
 		"url": "https://github.com/sponsors/biomejs"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.8.2",
+		"@biomejs/biome": "1.8.3",
 		"@rollup/plugin-commonjs": "^25.0.7",
 		"@rollup/plugin-json": "^6.1.0",
 		"@rollup/plugin-node-resolve": "^15.2.3",
