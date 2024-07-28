@@ -4,14 +4,19 @@ import { type QuickPickItem, Uri, window, workspace } from "vscode";
 import { state } from "./state";
 import { binaryName, fileExists } from "./utils";
 
-export const downloadBiome = async () => {
-	const versions = await promptVersionsToDownload();
+export const downloadBiome = async (): Promise<Uri | undefined> => {
+	const version = await promptVersionToDownload();
 
-	for (const version of versions) {
+	if (!version) {
+		return;
 	}
+
+	return await downloadBiomeVersion(version?.label);
 };
 
-const downloadBiomeVersion = async (version: string) => {
+const downloadBiomeVersion = async (
+	version: string,
+): Promise<Uri | undefined> => {
 	const releases: {
 		assets: { name: string; browser_download_url: string }[];
 	} = await ky
@@ -57,33 +62,29 @@ const downloadBiomeVersion = async (version: string) => {
  * Retrieves the list of Biome CLI versions that have already been downloaded
  * to the global storage directory.
  */
-const getDownloadedVersions = async () => {
+const getDownloadedVersion = async () => {
 	// Retrieve the list of downloaded version from the global state
-	const versions = state.context.globalState.get<string[]>(
-		"downloadedVersions",
-		[],
-	);
+	const version = state.context.globalState.get<string>("downloadedVersion");
 
 	// For every version in the list, ensure that the version exists in the
 	// global storage directory. If it does not exist, remove it from the list.
-	for (const version of versions) {
-		const exists = await fileExists(
+
+	if (
+		await fileExists(
 			Uri.joinPath(
 				state.context.globalStorageUri,
 				"bin",
 				`biome-${version}${process.platform === "win32" ? ".exe" : ""}`,
 			),
-		);
-
-		if (!exists) {
-			versions.splice(versions.indexOf(version), 1);
-		}
+		)
+	) {
+		return version;
 	}
 
 	// Save the updated list of downloaded versions
-	state.context.globalState.update("downloadedVersions", versions);
+	state.context.globalState.update("downloadedVersion", version);
 
-	return versions;
+	return version;
 };
 
 /**
@@ -93,28 +94,29 @@ const getDownloadedVersions = async () => {
  * select which versions of the Biome CLI they would like to download. Versions
  * that have already been downloaded will be pre-selected.
  */
-const promptVersionsToDownload = async () => {
+const promptVersionToDownload = async () => {
 	// Get the list of versions
 	const compileItems = async (): Promise<QuickPickItem[]> => {
-		// Get the list of versions we already have
-		const downloadedVersions = await getDownloadedVersions();
+		const downloadedVersion = await getDownloadedVersion();
 
 		// Get the list of available versions
-		const availableVersions = await getAllVersions();
+		const availableVersions = await getAllVersions(false);
 
 		return availableVersions.map((version, index) => {
 			return {
 				label: version,
 				description: index === 0 ? "(latest)" : "",
+				detail:
+					downloadedVersion === version
+						? "(currently installed)"
+						: "",
 				alwaysShow: index < 3,
-				picked: downloadedVersions.includes(version),
 			};
 		});
 	};
 
 	return window.showQuickPick(compileItems(), {
 		title: "Select Biome version to download",
-		canPickMany: true,
 		placeHolder: "Select Biome version to download",
 	});
 };

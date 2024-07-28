@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { delimiter } from "node:path";
 import { Uri } from "vscode";
-import type { Project } from "./project";
+import { downloadBiome } from "./downloader";
 import {
 	binaryName,
 	config,
@@ -34,82 +34,6 @@ export type BinaryFinderResult = Promise<
 	  }
 	| undefined
 >;
-
-/**
- * Node Modules Locator Strategy
- *
- * The Node Modules Locator Strategy is responsible for finding a suitable
- * Biome binary from the project's dependencies in the `node_modules` directory
- * by looking for a `@biomejs/cli-{platform}-{arch}{libc}` package, which would
- * usually have been installed as a transitive dependency by the user's package
- * manager.
- *
- * The locator is implemented in such a way that it should work with most if
- * not all packages managers, including npm, pnpm, yarn and bun. Using node's
- * built-in `createRequire`, we create a require function that is scoped to the
- * root `@biomejs/biome` package, which allows us to resolve the platform-specific
- * `@biomejs/cli-{platform}-{arch}{libc}` package. We then resolve the path to the
- * `biome` binary by looking for the `biome` executable in the root of the package.
- */
-const nodeModulesStrategy: LocatorStrategy = {
-	name: "Node Modules",
-	find: async (path: Uri): Promise<Uri | undefined> => {
-		try {
-			const biomePackage = createRequire(
-				require.resolve("@biomejs/biome/package.json", {
-					paths: [path.fsPath],
-				}),
-			);
-
-			// We need to resolve the package.json file here because the
-			// platform-specific packages do not have an entry point.
-			const binPackage = dirname(
-				biomePackage.resolve(`${getPackageName()}/package.json`),
-			);
-
-			const binPath = Uri.file(join(binPackage, binaryName));
-
-			if (!(await fileExists(binPath))) {
-				return undefined;
-			}
-
-			return binPath;
-		} catch {
-			return undefined;
-		}
-	},
-};
-
-/**
- * Path Environment Variable Strategy
- *
- * The Path Environment Variable Strategy is responsible for finding a suitable
- * Biome binary from the system's PATH environment variable by looking for the
- * `biome` executable in each directories in the PATH.
- *
- * The PATH environment variable is scanned from left to right, and the first
- * `biome` executable found is returned, if any.
- */
-const pathEnvironmentVariableStrategy: LocatorStrategy = {
-	name: "Path Environment Variable",
-	find: async (path?: Uri): Promise<Uri | undefined> => {
-		const pathEnv = process.env.PATH;
-
-		if (!path) {
-			return;
-		}
-
-		for (const dir of pathEnv.split(delimiter)) {
-			const biome = Uri.joinPath(Uri.file(dir), binaryName);
-
-			if (await fileExists(biome)) {
-				return biome;
-			}
-		}
-
-		return undefined;
-	},
-};
 
 /**
  * VSCode Settings Strategy
@@ -191,6 +115,51 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 };
 
 /**
+ * Node Modules Locator Strategy
+ *
+ * The Node Modules Locator Strategy is responsible for finding a suitable
+ * Biome binary from the project's dependencies in the `node_modules` directory
+ * by looking for a `@biomejs/cli-{platform}-{arch}{libc}` package, which would
+ * usually have been installed as a transitive dependency by the user's package
+ * manager.
+ *
+ * The locator is implemented in such a way that it should work with most if
+ * not all packages managers, including npm, pnpm, yarn and bun. Using node's
+ * built-in `createRequire`, we create a require function that is scoped to the
+ * root `@biomejs/biome` package, which allows us to resolve the platform-specific
+ * `@biomejs/cli-{platform}-{arch}{libc}` package. We then resolve the path to the
+ * `biome` binary by looking for the `biome` executable in the root of the package.
+ */
+const nodeModulesStrategy: LocatorStrategy = {
+	name: "Node Modules",
+	find: async (path: Uri): Promise<Uri | undefined> => {
+		try {
+			const biomePackage = createRequire(
+				require.resolve("@biomejs/biome/package.json", {
+					paths: [path.fsPath],
+				}),
+			);
+
+			// We need to resolve the package.json file here because the
+			// platform-specific packages do not have an entry point.
+			const binPackage = dirname(
+				biomePackage.resolve(`${getPackageName()}/package.json`),
+			);
+
+			const binPath = Uri.file(join(binPackage, binaryName));
+
+			if (!(await fileExists(binPath))) {
+				return undefined;
+			}
+
+			return binPath;
+		} catch {
+			return undefined;
+		}
+	},
+};
+
+/**
  * Yarn Plug'n'Play Strategy
  *
  * The Yarn Plug'n'Play Strategy is responsible for finding a suitable Biome
@@ -226,6 +195,48 @@ const yarnPnpStrategy: LocatorStrategy = {
 			} catch {
 				return undefined;
 			}
+		}
+	},
+};
+
+/**
+ * Path Environment Variable Strategy
+ *
+ * The Path Environment Variable Strategy is responsible for finding a suitable
+ * Biome binary from the system's PATH environment variable by looking for the
+ * `biome` executable in each directories in the PATH.
+ *
+ * The PATH environment variable is scanned from left to right, and the first
+ * `biome` executable found is returned, if any.
+ */
+const pathEnvironmentVariableStrategy: LocatorStrategy = {
+	name: "Path Environment Variable",
+	find: async (path?: Uri): Promise<Uri | undefined> => {
+		const pathEnv = process.env.PATH;
+
+		if (!path) {
+			return;
+		}
+
+		for (const dir of pathEnv.split(delimiter)) {
+			const biome = Uri.joinPath(Uri.file(dir), binaryName);
+
+			if (await fileExists(biome)) {
+				return biome;
+			}
+		}
+
+		return undefined;
+	},
+};
+
+const downloadBiomeStrategy: LocatorStrategy = {
+	name: "Download Biome",
+	find: async (): Promise<Uri | undefined> => {
+		const binPath = await downloadBiome();
+
+		if (binPath) {
+			return binPath;
 		}
 	},
 };
@@ -288,6 +299,14 @@ export const findBiomeLocally = async (
 		return {
 			bin: binPathInPathEnvironmentVariable,
 			strategy: pathEnvironmentVariableStrategy,
+		};
+	}
+
+	const downloadedBinPath = await downloadBiomeStrategy.find();
+	if (downloadedBinPath) {
+		return {
+			bin: downloadedBinPath,
+			strategy: downloadBiomeStrategy,
 		};
 	}
 };
