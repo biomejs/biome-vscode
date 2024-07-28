@@ -1,10 +1,47 @@
 import { getAllVersions } from "@biomejs/version-utils";
-import { type QuickPickItem, window } from "vscode";
+import { type QuickPickItem, Uri, window, workspace } from "vscode";
 import { info } from "./logger";
+import { state } from "./state";
+import { fileExists } from "./utils";
 
 export const downloadBiome = async () => {
 	const versions = await promptVersionsToDownload();
-	info(`Downloading Biome CLI versions: ${versions.join(", ")}`);
+
+	for (const version of versions) {
+	}
+};
+
+/**
+ * Retrieves the list of Biome CLI versions that have already been downloaded
+ * to the global storage directory.
+ */
+const getDownloadedVersions = async () => {
+	// Retrieve the list of downloaded version from the global state
+	const versions = state.context.globalState.get<string[]>(
+		"downloadedVersions",
+		[],
+	);
+
+	// For every version in the list, ensure that the version exists in the
+	// global storage directory. If it does not exist, remove it from the list.
+	for (const version of versions) {
+		const exists = await fileExists(
+			Uri.joinPath(
+				state.context.globalStorageUri,
+				"bin",
+				`biome-${version}${process.platform === "win32" ? ".exe" : ""}`,
+			),
+		);
+
+		if (!exists) {
+			versions.splice(versions.indexOf(version), 1);
+		}
+	}
+
+	// Save the updated list of downloaded versions
+	state.context.globalState.update("downloadedVersions", versions);
+
+	return versions;
 };
 
 /**
@@ -15,16 +52,20 @@ export const downloadBiome = async () => {
  * that have already been downloaded will be pre-selected.
  */
 const promptVersionsToDownload = async () => {
-	// Get the list of versions we already have
-
 	// Get the list of versions
 	const compileItems = async (): Promise<QuickPickItem[]> => {
-		const allVersions = await getAllVersions();
-		return allVersions.map((version, index) => {
+		// Get the list of versions we already have
+		const downloadedVersions = await getDownloadedVersions();
+
+		// Get the list of available versions
+		const availableVersions = await getAllVersions();
+
+		return availableVersions.map((version, index) => {
 			return {
 				label: version,
 				description: index === 0 ? "(latest)" : "",
 				alwaysShow: index < 3,
+				picked: downloadedVersions.includes(version),
 			};
 		});
 	};
