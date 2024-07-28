@@ -1,6 +1,6 @@
 import { Uri, type WorkspaceFolder, window, workspace } from "vscode";
 import { Utils } from "vscode-uri";
-import { findBiomeLocally } from "./locator/locator";
+import { findBiomeLocally } from "./binary-finder";
 import { error, info, warn } from "./logger";
 import { config, directoryExists, fileExists, mode } from "./utils";
 
@@ -44,10 +44,10 @@ const createProject = async ({
 	configFile?: Uri;
 }): Promise<Project | undefined> => {
 	// Resolve the path to the Biome binary
-	const bin = await findBiomeLocally(path);
+	const findResult = await findBiomeLocally(path);
 
 	// If the Biome binary could not be found, error out
-	if (!bin) {
+	if (!findResult) {
 		error("Could not find the Biome binary");
 		return;
 	}
@@ -56,7 +56,7 @@ const createProject = async ({
 		folder: folder,
 		path: path,
 		configFile: configFile,
-		bin: bin.uri,
+		bin: findResult.bin,
 	};
 };
 

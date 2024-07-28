@@ -7,7 +7,7 @@ import {
 	TransportKind,
 } from "vscode-languageclient/node";
 import { displayName } from "../package.json";
-import { findBiomeGlobally, findBiomeLocally } from "./locator/locator";
+import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
 import { debug, error, info } from "./logger";
 import type { Project } from "./project";
 import { mode, subtractURI, supportedLanguages } from "./utils";
@@ -24,25 +24,25 @@ export type Session = {
 export const createSession = async (
 	project?: Project,
 ): Promise<Session | undefined> => {
-	const bin = project
+	const findResult = project
 		? await findBiomeLocally(project.path)
 		: await findBiomeGlobally();
 
-	if (!bin) {
+	if (!findResult) {
 		error("Could not find the Biome binary");
 		return;
 	}
 
 	info(
-		`Found Biome binary at ${bin.uri.fsPath} using strategy ${bin.source}`,
+		`Found Biome binary at ${findResult.bin.fsPath} using strategy [${findResult.strategy.name}]`,
 	);
 
 	info("Creating new Biome LSP session");
 
 	return {
-		bin: bin.uri,
+		bin: findResult.bin,
 		project: project,
-		client: createLanguageClient(bin.uri, project),
+		client: createLanguageClient(findResult.bin, project),
 	};
 };
 

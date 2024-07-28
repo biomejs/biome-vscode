@@ -1,6 +1,6 @@
 import { StatusBarAlignment, type StatusBarItem, window } from "vscode";
-import { type State, state } from "../../state";
-import { config } from "../../utils";
+import { type State, state } from "./state";
+import { config } from "./utils";
 
 export type StatusBar = {
 	item: StatusBarItem;
