@@ -1,13 +1,55 @@
 import { getAllVersions } from "@biomejs/version-utils";
+import ky from "ky";
 import { type QuickPickItem, Uri, window, workspace } from "vscode";
-import { info } from "./logger";
 import { state } from "./state";
-import { fileExists } from "./utils";
+import { binaryName, fileExists } from "./utils";
 
 export const downloadBiome = async () => {
 	const versions = await promptVersionsToDownload();
 
 	for (const version of versions) {
+	}
+};
+
+const downloadBiomeVersion = async (version: string) => {
+	const releases: {
+		assets: { name: string; browser_download_url: string }[];
+	} = await ky
+		.get(
+			`https://api.github.com/repos/biomejs/biome/releases/tags/cli/v${version}`,
+		)
+		.json();
+
+	const asset = releases.assets.find((asset) => {
+		return asset.name === binaryName;
+	});
+
+	if (!asset) {
+		window.showErrorMessage(
+			`Could not Biome ${version} for platform your platform.`,
+		);
+	}
+
+	let bin: ArrayBuffer;
+	try {
+		const blob = await ky.get(asset.browser_download_url).blob();
+		bin = await blob.arrayBuffer();
+	} catch (error) {
+		window.showErrorMessage(`Failed to download Biome ${version}.`);
+		return;
+	}
+
+	const binPath = Uri.joinPath(
+		state.context.globalStorageUri,
+		"bin",
+		`biome-${version}${process.platform === "win32" ? ".exe" : ""}`,
+	);
+
+	try {
+		await workspace.fs.writeFile(binPath, new Uint8Array(bin));
+	} catch (error) {
+		window.showErrorMessage(`Failed to save Biome ${version}.`);
+		return;
 	}
 };
 

@@ -186,6 +186,7 @@
 	},
 	"dependencies": {
 		"@biomejs/version-utils": "^0.2.0",
+		"ky": "^1.5.0",
 		"undici": "^5",
 		"vscode-languageclient": "^8",
 		"vscode-uri": "^3.0.8"
