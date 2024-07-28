@@ -21,7 +21,11 @@ export const updateStatusBar = () => {
 		return;
 	}
 
-	if (!config("enable", { default: true }) || state.state === "disabled") {
+	if (
+		!config("enabled", { default: true }) ||
+		state.state === "disabled" ||
+		state.hidden
+	) {
 		statusBar.item.hide();
 		return;
 	}

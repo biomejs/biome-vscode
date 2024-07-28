@@ -35,12 +35,15 @@ export type State = {
 	globalSession?: Session;
 
 	context: ExtensionContext;
+
+	hidden: boolean;
 };
 
 const _state: State = {
 	state: "initializing",
 	sessions: new Map<Project, Session>([]),
 	globalSession: undefined,
+	hidden: false,
 } as State;
 
 /**

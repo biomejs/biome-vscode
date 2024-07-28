@@ -42,11 +42,21 @@
 	"categories": ["Formatters", "Linters"],
 	"contributes": {
 		"commands": [
-			{ "title": "Biome: Start", "command": "biome.start" },
-			{ "title": "Biome: Stop", "command": "biome.stop" },
+			{
+				"title": "Biome: Start",
+				"command": "biome.start"
+			},
+			{
+				"title": "Biome: Stop",
+				"command": "biome.stop"
+			},
 			{
 				"title": "Biome: Restart",
 				"command": "biome.restart"
+			},
+			{
+				"title": "Biome: Download CLI",
+				"command": "biome.download"
 			}
 		],
 		"configuration": {
@@ -175,6 +185,7 @@
 		"skipLicense": true
 	},
 	"dependencies": {
+		"@biomejs/version-utils": "^0.2.0",
 		"undici": "^5",
 		"vscode-languageclient": "^8",
 		"vscode-uri": "^3.0.8"

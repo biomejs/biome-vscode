@@ -1,3 +1,6 @@
+import { getAllVersions } from "@biomejs/version-utils";
+import { type QuickPickItem, QuickPickItemKind, version, window } from "vscode";
+import { downloadBiome } from "./downloader";
 import { restart, start, stop } from "./extension";
 
 /**
@@ -25,4 +28,17 @@ export const stopCommand = async () => {
  */
 export const restartCommand = async () => {
 	await restart();
+};
+
+/**
+ * Installs a pre-built version of the Biome CLI
+ *
+ * This command is exposed to the users as a command in the command palette.
+ *
+ * When calling this command, the user will be prompted to select a version of
+ * the Biome CLI to install. The selected version will be downloaded and stored
+ * in VS Code's global storage directory.
+ */
+export const downloadCommand = async () => {
+	await downloadBiome();
 };

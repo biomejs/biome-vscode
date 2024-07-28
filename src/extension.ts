@@ -1,11 +1,17 @@
 import {
 	type ExtensionContext,
 	ProgressLocation,
+	type TextEditor,
 	commands,
 	window,
 	workspace,
 } from "vscode";
-import { restartCommand, startCommand, stopCommand } from "./commands";
+import {
+	downloadCommand,
+	restartCommand,
+	startCommand,
+	stopCommand,
+} from "./commands";
 import { error, info } from "./logger";
 import { type Project, createProjects } from "./project";
 import { type Session, createSession } from "./session";
@@ -175,6 +181,7 @@ const registerCommands = () => {
 		commands.registerCommand("biome.start", startCommand),
 		commands.registerCommand("biome.stop", stopCommand),
 		commands.registerCommand("biome.restart", restartCommand),
+		commands.registerCommand("biome.download", downloadCommand),
 	);
 };
 
@@ -202,12 +209,14 @@ const listenForConfigurationChanges = async () => {
  * editor by checking if the document in the active text editor is part of a
  * project. If it is, the active project is updated to reflect this change.
  */
-const updateActiveProject = () => {
+const updateActiveProject = (editor: TextEditor) => {
 	const project = [...state.sessions.keys()].find((project) => {
-		return window.activeTextEditor?.document.uri.fsPath.startsWith(
-			project.path.fsPath,
-		);
+		return editor?.document?.uri.fsPath.startsWith(project.path.fsPath);
 	});
+
+	state.hidden =
+		editor.document === undefined ||
+		!supportedLanguages.includes(editor.document.languageId);
 
 	state.activeProject = project;
 };
@@ -222,20 +231,10 @@ const updateActiveProject = () => {
  */
 const listenForActiveTextEditorChange = () => {
 	state.context.subscriptions.push(
-		window.onDidChangeActiveTextEditor(({ document }) => {
-			if (!document) {
-				state.state = "disabled";
-				return;
-			}
-
-			if (!supportedLanguages.includes(document.languageId)) {
-				state.state = "disabled";
-				return;
-			}
-
-			updateActiveProject();
+		window.onDidChangeActiveTextEditor((editor) => {
+			updateActiveProject(editor);
 		}),
 	);
 
-	updateActiveProject();
+	updateActiveProject(window.activeTextEditor);
 };
