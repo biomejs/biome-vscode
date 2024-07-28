@@ -1,4 +1,4 @@
-import { window, workspace } from "vscode";
+import { type ExtensionContext, window, workspace } from "vscode";
 import type { Project } from "./project";
 import type { Session } from "./session";
 import { updateStatusBar } from "./ui/status-bar/status-bar";
@@ -33,6 +33,8 @@ export type State = {
 	sessions: Map<Project, Session>;
 
 	globalSession?: Session;
+
+	context: ExtensionContext;
 };
 
 const _state: State = {

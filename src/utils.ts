@@ -199,5 +199,22 @@ export const determineMode = ():
 
 export const mode = determineMode();
 
+/**
+ * Indicates whether the extension is enabled
+ */
+export const isEnabled = () =>
+	config<boolean>("enabled", { level: "global", default: true }) === true;
+
+/**
+ * Indicates whether the extension is disabled
+ *
+ * This function is the inverse of `isEnabled`.
+ */
+export const isDisabled = () => !isEnabled();
+
+/**
+ * Indicates whether there are any untitled documents currently open in the
+ * workspace
+ */
 export const hasUntitledDocuments = (): boolean =>
 	workspace.textDocuments.find((doc) => doc.isUntitled) !== undefined;

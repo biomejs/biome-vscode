@@ -8,9 +8,9 @@ import {
 import { restartCommand, startCommand, stopCommand } from "./commands";
 import { error, info } from "./logger";
 import { type Project, createProjects } from "./project";
-import { createSession } from "./session";
+import { type Session, createSession } from "./session";
 import { state } from "./state";
-import { config, hasUntitledDocuments, supportedLanguages } from "./utils";
+import { hasUntitledDocuments, isEnabled, supportedLanguages } from "./utils";
 
 /**
  * Creates a new Biome extension
@@ -21,62 +21,18 @@ import { config, hasUntitledDocuments, supportedLanguages } from "./utils";
 export const createExtension = async (
 	context: ExtensionContext,
 ): Promise<void> => {
-	// Listen for configuration changes, so we can restart the extension
-	// when the configuration changes. This is the first thing we do to ensure
-	// that we can restart the extension even when the user had it disabled
-	// initially.
-	context.subscriptions.push(
-		workspace.onDidChangeConfiguration(async (event) => {
-			if (event.affectsConfiguration("biome")) {
-				await restart();
-			}
-		}),
-	);
-
-	// Register commands
-	context.subscriptions.push(
-		commands.registerCommand("biome.start", startCommand),
-		commands.registerCommand("biome.stop", stopCommand),
-		commands.registerCommand("biome.restart", restartCommand),
-	);
-
-	// If the extension is or became disabled globally, stop it now.
-	if (
-		config<boolean>("enabled", { level: "global", default: true }) === false
-	) {
-		await stop();
-		return;
-	}
-
-	window.onDidChangeActiveTextEditor((editor) => {
-		if (!editor) {
-			state.state = "disabled";
-			return;
-		}
-
-		if (!supportedLanguages.includes(editor.document.languageId)) {
-			state.state = "disabled";
-			return;
-		}
-
-		const project = [...state.sessions.keys()].find((project) =>
-			editor.document.uri.fsPath.startsWith(project.path),
-		);
-
-		if (project) {
-			state.activeProject = project;
-		}
-	});
-
 	state.state = "initializing";
+	state.context = context;
 
-	// Start the extension
-	await start();
+	registerCommands();
+	listenForConfigurationChanges();
 
-	// Set the active project, if any
-	state.activeProject = [...state.sessions.keys()].find((project) =>
-		window.activeTextEditor?.document.uri.fsPath.startsWith(project.path),
-	);
+	if (isEnabled()) {
+		await start();
+		listenForActiveTextEditorChange();
+	} else {
+		await stop();
+	}
 };
 
 /**
@@ -128,6 +84,7 @@ const setupGlobalSession = async () => {
  */
 const setupProjectSessions = async (projects: Project[]) => {
 	info("Setting up project sessions");
+	const sessions = new Map<Project, Session>([]);
 	for (const project of projects) {
 		info("=== Creating session for project ===");
 		const session = await createSession(project);
@@ -135,7 +92,7 @@ const setupProjectSessions = async (projects: Project[]) => {
 			info(
 				`Created session for project ${project.path} in workspace ${project.folder.name}.`,
 			);
-			state.sessions.set(project, session);
+			sessions.set(project, session);
 
 			await session.client.start();
 		} else {
@@ -144,6 +101,7 @@ const setupProjectSessions = async (projects: Project[]) => {
 			);
 		}
 	}
+	state.sessions = sessions;
 };
 
 /**
@@ -152,7 +110,7 @@ const setupProjectSessions = async (projects: Project[]) => {
 export const start = async () => {
 	info("🚀 Starting Biome extension");
 	state.state = "starting";
-	window.withProgress(
+	await window.withProgress(
 		{
 			title: "Starting Biome extension",
 			location: ProgressLocation.Notification,
@@ -177,7 +135,7 @@ export const start = async () => {
 export const stop = async () => {
 	info("Stopping Biome extension");
 	state.state = "stopping";
-	window.withProgress(
+	await window.withProgress(
 		{
 			title: "Stopping Biome extension",
 			location: ProgressLocation.Notification,
@@ -199,4 +157,85 @@ export const stop = async () => {
 export const restart = async () => {
 	await stop();
 	await start();
+};
+
+/**
+ * Registers the extension's commands
+ *
+ * This function is responsible for registering the extension's commands with
+ * the VS Code API. Commands registered here are not necessarily exposed to the
+ * end user in the command palette, but can be invoked programmatically, or
+ * bound to keybindings.
+ *
+ * To expose a command to the end user, you must add it to the
+ * `contributes.commands` section of the `package.json` file.
+ */
+const registerCommands = () => {
+	state.context.subscriptions.push(
+		commands.registerCommand("biome.start", startCommand),
+		commands.registerCommand("biome.stop", stopCommand),
+		commands.registerCommand("biome.restart", restartCommand),
+	);
+};
+
+/**
+ * Listens for configuration changes
+ *
+ * This function sets up a listener for configuration changes in the `biome`
+ * namespace. When a configuration change is detected, the extension is
+ * restarted to reflect the new configuration.
+ */
+const listenForConfigurationChanges = async () => {
+	state.context.subscriptions.push(
+		workspace.onDidChangeConfiguration(async (event) => {
+			if (event.affectsConfiguration("biome")) {
+				await restart();
+			}
+		}),
+	);
+};
+
+/**
+ * Updates the currently active project
+ *
+ * This function updates the currently active project based on the active text
+ * editor by checking if the document in the active text editor is part of a
+ * project. If it is, the active project is updated to reflect this change.
+ */
+const updateActiveProject = () => {
+	const project = [...state.sessions.keys()].find((project) => {
+		return window.activeTextEditor?.document.uri.fsPath.startsWith(
+			project.path.fsPath,
+		);
+	});
+
+	state.activeProject = project;
+};
+
+/**
+ * Listens for changes to the active text editor
+ *
+ * This function listens for changes to the active text editor and updates the
+ * active project accordingly. This change is then reflected throughout the
+ * extension automatically. Notably, this triggers the status bar to update
+ * with the active project.
+ */
+const listenForActiveTextEditorChange = () => {
+	state.context.subscriptions.push(
+		window.onDidChangeActiveTextEditor(({ document }) => {
+			if (!document) {
+				state.state = "disabled";
+				return;
+			}
+
+			if (!supportedLanguages.includes(document.languageId)) {
+				state.state = "disabled";
+				return;
+			}
+
+			updateActiveProject();
+		}),
+	);
+
+	updateActiveProject();
 };

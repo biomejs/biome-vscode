@@ -1,9 +1,4 @@
-import {
-	StatusBarAlignment,
-	type StatusBarItem,
-	window,
-	workspace,
-} from "vscode";
+import { StatusBarAlignment, type StatusBarItem, window } from "vscode";
 import { type State, state } from "../../state";
 import { config } from "../../utils";
 
@@ -33,11 +28,22 @@ export const updateStatusBar = () => {
 
 	const icon = getStateIcon(state);
 	const text = getStateText();
+	const version = getBiomeVersion();
 	const tooltip = getStateTooltip();
+	const folder = state.activeProject?.folder.name
+		? `($(folder) ${state.activeProject?.folder.name})`
+		: "";
 
-	statusBar.item.text = `${icon} ${text} ${state.activeProject?.path}`.trim();
+	statusBar.item.text = `${icon} ${text} ${version} ${folder}`.trim();
 	statusBar.item.tooltip = tooltip;
 	statusBar.item.show();
+};
+
+const getBiomeVersion = () => {
+	const session = state.activeProject
+		? state.sessions.get(state.activeProject)
+		: state.globalSession;
+	return session?.client.initializeResult?.serverInfo.version;
 };
 
 const getStateText = (): string => {
