@@ -1,0 +1,30 @@
+name: Integrate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    
+jobs:
+
+  # Check quality of the code
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+      - name: Run Biome
+        run: biome ci --reporter=github
+
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+

@@ -11,5 +11,10 @@
 	},
 	"[typescript]": {
 		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[yaml]": {
+		"editor.insertSpaces": true,
+		"editor.tabSize": 2,
+		"editor.autoIndent": "none"
 	}
 }

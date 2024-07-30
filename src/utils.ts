@@ -156,6 +156,8 @@ export const supportedLanguages = activationEvents
  */
 export const binaryName = `biome${process.platform === "win32" ? ".exe" : ""}`;
 
+export const binaryExtension = process.platform === "win32" ? ".exe" : "";
+
 /**
  * Name of the Biome CLI NPM package
  */
@@ -218,3 +220,5 @@ export const isDisabled = () => !isEnabled();
  */
 export const hasUntitledDocuments = (): boolean =>
 	workspace.textDocuments.find((doc) => doc.isUntitled) !== undefined;
+
+export const platformPackageName = `biome-${platform}`;

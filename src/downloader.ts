@@ -1,8 +1,9 @@
 import { getAllVersions } from "@biomejs/version-utils";
 import ky from "ky";
 import { type QuickPickItem, Uri, window, workspace } from "vscode";
+import { debug, error, info } from "./logger";
 import { state } from "./state";
-import { binaryName, fileExists } from "./utils";
+import { binaryExtension, fileExists, platformPackageName } from "./utils";
 
 export const downloadBiome = async (): Promise<Uri | undefined> => {
 	const version = await promptVersionToDownload();
@@ -26,13 +27,17 @@ const downloadBiomeVersion = async (
 		.json();
 
 	const asset = releases.assets.find((asset) => {
-		return asset.name === binaryName;
+		return asset.name === platformPackageName;
 	});
+
+	debug(platformPackageName);
+	debug(releases.assets.map((asset) => asset.name).join(", "));
 
 	if (!asset) {
 		window.showErrorMessage(
-			`Could not Biome ${version} for platform your platform.`,
+			`Could not find Biome ${version} for your platform.`,
 		);
+		return;
 	}
 
 	let bin: ArrayBuffer;
@@ -47,13 +52,16 @@ const downloadBiomeVersion = async (
 	const binPath = Uri.joinPath(
 		state.context.globalStorageUri,
 		"bin",
-		`biome-${version}${process.platform === "win32" ? ".exe" : ""}`,
+		`biome${binaryExtension}`,
 	);
 
 	try {
 		await workspace.fs.writeFile(binPath, new Uint8Array(bin));
-	} catch (error) {
+		info(`Downloaded Biome ${version} to ${binPath.fsPath}`);
+		state.context.globalState.update("downloadedVersion", version);
+	} catch (e) {
 		window.showErrorMessage(`Failed to save Biome ${version}.`);
+		error(e);
 		return;
 	}
 };
@@ -66,6 +74,8 @@ const getDownloadedVersion = async () => {
 	// Retrieve the list of downloaded version from the global state
 	const version = state.context.globalState.get<string>("downloadedVersion");
 
+	info(`Downloaded version: ${version}`);
+
 	// For every version in the list, ensure that the version exists in the
 	// global storage directory. If it does not exist, remove it from the list.
 
@@ -74,7 +84,7 @@ const getDownloadedVersion = async () => {
 			Uri.joinPath(
 				state.context.globalStorageUri,
 				"bin",
-				`biome-${version}${process.platform === "win32" ? ".exe" : ""}`,
+				`biome${binaryExtension}`,
 			),
 		)
 	) {

@@ -176,9 +176,10 @@
 	"scripts": {
 		"build": "rollup --config rollup.config.ts --configPlugin esbuild",
 		"dev": "rollup --watch --config rollup.config.ts --configPlugin esbuild",
-		"package": "bun run build && vsce package --out biome.vsix",
+		"package": "pnpm run build && vsce package --out biome.vsix",
 		"typecheck": "tsc --noEmit",
-		"check": "biome check --apply ."
+		"pretest": "pnpm run build",
+		"test": "vscode-test"
 	},
 	"vsce": {
 		"dependencies": false,
@@ -186,6 +187,8 @@
 	},
 	"dependencies": {
 		"@biomejs/version-utils": "^0.3.0",
+		"@vscode/test-cli": "^0.0.10",
+		"@vscode/test-electron": "^2.4.1",
 		"ky": "^1.5.0",
 		"undici": "^5",
 		"vscode-languageclient": "^8",
