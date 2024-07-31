@@ -38,7 +38,7 @@ export const updateStatusBar = () => {
 		? `($(folder) ${state.activeProject?.folder.name})`
 		: "";
 
-	statusBar.item.text = `${icon} ${text} ${version} ${folder}`.trim();
+	statusBar.item.text = `${icon} ${text} ${version}`.trim();
 	statusBar.item.tooltip = tooltip;
 	statusBar.item.show();
 };
