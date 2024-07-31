@@ -15,7 +15,9 @@
 		"@rollup/plugin-json": "^6.1.0",
 		"@rollup/plugin-node-resolve": "^15.2.3",
 		"@types/bun": "^1.1.0",
+		"@types/mocha": "^10.0.7",
 		"@types/vscode": "1.80.0",
+		"@vscode/test-cli": "^0.0.10",
 		"@vscode/vsce": "^2.23.0",
 		"@wdio/cli": "^8.39.1",
 		"@wdio/local-runner": "^8.39.1",
@@ -63,6 +65,10 @@
 			{
 				"title": "Biome: Download CLI",
 				"command": "biome.download"
+			},
+			{
+				"title": "Biome: Get projects",
+				"command": "biome.get-projects"
 			}
 		],
 		"configuration": {
@@ -185,8 +191,7 @@
 		"package": "pnpm run build && vsce package --out biome.vsix",
 		"typecheck": "tsc --noEmit",
 		"pretest": "pnpm run build",
-		"test": "vscode-test",
-		"wdio": "wdio run ./wdio.conf.ts"
+		"test": "vscode-test"
 	},
 	"vsce": {
 		"dependencies": false,
@@ -194,7 +199,6 @@
 	},
 	"dependencies": {
 		"@biomejs/version-utils": "^0.3.0",
-		"@vscode/test-cli": "^0.0.10",
 		"@vscode/test-electron": "^2.4.1",
 		"ky": "^1.5.0",
 		"undici": "^5",

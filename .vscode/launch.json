@@ -9,7 +9,7 @@
 				"--disable-extensions",
 				"--extensionDevelopmentKind=node",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"${workspaceFolder}/test/fixtures/multi-root-workspace/multi-root.code-workspace"
+				"${workspaceFolder}/test/fixtures/multi-root-workspace/multi-root-workspace.code-workspace"
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: dev",

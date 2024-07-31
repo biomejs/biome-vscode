@@ -31,5 +31,17 @@
 	},
 	"organizeImports": {
 		"enabled": true
-	}
+	},
+	"overrides": [
+		{
+			"include": ["test/**/*"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		}
+	]
 }

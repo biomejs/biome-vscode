@@ -11,9 +11,6 @@ importers:
       '@biomejs/version-utils':
         specifier: ^0.3.0
         version: 0.3.0
-      '@vscode/test-cli':
-        specifier: ^0.0.10
-        version: 0.0.10
       '@vscode/test-electron':
         specifier: ^2.4.1
         version: 2.4.1
@@ -45,9 +42,15 @@ importers:
       '@types/bun':
         specifier: ^1.1.0
         version: 1.1.6
+      '@types/mocha':
+        specifier: ^10.0.7
+        version: 10.0.7
       '@types/vscode':
         specifier: 1.80.0
         version: 1.80.0
+      '@vscode/test-cli':
+        specifier: ^0.0.10
+        version: 0.0.10
       '@vscode/vsce':
         specifier: ^2.23.0
         version: 2.31.1

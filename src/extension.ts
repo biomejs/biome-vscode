@@ -8,6 +8,7 @@ import {
 } from "vscode";
 import {
 	downloadCommand,
+	getProjectsCommand,
 	restartCommand,
 	startCommand,
 	stopCommand,
@@ -182,6 +183,7 @@ const registerCommands = () => {
 		commands.registerCommand("biome.stop", stopCommand),
 		commands.registerCommand("biome.restart", restartCommand),
 		commands.registerCommand("biome.download", downloadCommand),
+		commands.registerCommand("biome.get-projects", getProjectsCommand),
 	);
 };
 

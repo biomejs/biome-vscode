@@ -111,6 +111,12 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 	// workspace folder's configuration.
 	const projectConfigs = config<ProjectConfig[]>("projects", {
 		scope: folder.uri,
+	}).filter((project) => {
+		if (!project.folder) {
+			return true;
+		}
+
+		return project.folder === folder.name;
 	});
 
 	// If there are no project definitions in the configuration, we create
