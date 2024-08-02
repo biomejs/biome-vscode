@@ -3,6 +3,17 @@ import { Uri, commands, workspace } from "vscode";
 import type { Project } from "../../../src/project";
 
 suite("Multi-root Workspace", () => {
+	// beforeEach(async () => {
+	// 	await commands.executeCommand(
+	// 		"vscode.open",
+	// 		`${__dirname}/fixtures/multi-root-workspace/multi-root-workspace.code-workspace`,
+	// 	);
+	// });
+
+	afterEach(async () => {
+		await commands.executeCommand("workbench.action.closeFolder");
+	});
+
 	test("There are two workspace folders", async () => {
 		assert.equal(workspace.workspaceFolders?.length, 2);
 	});
@@ -79,21 +90,21 @@ suite("Multi-root Workspace", () => {
 
 		assert.equal(project?.path.fsPath, undefined);
 	});
-});
 
-test("It does not create a project for frontend package of the bar workspace", async () => {
-	// Open a file to activate the extension
-	await commands.executeCommand(
-		"vscode.open",
-		Uri.joinPath(workspace.workspaceFolders![1].uri, "trigger.js"),
-	);
+	test("It does not create a project for frontend package of the bar workspace", async () => {
+		// Open a file to activate the extension
+		await commands.executeCommand(
+			"vscode.open",
+			Uri.joinPath(workspace.workspaceFolders![1].uri, "trigger.js"),
+		);
 
-	const projects =
-		await commands.executeCommand<Project[]>("biome.get-projects");
+		const projects =
+			await commands.executeCommand<Project[]>("biome.get-projects");
 
-	const project = projects.find((project) =>
-		project.path.path.includes("bar/packages/frontend"),
-	);
+		const project = projects.find((project) =>
+			project.path.path.includes("bar/packages/frontend"),
+		);
 
-	assert.equal(project?.path.fsPath, undefined);
+		assert.equal(project?.path.fsPath, undefined);
+	});
 });
