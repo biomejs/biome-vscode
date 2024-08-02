@@ -139,12 +139,6 @@ export const config = <T>(
 	}
 
 	return workspace.getConfiguration("biome", options?.scope).get<T>(key);
-
-	// return options?.default !== undefined
-	// 	? workspace
-	// 			.getConfiguration("biome", options?.scope)
-	// 			.get<T>(key, options?.default)
-	// 	: workspace.getConfiguration("biome", options?.scope).get<T>(key);
 };
 
 /**

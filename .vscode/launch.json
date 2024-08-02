@@ -2,6 +2,34 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "🧩 Debug Extension (multi-root workspace)",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentKind=node",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/test/fixtures/multi-root-workspace/test.code-workspace"
+			],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"preLaunchTask": "npm: dev",
+			"sourceMapRenames": true
+		},
+		{
+			"name": "🧩 Debug Extension (multi-root workspace require config)",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentKind=node",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/test/fixtures/multi-root-workspace-requires-config/test.code-workspace"
+			],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"preLaunchTask": "npm: dev",
+			"sourceMapRenames": true
+		},
+		{
 			"name": "🧩 Debug Extension (single-file)",
 			"type": "extensionHost",
 			"request": "launch",

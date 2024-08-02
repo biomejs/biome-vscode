@@ -128,20 +128,27 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 		info(
 			`No project definitions found in workspace folder ${folder.name}, creating project for workspace folder itself`,
 		);
-		projects.push(
-			await createProject({
-				folder,
-				path: folder.uri,
-				configFile: undefined,
-			}),
-		);
 
-		return projects;
+		if (
+			!(await configFileExistsIfRequired(folder, {
+				path: folder.uri.fsPath,
+			}))
+		) {
+			warn(
+				`Project ${folder.uri.fsPath} requires a configuration file that does not exist, skipping project creation`,
+			);
+		} else {
+			projects.push(
+				await createProject({
+					folder,
+					path: folder.uri,
+					configFile: undefined,
+				}),
+			);
+		}
 	}
 
-	info(
-		"Found project definitions in workspace folder configuration. Creating projects.",
-	);
+	info("Creating projects.");
 
 	// If there are project definitions in the configuration, we create a
 	// project for each of them, but we'll igore projects that point to
@@ -188,7 +195,7 @@ const configFileExistsIfRequired = async (
 	folder: WorkspaceFolder,
 	project: ProjectConfig,
 ): Promise<boolean> => {
-	const requireConfig = config("requireConfig", {
+	const requireConfig = config("requireConfigFile", {
 		default: false,
 		scope: Uri.joinPath(folder.uri, project.path),
 	});

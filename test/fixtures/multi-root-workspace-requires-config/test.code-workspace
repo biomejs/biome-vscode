@@ -1,0 +1,13 @@
+{
+    "folders": [
+        {
+            "path": "workspace-folder-1"
+        },
+        {
+            "path": "workspace-folder-2"
+        }
+    ],
+    "settings": {
+        "biome.requireConfigFile": true
+    }
+}
