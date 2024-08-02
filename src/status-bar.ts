@@ -34,7 +34,7 @@ export const updateStatusBar = () => {
 	const text = getStateText();
 	const version = getBiomeVersion();
 	const tooltip = getStateTooltip();
-	const folder = state.activeProject?.folder.name
+	const folder = state.activeProject?.folder?.name
 		? `($(folder) ${state.activeProject?.folder.name})`
 		: "";
 

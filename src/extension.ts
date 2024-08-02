@@ -96,16 +96,12 @@ const setupProjectSessions = async (projects: Project[]) => {
 		info("=== Creating session for project ===");
 		const session = await createSession(project);
 		if (session) {
-			info(
-				`Created session for project ${project.path} in workspace ${project.folder.name}.`,
-			);
+			info(`Created session for project ${project.path}.`);
 			sessions.set(project, session);
 
 			await session.client.start();
 		} else {
-			error(
-				`Failed to create session for project ${project.path} in workspace ${project.folder.name}.`,
-			);
+			error(`Failed to create session for project ${project.path}`);
 		}
 	}
 	state.sessions = sessions;
@@ -128,7 +124,7 @@ export const start = async () => {
 				const projects = await createProjects();
 				await setupProjectSessions(projects);
 			} catch (e) {
-				error("Failed to start Biome extension", error);
+				error("Failed to start Biome extension", e);
 				state.state = "error";
 			}
 		},
