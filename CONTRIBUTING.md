@@ -20,7 +20,7 @@ Please review the following guidelines before making your contribution.
 
 ## Development
 
-The extension can be started in debug mode by pressing <kbd>F5</kbd> in Visual Studio Code. This will start a watcher that automatically rebuilds the extension when you make changes and opens a new VS Code window with only the Biome extension extension loaded.
+The extension can be started in debug mode by pressing <kbd>F5</kbd> in Visual Studio Code. This will start a watcher that automatically rebuilds the extension when you make changes and opens a new VS Code window with only the Biome extension loaded.
 
 ## Making changes
 
