@@ -89,18 +89,16 @@ const download = async (version: string, context: ExtensionContext) => {
 		assets: { name: string; browser_download_url: string }[];
 	};
 
-	const platformArch = `${process.platform}-${process.arch}`;
+	const assetName = `biome-${process.platform}-${process.arch}${
+		process.platform === "linux" ? "-musl" : ""
+	}${process.platform === "win32" ? ".exe" : ""}`;
 
 	// Find the asset for the current platform
-	const asset = releases.assets.find(
-		(asset) =>
-			asset.name ===
-			`biome-${platformArch}${process.platform === "win32" ? ".exe" : ""}`,
-	);
+	const asset = releases.assets.find((asset) => asset.name === assetName);
 
 	if (!asset) {
 		window.showErrorMessage(
-			`The specified version is not available for your platform/architecture (${platformArch}).`,
+			`The specified version is not available for your system (${assetName}).`,
 		);
 		return;
 	}
@@ -111,7 +109,7 @@ const download = async (version: string, context: ExtensionContext) => {
 		bin = await blob.arrayBuffer();
 	} catch {
 		window.showErrorMessage(
-			`Could not download the binary for your platform/architecture (${platformArch}).`,
+			`Could not download the binary for your system (${assetName}).`,
 		);
 		return;
 	}
