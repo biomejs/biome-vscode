@@ -90,6 +90,11 @@ const setupGlobalSession = async () => {
  * This function will create a session for each project.
  */
 const setupProjectSessions = async (projects: Project[]) => {
+	if (projects.length === 0) {
+		info("No projects found.");
+		return;
+	}
+
 	info("Setting up project sessions");
 	const sessions = new Map<Project, Session>([]);
 	for (const project of projects) {

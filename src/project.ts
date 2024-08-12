@@ -148,6 +148,11 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 		}
 	}
 
+	if (projects.length === 0) {
+		info(`No projects created for workspace folder ${folder.name}.`);
+		return [];
+	}
+
 	info("Creating projects.");
 
 	// If there are project definitions in the configuration, we create a
