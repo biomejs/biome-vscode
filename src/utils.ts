@@ -144,12 +144,21 @@ export const config = <T>(
 /**
  * Supported languages for the extension
  *
- * This array contains the supported languages for the extension. The languages
- * are derived from the activation events in the `package.json` file.
+ * This array contains the supported languages for the extension. These are
+ * language identifiers, not file extensions.
  */
-export const supportedLanguages = activationEvents
-	.filter((name) => name.startsWith("onLanguage:"))
-	.map((name) => name.replace("onLanguage:", "").trim());
+export const supportedLanguages: string[] = [
+	"astro",
+	"css",
+	"javascript",
+	"javascriptreact",
+	"json",
+	"jsonc",
+	"svelte",
+	"typescript",
+	"typescriptreact",
+	"vue",
+];
 
 /**
  * The name of the Biome executable

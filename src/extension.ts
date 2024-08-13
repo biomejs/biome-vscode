@@ -131,13 +131,7 @@ export const start = async () => {
 
 	info("🚀 Starting Biome extension");
 	state.state = "starting";
-	await window.withProgress(
-		{
-			title: "Starting Biome extension",
-			location: ProgressLocation.Notification,
-		},
-		doStart,
-	);
+	await doStart();
 	state.state = "started";
 };
 
@@ -229,6 +223,19 @@ const listenForConfigurationChanges = async () => {
 	state.context.subscriptions.push(
 		workspace.onDidChangeConfiguration(async (event) => {
 			if (event.affectsConfiguration("biome")) {
+				// This hack is necessary to prevent a race condition where VS Code attempts to
+				// send a workspace/didChangeConfiguration notification to the LSP sessions while
+				// they are being destroyed, resulting in an error being show in a popup. I'm yet
+				// to find a better way to handle this, but for now this seems to work.
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+
+				// If the configuration change resulted in the extension being disabled, we stop
+				// the extension and exit.
+				if (config("enabled", { default: true }) === false) {
+					await stop();
+					return;
+				}
+
 				await restart();
 			}
 		}),

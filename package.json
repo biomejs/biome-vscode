@@ -32,18 +32,7 @@
 		"typescript": "^5.3.3",
 		"wdio-vscode-service": "^6.1.0"
 	},
-	"activationEvents": [
-		"onLanguage:javascript",
-		"onLanguage:javascriptreact",
-		"onLanguage:typescript",
-		"onLanguage:typescriptreact",
-		"onLanguage:json",
-		"onLanguage:jsonc",
-		"onLanguage:vue",
-		"onLanguage:astro",
-		"onLanguage:svelte",
-		"onLanguage:css"
-	],
+	"activationEvents": ["onStartupFinished"],
 	"bugs": {
 		"url": "https://github.com/biomejs/biome-vscode/issues"
 	},
