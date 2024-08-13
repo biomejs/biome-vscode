@@ -11,7 +11,7 @@ export type Project = {
 	bin: Uri;
 };
 
-export type ProjectConfig = {
+export type ProjectDefinition = {
 	folder?: string;
 	path?: string;
 	configFile?: string;
@@ -95,110 +95,9 @@ const createWorkspaceProjects = async (): Promise<Project[]> => {
 	return projects;
 };
 
-const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
-	if (!config("enabled", { default: true, level: "workspaceFolder" })) {
-		info(
-			`Biome is disabled (by config) in workspace folder ${folder.name}. Skipping project creation.`,
-		);
-		return [];
-	}
-
-	info(`Creating projects for workspace folder ${folder.name}`);
-
-	const projects: Project[] = [];
-
-	// Retrieve the list of explicitly declared project definitions in the
-	// workspace folder's configuration.
-	const x = config<ProjectConfig[]>("projects", {
-		scope: folder.uri,
-		default: [],
-	});
-
-	const projectConfigs = x.filter((project) => {
-		if (!project.folder) {
-			return true;
-		}
-
-		return project.folder === folder.name;
-	});
-
-	// If there are no project definitions in the configuration, we create
-	// a single project for the workspace folder itself.
-	if ((projectConfigs ?? []).length === 0) {
-		info(
-			`No project definitions found in workspace folder ${folder.name}, creating project for workspace folder itself`,
-		);
-
-		if (
-			!(await configFileExistsIfRequired(folder, {
-				path: folder.uri.fsPath,
-			}))
-		) {
-			warn(
-				`Project ${folder.uri.fsPath} requires a configuration file that does not exist, skipping project creation`,
-			);
-		} else {
-			projects.push(
-				await createProject({
-					folder,
-					path: folder.uri,
-					configFile: undefined,
-				}),
-			);
-		}
-	}
-
-	if (projects.length === 0) {
-		info(`No projects created for workspace folder ${folder.name}.`);
-		return [];
-	}
-
-	info("Creating projects.");
-
-	// If there are project definitions in the configuration, we create a
-	// project for each of them, but we'll igore projects that point to
-	// non-existent directories on the filesystem, as well as projects
-	// that do not have an associated configuration file (if required).
-	for (const projectConfig of projectConfigs) {
-		const fullPath = Uri.joinPath(folder.uri, projectConfig.path);
-
-		if (!(await directoryExists(fullPath))) {
-			warn(
-				`Project directory ${fullPath.fsPath} does not exist on disk, skipping project creation`,
-			);
-			continue;
-		}
-
-		const configFileURI = projectConfig.configFile
-			? Uri.joinPath(folder.uri, projectConfig.configFile)
-			: undefined;
-
-		if (!(await configFileExistsIfRequired(folder, projectConfig))) {
-			warn(
-				`Project ${fullPath.fsPath} requires a configuration file that does not exist, skipping project creation`,
-			);
-			continue;
-		}
-
-		projects.push(
-			await createProject({
-				folder: folder,
-				path: fullPath,
-				configFile: configFileURI,
-			}),
-		);
-
-		info(
-			`Created project for directory ${fullPath.fsPath} in workspace folder ${folder.name}`,
-		);
-	}
-
-	return projects;
-};
-
 const configFileExistsIfRequired = async (
 	folder: WorkspaceFolder,
-	project: ProjectConfig,
+	project: ProjectDefinition,
 ): Promise<boolean> => {
 	const requireConfig = config("requireConfigFile", {
 		default: false,
@@ -236,4 +135,122 @@ const configFileExistsIfRequired = async (
 	}
 
 	return configFileExists;
+};
+
+/**
+ * Detects projects in the given workspace folder
+ *
+ * This function will detect projects in the given workspace folder by looking
+ * for project definitions in the workspace folder's configuration. If no project
+ * definitions are found, it will create a single project at the root of the
+ * workspace folder.
+ *
+ * Project definitions that reference workspace folders that do not exist will
+ * be ignored, as will project definitions that do not have a configuration file
+ * if they require one.
+ */
+const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
+	const biomeIsEnabledInWorkspaceFolder = config("enabled", {
+		default: true,
+		scope: folder.uri,
+		level: "workspaceFolder",
+	});
+
+	// If Biome is disabled in the workspace folder, we skip project creation
+	// entirely for that workspace folder.
+	if (!biomeIsEnabledInWorkspaceFolder) {
+		info(
+			`Biome is disabled in workspace folder ${folder.name}. Skipping project creation.`,
+		);
+		return [];
+	}
+
+	// Retrieve the project definitions in the workspace folder's configuration
+	// or fall back to a default project definition which references the workspace
+	// folder itself.
+	let projectDefinitions = config<ProjectDefinition[]>("projects", {
+		scope: folder.uri,
+		default: [
+			{
+				folder: folder.name,
+				path: "/",
+			},
+		],
+	});
+
+	// Only consider project definitions that have a matching workspace folder
+	projectDefinitions = projectDefinitions.filter((project) => {
+		// If the project definition does not specify a workspace folder, as would
+		// be the case when the project definitions have been specified in the
+		// workspace folder's configuration, we consider it to be valid.
+		if (!project.folder) {
+			return true;
+		}
+
+		// If the project definition specifies a workspace folder, we only consider
+		// it valid if the workspace folder name matches. This is the case when the
+		// project definition has been specified at the workspace level.
+		return project.folder === folder.name;
+	});
+
+	// Filter out project definitions whose path does not exist on disk
+	const definitionsOnDisk = await Promise.all(
+		projectDefinitions.map(async (definition) => {
+			const existsOnDisk = await directoryExists(
+				Uri.joinPath(folder.uri, definition.path),
+			);
+			if (!existsOnDisk) {
+				warn(
+					`Project directory ${Uri.joinPath(folder.uri, definition.path)} does not exist on disk, skipping project creation.`,
+				);
+			}
+			return existsOnDisk;
+		}),
+	);
+	projectDefinitions = projectDefinitions.filter(
+		(_, index) => definitionsOnDisk[index],
+	);
+
+	// Filter out project definitions for which the configuration file does not
+	// exist if they require one.
+	const definitionsWithConfigFileIfRequired = await Promise.all(
+		projectDefinitions.map(async (definition) => {
+			const configFileExists = await configFileExistsIfRequired(
+				folder,
+				definition,
+			);
+
+			if (!configFileExists) {
+				warn(
+					`Project ${Uri.joinPath(folder.uri, definition.path)} requires a configuration file that does not exist, skipping project creation.`,
+				);
+			}
+
+			return configFileExists;
+		}),
+	);
+	projectDefinitions = projectDefinitions.filter(
+		(_, index) => definitionsWithConfigFileIfRequired[index],
+	);
+
+	// At this point, we have a list of project definitions that are valid and
+	// can be created, so we create projects for them.
+	const projects: Project[] = [];
+	for (const projectDefinition of projectDefinitions) {
+		const fullPath = Uri.joinPath(folder.uri, projectDefinition.path);
+
+		const configFileURI = projectDefinition.configFile
+			? Uri.joinPath(folder.uri, projectDefinition.configFile)
+			: undefined;
+
+		projects.push(
+			await createProject({
+				folder: folder,
+				path: fullPath,
+				configFile: configFileURI,
+			}),
+		);
+	}
+
+	return projects;
 };

@@ -151,6 +151,6 @@ const createDocumentSelector = (project?: Project): DocumentFilter[] => {
 	return supportedLanguages.map((language) => ({
 		language,
 		scheme: project ? "file" : "untitled",
-		...(project && { pattern: `${project.path.fsPath}/**/*` }),
+		...(project && { pattern: `${project.path.fsPath}**/*` }),
 	}));
 };

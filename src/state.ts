@@ -15,6 +15,7 @@ export type State = {
 		| "initializing"
 		| "disabled"
 		| "starting"
+		| "restarting"
 		| "started"
 		| "running"
 		| "stopping"

@@ -13,11 +13,16 @@ import {
 	startCommand,
 	stopCommand,
 } from "./commands";
-import { error, info } from "./logger";
+import { clear, error, info } from "./logger";
 import { type Project, createProjects } from "./project";
 import { type Session, createSession } from "./session";
 import { state } from "./state";
-import { hasUntitledDocuments, isEnabled, supportedLanguages } from "./utils";
+import {
+	config,
+	hasUntitledDocuments,
+	isEnabled,
+	supportedLanguages,
+} from "./utils";
 
 /**
  * Creates a new Biome extension
@@ -28,6 +33,7 @@ import { hasUntitledDocuments, isEnabled, supportedLanguages } from "./utils";
 export const createExtension = async (
 	context: ExtensionContext,
 ): Promise<void> => {
+	clear();
 	state.state = "initializing";
 	state.context = context;
 
@@ -46,7 +52,9 @@ export const createExtension = async (
  * Destroys the Biome extension
  */
 export const destroyExtension = async (): Promise<void> => {
+	info("🛑 Destroying Biome extension");
 	await stop();
+	info("🛑 Biome extension destroyed");
 };
 
 /**
@@ -116,6 +124,11 @@ const setupProjectSessions = async (projects: Project[]) => {
  * Starts the Biome extension
  */
 export const start = async () => {
+	if (config("enabled", { default: true }) === false) {
+		info("Biome extension is disabled, skipping start.");
+		return;
+	}
+
 	info("🚀 Starting Biome extension");
 	state.state = "starting";
 	await window.withProgress(
@@ -123,18 +136,20 @@ export const start = async () => {
 			title: "Starting Biome extension",
 			location: ProgressLocation.Notification,
 		},
-		async () => {
-			try {
-				await setupGlobalSession();
-				const projects = await createProjects();
-				await setupProjectSessions(projects);
-			} catch (e) {
-				error("Failed to start Biome extension", e);
-				state.state = "error";
-			}
-		},
+		doStart,
 	);
 	state.state = "started";
+};
+
+const doStart = async () => {
+	try {
+		await setupGlobalSession();
+		const projects = await createProjects();
+		await setupProjectSessions(projects);
+	} catch (e) {
+		error("Failed to start Biome extension", e);
+		state.state = "error";
+	}
 };
 
 /**
@@ -148,22 +163,37 @@ export const stop = async () => {
 			title: "Stopping Biome extension",
 			location: ProgressLocation.Notification,
 		},
-		async () => {
-			await state.globalSession?.client.stop();
-			for (const session of state.sessions.values()) {
-				await session.client.stop();
-			}
-			state.sessions.clear();
-		},
+		doStop,
 	);
 	state.state = "stopped";
+};
+
+const doStop = async () => {
+	await state.globalSession?.client.stop();
+	for (const session of state.sessions.values()) {
+		await session.client.stop(20);
+	}
+	state.sessions.clear();
 };
 
 /**
  * Restarts the Biome extension
  */
 export const restart = async () => {
-	await stop();
+	info("Restarting Biome extension");
+	state.state = "restarting";
+	await window.withProgress(
+		{
+			title: "Restarting Biome extension",
+			location: ProgressLocation.Notification,
+		},
+		async () => {
+			await doStop();
+			await doStart();
+		},
+	);
+	state.state = "running";
+	await doStop();
 	await start();
 };
 
@@ -218,7 +248,7 @@ const updateActiveProject = (editor: TextEditor) => {
 	});
 
 	state.hidden =
-		editor.document === undefined ||
+		editor?.document === undefined ||
 		!supportedLanguages.includes(editor.document.languageId);
 
 	state.activeProject = project;
