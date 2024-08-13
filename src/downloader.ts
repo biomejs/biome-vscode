@@ -1,6 +1,13 @@
 import { getAllVersions } from "@biomejs/version-utils";
 import ky from "ky";
-import { type QuickPickItem, Uri, window, workspace } from "vscode";
+import {
+	ProgressLocation,
+	type QuickPickItem,
+	Uri,
+	window,
+	workspace,
+} from "vscode";
+import { restart } from "./extension";
 import { debug, error, info } from "./logger";
 import { state } from "./state";
 import { binaryExtension, fileExists, platformPackageName } from "./utils";
@@ -12,7 +19,15 @@ export const downloadBiome = async (): Promise<Uri | undefined> => {
 		return;
 	}
 
-	return await downloadBiomeVersion(version?.label);
+	await window.withProgress(
+		{
+			title: `Downloading Biome ${version.label}`,
+			location: ProgressLocation.Notification,
+		},
+		async () => await downloadBiomeVersion(version.label),
+	);
+
+	await restart();
 };
 
 const downloadBiomeVersion = async (

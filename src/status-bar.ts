@@ -34,9 +34,6 @@ export const updateStatusBar = () => {
 	const text = getStateText();
 	const version = getBiomeVersion();
 	const tooltip = getStateTooltip();
-	const folder = state.activeProject?.folder?.name
-		? `($(folder) ${state.activeProject?.folder.name})`
-		: "";
 
 	statusBar.item.text = `${icon} ${text} ${version}`.trim();
 	statusBar.item.tooltip = tooltip;
@@ -56,6 +53,8 @@ const getStateText = (): string => {
 			return "Biome";
 		case "starting":
 			return "Biome";
+		case "restarting":
+			return "Biome";
 		case "started":
 			return "Biome";
 		case "stopping":
@@ -74,7 +73,7 @@ const getStateTooltip = () => {
 		case "starting":
 			return "Starting";
 		case "restarting":
-			return "Starting";
+			return "Restarting";
 		case "started":
 			return "Up and running";
 		case "stopping":
