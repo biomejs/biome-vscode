@@ -73,6 +73,8 @@ const getStateTooltip = () => {
 			return "Initializing";
 		case "starting":
 			return "Starting";
+		case "restarting":
+			return "Starting";
 		case "started":
 			return "Up and running";
 		case "stopping":
@@ -91,6 +93,8 @@ const getStateIcon = (state: State): string => {
 		case "initializing":
 			return "$(sync~spin)";
 		case "starting":
+			return "$(sync~spin)";
+		case "restarting":
 			return "$(sync~spin)";
 		case "started":
 			return "$(check)";
