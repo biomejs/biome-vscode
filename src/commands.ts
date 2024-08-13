@@ -1,9 +1,5 @@
-import { getAllVersions } from "@biomejs/version-utils";
-import { type QuickPickItem, QuickPickItemKind, version, window } from "vscode";
 import { downloadBiome } from "./downloader";
 import { restart, start, stop } from "./extension";
-import type { Project } from "./project";
-import { state } from "./state";
 
 /**
  * Starts the Biome extension
@@ -43,11 +39,4 @@ export const restartCommand = async () => {
  */
 export const downloadCommand = async () => {
 	await downloadBiome();
-};
-
-/**
- * Returns the list of current open projects
- */
-export const getProjectsCommand = async (): Promise<Project[]> => {
-	return [...state.sessions.keys()];
 };

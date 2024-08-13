@@ -48,10 +48,6 @@
 			{
 				"title": "Biome: Download CLI",
 				"command": "biome.download"
-			},
-			{
-				"title": "Biome: Get projects",
-				"command": "biome.get-projects"
 			}
 		],
 		"configuration": {
