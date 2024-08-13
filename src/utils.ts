@@ -7,7 +7,6 @@ import { type ConfigurationScope, FileType, Uri, workspace } from "vscode";
  * the Biome CLI. The package name is computed based on the current platform and
  * architecture, and whether the system's C library is musl.
  *
- * @example "@biomejs/cli-linux-x64"
  * @example "@biomejs/cli-linux-x64-musl"
  * @example "@biomejs/cli-darwin-x64"
  * @example "@biomejs/cli-win32-x64"
