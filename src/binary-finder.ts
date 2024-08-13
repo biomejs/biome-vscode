@@ -129,6 +129,11 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
  * root `@biomejs/biome` package, which allows us to resolve the platform-specific
  * `@biomejs/cli-{platform}-{arch}{libc}` package. We then resolve the path to the
  * `biome` binary by looking for the `biome` executable in the root of the package.
+ *
+ * On Linux, we always use the `musl` variant of the binary because it has the
+ * advantage of having been built statically. This is meant to improve the
+ * compatibility with various systems such as NixOS, which handle dynamically
+ * linked binaries differently.
  */
 const nodeModulesStrategy: LocatorStrategy = {
 	name: "Node Modules",

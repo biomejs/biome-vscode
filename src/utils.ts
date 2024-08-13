@@ -1,27 +1,4 @@
-import { spawnSync } from "node:child_process";
 import { type ConfigurationScope, FileType, Uri, workspace } from "vscode";
-import { activationEvents } from "../package.json";
-
-/**
- * Checks whether the system's C library is musl
- *
- * This function checks whether the system's C library is musl by running the
- * `ldd --version` command and checking the output for the string "musl".
- *
- * @returns Whether the system's C library is musl
- */
-export const isMusl = () => {
-	if (process.platform !== "linux") {
-		return false;
-	}
-
-	try {
-		const output = spawnSync("ldd", ["--version"], { encoding: "utf8" });
-		return output.stdout.includes("musl") || output.stderr.includes("musl");
-	} catch {
-		return false;
-	}
-};
 
 /**
  * Returns the platform-specific NPM package name of the Biome CLI
@@ -38,9 +15,9 @@ export const isMusl = () => {
  * @returns The platform-specific NPM package name of the Biome CLI
  */
 export const getPackageName = (): string => {
-	const libc = `${isMusl() ? "-musl" : ""}`;
+	const flavor = process.platform === "linux" ? "-musl" : "";
 
-	return `@biomejs/cli-${process.platform}-${process.arch}${libc}`;
+	return `@biomejs/cli-${process.platform}-${process.arch}${flavor}`;
 };
 
 /**
@@ -179,7 +156,7 @@ export const packageName = getPackageName();
  * The platform identifier
  */
 export const platform = `${process.platform}-${process.arch}${
-	isMusl() ? "-musl" : ""
+	process.platform === "linux" ? "-musl" : ""
 }`;
 
 /**
