@@ -53,7 +53,7 @@ const createLanguageClient = (bin: Uri, project?: Project) => {
 	info("Creating new Biome LSP client");
 
 	let args = ["lsp-proxy"];
-	if (project.configFile) {
+	if (project?.configFile) {
 		info(`Using custom config file: ${project.configFile.fsPath}`);
 		args = [...args, "--config", project.configFile.fsPath];
 	}
@@ -62,7 +62,7 @@ const createLanguageClient = (bin: Uri, project?: Project) => {
 		command: bin.fsPath,
 		transport: TransportKind.stdio,
 		options: {
-			cwd: project.path.fsPath,
+			...(project?.path && { cwd: project.path.fsPath }),
 		},
 		args,
 	};

@@ -8,7 +8,6 @@ import {
 } from "vscode";
 import {
 	downloadCommand,
-	getProjectsCommand,
 	restartCommand,
 	startCommand,
 	stopCommand,
