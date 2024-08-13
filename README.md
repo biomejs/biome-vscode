@@ -36,7 +36,7 @@ This will ensure that VS Code uses Biome to format all supported files, instead 
 If you'd rather not set Biome as the default formatter for all languages, you can set it as the default formatter for specific languages only. The following steps describe how to do this.
 
 1. Open the **Command Palette**
-2. Select _Preferences: Open User Settings (JSON)_ 
+2. Select _Preferences: Open User Settings (JSON)_
 
 Set the `editor.defaultFormatter` to `biomejs.biome` for the desired language. For example, to set Biome as the default formatter for JavaScript files, add the following to your editor's options.
 
@@ -56,7 +56,7 @@ To resolve the location of the `biome` binary, the extension will look into the 
 
 If none of these locations has a `biome` binary, the extension will prompt you to download a binary compatible with your operating system and architecture and store it in the `globalStorage`.
 
-> [!NOTE]  
+> [!NOTE]
 > We recommend adding Biome to your project's devDependencies so that both the extension and your NPM scripts use the same version of Biome.
 > ```
 > npm install -D @biomejs/biome
