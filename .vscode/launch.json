@@ -44,6 +44,19 @@
 			"sourceMapRenames": true
 		},
 		{
+			"name": "🧩 Debug Extension (no files)",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentKind=node",
+				"--extensionDevelopmentPath=${workspaceFolder}"
+			],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"preLaunchTask": "npm: dev",
+			"sourceMapRenames": true
+		},
+		{
 			"name": "🧩 Debug Extension (single-root workspace)",
 			"type": "extensionHost",
 			"request": "launch",

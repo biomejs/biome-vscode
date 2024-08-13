@@ -19,9 +19,13 @@ export type ProjectDefinition = {
 
 export const createProjects = async () => {
 	info("=== Creating projects ===");
-	return mode === "single-file"
-		? [await createSingleFileProject()]
-		: await createWorkspaceProjects();
+
+	if (mode === "single-file") {
+		const project = await createSingleFileProject();
+		return project ? [project] : [];
+	}
+
+	return await createWorkspaceProjects();
 };
 
 /**
@@ -66,7 +70,9 @@ const createSingleFileProject = async (): Promise<Project> => {
 	// directory of the file.
 	const singleFileURI = window.activeTextEditor?.document.uri;
 
-	if (!singleFileURI) {
+	// If the active text editor is not a file on disk, we abort.
+	// Untitled files are handled by the global session.
+	if (!singleFileURI || singleFileURI.scheme !== "file") {
 		return;
 	}
 

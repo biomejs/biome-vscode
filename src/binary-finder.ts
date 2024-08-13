@@ -216,10 +216,10 @@ const yarnPnpStrategy: LocatorStrategy = {
  */
 const pathEnvironmentVariableStrategy: LocatorStrategy = {
 	name: "Path Environment Variable",
-	find: async (path?: Uri): Promise<Uri | undefined> => {
+	find: async (): Promise<Uri | undefined> => {
 		const pathEnv = process.env.PATH;
 
-		if (!path) {
+		if (!pathEnv) {
 			return;
 		}
 
