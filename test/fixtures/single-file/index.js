@@ -1,1 +1,3 @@
-export const a = 1;
+if (true) {
+	const a = 1;
+}
