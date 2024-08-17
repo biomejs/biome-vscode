@@ -77,47 +77,6 @@ export const anyFileExists = async (uris: Uri[]): Promise<boolean> => {
 };
 
 /**
- * Retrieves a setting
- *
- * This function retrieves a setting from the workspace configuration. By
- * default, settings are looked up under the "biome" prefix.
- *
- * @param key The key of the setting to retrieve
- */
-export const config = <T>(
-	key: string,
-	options?: Partial<{
-		scope: ConfigurationScope;
-		default: T;
-		level?: "global" | "workspace" | "workspaceFolder";
-	}>,
-): T | undefined => {
-	if (options.level) {
-		const { globalValue, workspaceValue, workspaceFolderValue } = workspace
-			.getConfiguration("biome", options?.scope)
-			.inspect<T>(key);
-
-		switch (options.level) {
-			case "global":
-				return globalValue || options?.default;
-			case "workspace":
-				return workspaceValue || options?.default;
-			case "workspaceFolder":
-				return workspaceFolderValue || options?.default;
-		}
-	}
-
-	if (options.default !== undefined) {
-		return (
-			workspace.getConfiguration("biome", options?.scope).get<T>(key) ??
-			options.default
-		);
-	}
-
-	return workspace.getConfiguration("biome", options?.scope).get<T>(key);
-};
-
-/**
  * Supported languages for the extension
  *
  * This array contains the supported languages for the extension. These are
@@ -188,19 +147,6 @@ export const determineMode = ():
 };
 
 export const mode = determineMode();
-
-/**
- * Indicates whether the extension is enabled
- */
-export const isEnabled = () =>
-	config<boolean>("enabled", { level: "global", default: true }) === true;
-
-/**
- * Indicates whether the extension is disabled
- *
- * This function is the inverse of `isEnabled`.
- */
-export const isDisabled = () => !isEnabled();
 
 /**
  * Indicates whether there are any untitled documents currently open in the

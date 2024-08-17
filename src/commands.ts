@@ -1,5 +1,5 @@
 import { downloadBiome } from "./downloader";
-import { restart, start, stop } from "./extension";
+import { restart, start, stop } from "./lifecycle";
 
 /**
  * Starts the Biome extension

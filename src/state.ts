@@ -1,4 +1,4 @@
-import { type ExtensionContext, window, workspace } from "vscode";
+import type { ExtensionContext } from "vscode";
 import type { Project } from "./project";
 import type { Session } from "./session";
 import { updateStatusBar } from "./status-bar";

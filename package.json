@@ -56,13 +56,14 @@
 				"biome.enabled": {
 					"type": "boolean",
 					"description": "Whether to enable the Biome extension",
-					"default": true
+					"default": true,
+					"scope": "resource"
 				},
 				"biome.requireConfigFile": {
 					"type": "boolean",
-					"description": "Require a Biome configuration file to be present for the extension to start.",
-					"markdownDescription": "If enabled, the extension will only start a Biome LSP session if a Biome configuration file is present at the root of a given Biome root. This can used to automatically prevent Biome from interfering with projects that do not use Biome.",
-					"default": false
+					"markdownDescription": "Require a Biome configuration file to be present at the root of a Biome project to starts an LSP session for that project.",
+					"default": false,
+					"scope": "resource"
 				},
 				"biome.projects": {
 					"anyOf": [
@@ -106,7 +107,8 @@
 								"required": ["path"]
 							}
 						}
-					]
+					],
+					"scope": "resource"
 				},
 				"biome.lsp.bin": {
 					"oneOf": [
@@ -129,13 +131,47 @@
 								}
 							]
 						}
-					]
+					],
+					"scope": "resource"
 				},
 				"biome.lsp.trace.server": {
 					"type": "string",
 					"enum": ["off", "messages", "compact", "verbose"],
 					"description": "Tracing level of the communications between the extension and the Biome Language Server.",
 					"default": "off"
+				},
+				"biome.experimental.rename": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Use Biome to handle symbols renames in the workspace. (Experimental)"
+				},
+				"biome.lspBin": {
+					"type": "string",
+					"default": "",
+					"ignoreSync": true,
+					"description": "The biome lsp server executable. If the path is relative, the workspace folder will be used as base path",
+					"deprecationMessage": "This setting has been deprecated and will be removed in a future version of the extension. Please use the `biome.lsp.bin` setting instead."
+				},
+				"biome.rename": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Enable/Disable Biome handling renames in the workspace. (Experimental)",
+					"deprecationMessage": "This setting has been deprecated and will be removed in a future version of the extension. Please use the `biome.experimental.rename` setting instead."
+				},
+				"biome.searchInPath": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Whether to search for the biome executable in the folders declared in the PATH environment variable",
+					"deprecationMessage": "This setting has been deprecated and will be removed in a future version of the extension. The extension will now always search for the biome executable in the PATH environment variable."
+				},
+				"biome_lsp.trace.server": {
+					"type": "string",
+					"scope": "window",
+					"enum": ["off", "messages", "verbose"],
+					"enumDescriptions": ["No traces", "Error only", "Full log"],
+					"default": "off",
+					"description": "Traces the communication between VS Code and the language server.",
+					"deprecationMessage": "This setting has been deprecated and will be removed in a future version of the extension. Please use the `biome.lsp.trace.server` setting instead."
 				}
 			}
 		},

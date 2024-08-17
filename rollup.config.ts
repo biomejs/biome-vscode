@@ -23,22 +23,4 @@ export default defineConfig([
 		],
 		external: ["vscode", "node:events"],
 	},
-	{
-		input: "test/suites/multi-root-workspace/index.test.ts",
-		output: {
-			dir: "out/test/suites/multi-root-workspace",
-			format: "cjs",
-			sourcemap: true,
-		},
-		plugins: [
-			json(),
-			commonjs(),
-			nodeResolve(),
-			esbuild({
-				target: "node16",
-				sourceMap: true,
-			}),
-		],
-		external: ["vscode", "node:events"],
-	},
 ]);

@@ -1,58 +1,97 @@
-import { workspace } from "vscode";
-import { config } from "./utils";
+import {
+	type ConfigurationScope,
+	type WorkspaceFolder,
+	workspace,
+} from "vscode";
+import type { ProjectDefinition } from "./project";
+type LspBinSetting = string | Record<string, string>;
 
 /**
- * Migrates configuration settings from a previous version of the extension
+ * Retrieves a setting
  *
- * This function migrates configuration settings from a previous version of the
- * extension to the current version. It is called when the extension is
- * activated for the first time, and should be used to migrate any settings that
- * have been changed or removed in a previous version.
+ * This function retrieves a setting from the workspace configuration. By
+ * default, settings are looked up under the "biome" prefix.
  *
- * Upon migration, the old settings will be removed from the configuration.
+ * @param key The key of the setting to retrieve
  */
-export const migrateConfigurationSettings = async () => {
-	migrateBiomeLspBin();
-	migrateTraceServer();
-	migrateBiomeRename();
+export const config = <T>(
+	key: string,
+	options?: Partial<{
+		scope: ConfigurationScope;
+		default: T;
+	}>,
+): T | undefined => {
+	if (options?.default !== undefined)
+		return (
+			workspace.getConfiguration("biome", options?.scope).get<T>(key) ??
+			options.default
+		);
+
+	return workspace.getConfiguration("biome", options?.scope).get<T>(key);
+};
+
+export const isEnabled = () => {
+	return config("enabled", { default: true }) === true;
+};
+
+export const isEnabledInWorkspaceFolder = (folder: WorkspaceFolder) => {
+	return config("enabled", { default: true, scope: folder.uri }) === true;
 };
 
 /**
- * Migrates the `biome.lspBin` setting to the new `biome.lsp.bin` setting.
+ * Determines whether a Biome configuration file is required in the given
+ * workspace folder for the extension to start.
  */
-const migrateBiomeLspBin = () => {
-	const lspBin = config<string>("lspBin", { default: undefined });
-
-	if (lspBin) {
-		workspace.getConfiguration("biome").update("lsp.bin", lspBin, true);
-		workspace.getConfiguration("biome").update("lspBin", undefined, true);
-	}
+export const workspaceFolderRequiresConfigFile = (
+	folder: WorkspaceFolder,
+): boolean => {
+	return (
+		config("requireConfigFile", { default: false, scope: folder.uri }) ===
+		true
+	);
 };
 
-const migrateTraceServer = () => {
-	const traceServer = workspace
-		.getConfiguration("biome_lsp")
-		.get<string>("trace.server");
-
-	if (traceServer) {
-		workspace
-			.getConfiguration("biome")
-			.update("lsp.trace.server", traceServer, true);
-		workspace
-			.getConfiguration("biome_lsp")
-			.update("trace.server", undefined, true);
-	}
+/**
+ * Retrieves the project definitions for the given workspace folder.
+ */
+export const getProjectDefinitions = (
+	folder: WorkspaceFolder,
+	defaultValue: ProjectDefinition[] = [],
+) => {
+	return config<ProjectDefinition[]>("projects", {
+		scope: folder.uri,
+		default: defaultValue,
+	});
 };
 
-const migrateBiomeRename = () => {
-	const biomeRename = workspace
-		.getConfiguration("biome")
-		.get<string>("rename");
+/**
+ * Retrieves the `biome.lsp.bin` setting
+ *
+ * This function retrieves the `biome.lsp.bin` setting from the given scope. It
+ * also handles retrieving the setting from the deprecated `biome.lspBin` setting
+ * transparently for users that have not yet migrated to the new setting.
+ */
+export const getLspBin = (
+	scope: ConfigurationScope,
+): LspBinSetting | undefined => {
+	const lspBin = config<LspBinSetting>("lsp.bin", {
+		default: undefined,
+		scope: scope,
+	});
 
-	if (biomeRename) {
-		workspace
-			.getConfiguration("biome")
-			.update("experimental.rename", biomeRename, true);
-		workspace.getConfiguration("biome").update("rename", undefined, true);
+	const deprecatedLspBin = config<string>("lspBin", {
+		default: undefined,
+		scope: scope,
+	});
+
+	switch (lspBin) {
+		case undefined:
+			return deprecatedLspBin;
+		case null:
+			return deprecatedLspBin;
+		case "":
+			return deprecatedLspBin;
+		default:
+			return lspBin;
 	}
 };

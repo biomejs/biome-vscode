@@ -2,10 +2,10 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { delimiter } from "node:path";
 import { Uri } from "vscode";
+import { getLspBin } from "./config";
 import { downloadBiome } from "./downloader";
 import {
 	binaryName,
-	config,
 	fileExists,
 	getPackageName,
 	packageName,
@@ -73,10 +73,7 @@ export type BinaryFinderResult = Promise<
 const vsCodeSettingsStrategy: LocatorStrategy = {
 	name: "VSCode Settings",
 	find: async (path?: Uri): Promise<Uri | undefined> => {
-		const bin = config<string | Record<string, string>>("lsp.bin", {
-			default: "",
-			scope: path,
-		});
+		const bin = getLspBin(path);
 
 		const findBinary = async (bin: string): Promise<Uri | undefined> => {
 			if (bin === "") {

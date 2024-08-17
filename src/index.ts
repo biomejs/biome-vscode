@@ -1,11 +1,13 @@
 import type { ExtensionContext } from "vscode";
 import { createExtension, destroyExtension } from "./extension";
+import { state } from "./state";
 
 /**
  * Activates the Biome extension
  */
 export const activate = async (context: ExtensionContext) => {
-	await createExtension(context);
+	state.context = context;
+	await createExtension();
 };
 
 /**

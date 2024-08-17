@@ -1,6 +1,6 @@
 import { StatusBarAlignment, type StatusBarItem, window } from "vscode";
+import { isDisabledGlobally } from "./config";
 import { type State, state } from "./state";
-import { config } from "./utils";
 
 export type StatusBar = {
 	item: StatusBarItem;
@@ -21,11 +21,7 @@ export const updateStatusBar = () => {
 		return;
 	}
 
-	if (
-		!config("enabled", { default: true }) ||
-		state.state === "disabled" ||
-		state.hidden
-	) {
+	if (isDisabledGlobally() || state.state === "disabled" || state.hidden) {
 		statusBar.item.hide();
 		return;
 	}

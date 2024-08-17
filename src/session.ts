@@ -1,4 +1,4 @@
-import { type LogOutputChannel, type Uri, window } from "vscode";
+import { type LogOutputChannel, type Uri, window, workspace } from "vscode";
 import {
 	type DocumentFilter,
 	LanguageClient,
@@ -9,8 +9,14 @@ import {
 import { displayName } from "../package.json";
 import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
 import { debug, error, info } from "./logger";
-import type { Project } from "./project";
-import { mode, subtractURI, supportedLanguages } from "./utils";
+import { type Project, createProjects } from "./project";
+import { state } from "./state";
+import {
+	hasUntitledDocuments,
+	mode,
+	subtractURI,
+	supportedLanguages,
+} from "./utils";
 
 export type Session = {
 	bin: Uri;
@@ -44,6 +50,59 @@ export const createSession = async (
 		project: project,
 		client: createLanguageClient(findResult.bin, project),
 	};
+};
+
+/**
+ * Creates a new global session
+ */
+export const createGlobalSession = async () => {
+	if (hasUntitledDocuments()) {
+		info("Found Untitled files at startup, creating global session.");
+		state.globalSession = await createSession();
+	}
+
+	// Listen for untitled files being opened
+	workspace.onDidOpenTextDocument(async (document) => {
+		// If the workspace has untitled files open and there is no global session
+		// create a new global session
+		if (hasUntitledDocuments() && !state.globalSession) {
+			info("Found untitle files, creating global session.");
+			state.globalSession = await createSession();
+			state.globalSession?.client.start();
+		}
+	});
+
+	workspace.onDidCloseTextDocument(async () => {
+		// If the workspace has no untitled files open and there is a global session
+		// stop and destroy the global session
+		if (!hasUntitledDocuments() && state.globalSession) {
+			info("No untitled files left, stopping global session.");
+			await state.globalSession.client.stop();
+			state.globalSession = undefined;
+		}
+	});
+};
+
+/**
+ * Creates sessions for all projects
+ */
+export const createProjectSessions = async () => {
+	const projects = await createProjects();
+
+	info("Creating LSP sessions for projects");
+	const sessions = new Map<Project, Session>([]);
+	for (const project of projects) {
+		const session = await createSession(project);
+		if (session) {
+			info(`Created session for project ${project.path}.`);
+			sessions.set(project, session);
+			await session.client.start();
+		} else {
+			error(`Failed to create session for project ${project.path}`);
+		}
+	}
+
+	state.sessions = sessions;
 };
 
 /**

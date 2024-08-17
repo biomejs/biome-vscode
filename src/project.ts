@@ -1,8 +1,20 @@
-import { Uri, type WorkspaceFolder, window, workspace } from "vscode";
+import {
+	type TextEditor,
+	Uri,
+	type WorkspaceFolder,
+	window,
+	workspace,
+} from "vscode";
 import { Utils } from "vscode-uri";
 import { findBiomeLocally } from "./binary-finder";
+import {
+	getProjectDefinitions,
+	isEnabledInWorkspaceFolder,
+	workspaceFolderRequiresConfigFile,
+} from "./config";
 import { error, info, warn } from "./logger";
-import { config, directoryExists, fileExists, mode } from "./utils";
+import { state } from "./state";
+import { directoryExists, fileExists, mode, supportedLanguages } from "./utils";
 
 export type Project = {
 	folder?: WorkspaceFolder;
@@ -105,12 +117,9 @@ const configFileExistsIfRequired = async (
 	folder: WorkspaceFolder,
 	project: ProjectDefinition,
 ): Promise<boolean> => {
-	const requireConfig = config("requireConfigFile", {
-		default: false,
-		scope: Uri.joinPath(folder.uri, project.path),
-	});
-
-	if (!requireConfig) {
+	// If the workspace folders does not require a configuration file, none of
+	// the projects in the workspace folder do, so we return early.
+	if (!workspaceFolderRequiresConfigFile(folder)) {
 		info("Project does not require a configuration file.");
 		return true;
 	}
@@ -156,15 +165,9 @@ const configFileExistsIfRequired = async (
  * if they require one.
  */
 const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
-	const biomeIsEnabledInWorkspaceFolder = config("enabled", {
-		default: true,
-		scope: folder.uri,
-		level: "workspaceFolder",
-	});
-
 	// If Biome is disabled in the workspace folder, we skip project creation
 	// entirely for that workspace folder.
-	if (!biomeIsEnabledInWorkspaceFolder) {
+	if (!isEnabledInWorkspaceFolder(folder)) {
 		info(
 			`Biome is disabled in workspace folder ${folder.name}. Skipping project creation.`,
 		);
@@ -174,15 +177,12 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 	// Retrieve the project definitions in the workspace folder's configuration
 	// or fall back to a default project definition which references the workspace
 	// folder itself.
-	let projectDefinitions = config<ProjectDefinition[]>("projects", {
-		scope: folder.uri,
-		default: [
-			{
-				folder: folder.name,
-				path: "/",
-			},
-		],
-	});
+	let projectDefinitions = getProjectDefinitions(folder, [
+		{
+			folder: folder.name,
+			path: "/",
+		},
+	]);
 
 	// Only consider project definitions that have a matching workspace folder
 	projectDefinitions = projectDefinitions.filter((project) => {
@@ -259,4 +259,23 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 	}
 
 	return projects;
+};
+
+/**
+ * Updates the currently active project
+ *
+ * This function updates the currently active project based on the active text
+ * editor by checking if the document in the active text editor is part of a
+ * project. If it is, the active project is updated to reflect this change.
+ */
+export const updateActiveProject = (editor: TextEditor) => {
+	const project = [...state.sessions.keys()].find((project) => {
+		return editor?.document?.uri.fsPath.startsWith(project.path.fsPath);
+	});
+
+	state.hidden =
+		editor?.document === undefined ||
+		!supportedLanguages.includes(editor.document.languageId);
+
+	state.activeProject = project;
 };
