@@ -54,9 +54,22 @@ const registerUserFacingCommands = () => {
  */
 const listenForConfigurationChanges = () => {
 	state.context.subscriptions.push(
-		workspace.onDidChangeConfiguration((event) => {
+		workspace.onDidChangeConfiguration(async (event) => {
 			if (event.affectsConfiguration("biome")) {
-				restart();
+				// Only restart the extension if we're not alreary in the middle
+				// of a restart or stop operation.
+				if (
+					state.state !== "restarting" &&
+					state.state !== "stopping"
+				) {
+					// This is a hack to ensure that we don't restart the LSP session until
+					// the workspace/didChangeConfiguration notification. This is necessary
+					// to prevent a race condition where the configuration change is received
+					// while the LSP session has already been stopped.
+					await new Promise((resolve) => setTimeout(resolve, 1000));
+
+					restart();
+				}
 			}
 		}),
 	);

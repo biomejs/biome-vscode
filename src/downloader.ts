@@ -7,7 +7,7 @@ import {
 	window,
 	workspace,
 } from "vscode";
-import { restart } from "./extension";
+import { restart } from "./lifecycle";
 import { debug, error, info } from "./logger";
 import { state } from "./state";
 import { binaryExtension, fileExists, platformPackageName } from "./utils";
