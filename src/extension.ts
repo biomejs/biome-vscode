@@ -67,7 +67,7 @@ const listenForConfigurationChanges = () => {
 		}),
 	);
 
-	info("Listening for configuration changes");
+	info("Started listening for configuration changes");
 };
 
 /**
@@ -85,7 +85,7 @@ const listenForActiveTextEditorChange = () => {
 		}),
 	);
 
-	info("Listening for active text editor changes");
+	info("Started listening for active text editor changes");
 
 	updateActiveProject(window.activeTextEditor);
 };
@@ -116,7 +116,7 @@ const listenForLockfilesChanges = () => {
 		restart();
 	});
 
-	info("Listening for lockfile changes");
+	info("Started listening for lockfile changes");
 
 	state.context.subscriptions.push(watcher);
 };

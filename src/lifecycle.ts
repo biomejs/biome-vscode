@@ -19,7 +19,7 @@ export const stop = async () => {
 	state.state = "stopping";
 	await doStop();
 	state.state = "stopped";
-	info("✅ Biome extension stopped");
+	info("Biome extension stopped");
 };
 
 /**
@@ -41,7 +41,7 @@ const doStart = async () => {
 		await createGlobalSession();
 		await createProjectSessions();
 	} catch (e) {
-		error("Failed to start Biome extension", e);
+		error("Failed to start Biome extension");
 		state.state = "error";
 	}
 };

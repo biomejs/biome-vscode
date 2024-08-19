@@ -23,9 +23,9 @@ export const log = (
 	args?: LogArguments,
 ) => {
 	if (args) {
-		message = `${message} ${Object.entries(args)
+		message = `${message}\n\t${Object.entries(args)
 			.map(([key, value]) => `${key}=${value}`)
-			.join(", ")}`.trim();
+			.join("\n\t")}`.trim();
 	}
 
 	switch (level) {
