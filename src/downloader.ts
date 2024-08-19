@@ -8,11 +8,20 @@ import {
 	workspace,
 } from "vscode";
 import { restart } from "./lifecycle";
-import { debug, error, info } from "./logger";
+import { error, info } from "./logger";
 import { state } from "./state";
 import { binaryExtension, fileExists, platformPackageName } from "./utils";
 
 export const downloadBiome = async (): Promise<Uri | undefined> => {
+	const downloadedVersion = await getDownloadedVersion();
+
+	if (downloadedVersion) {
+		info(
+			`Using previously downloaded version ${downloadedVersion.version}: ${downloadedVersion.binPath.fsPath}`,
+		);
+		return downloadedVersion.binPath;
+	}
+
 	const version = await promptVersionToDownload();
 
 	if (!version) {
@@ -44,9 +53,6 @@ const downloadBiomeVersion = async (
 	const asset = releases.assets.find((asset) => {
 		return asset.name === platformPackageName;
 	});
-
-	debug(platformPackageName);
-	debug(releases.assets.map((asset) => asset.name).join(", "));
 
 	if (!asset) {
 		window.showErrorMessage(
@@ -81,35 +87,26 @@ const downloadBiomeVersion = async (
 	}
 };
 
-/**
- * Retrieves the list of Biome CLI versions that have already been downloaded
- * to the global storage directory.
- */
-const getDownloadedVersion = async () => {
+const getDownloadedVersion = async (): Promise<
+	{ version: string; binPath: Uri } | undefined
+> => {
 	// Retrieve the list of downloaded version from the global state
 	const version = state.context.globalState.get<string>("downloadedVersion");
 
-	info(`Downloaded version: ${version}`);
+	const binPath = Uri.joinPath(
+		state.context.globalStorageUri,
+		"bin",
+		`biome${binaryExtension}`,
+	);
 
-	// For every version in the list, ensure that the version exists in the
-	// global storage directory. If it does not exist, remove it from the list.
-
-	if (
-		await fileExists(
-			Uri.joinPath(
-				state.context.globalStorageUri,
-				"bin",
-				`biome${binaryExtension}`,
-			),
-		)
-	) {
-		return version;
+	if (!(await fileExists(binPath))) {
+		return;
 	}
 
-	// Save the updated list of downloaded versions
-	state.context.globalState.update("downloadedVersion", version);
-
-	return version;
+	return {
+		version,
+		binPath,
+	};
 };
 
 /**
@@ -122,7 +119,7 @@ const getDownloadedVersion = async () => {
 const promptVersionToDownload = async () => {
 	// Get the list of versions
 	const compileItems = async (): Promise<QuickPickItem[]> => {
-		const downloadedVersion = await getDownloadedVersion();
+		const downloadedVersion = (await getDownloadedVersion())?.version;
 
 		// Get the list of available versions
 		const availableVersions = await getAllVersions(false);

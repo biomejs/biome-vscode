@@ -9,10 +9,10 @@ import { Utils } from "vscode-uri";
 import { findBiomeLocally } from "./binary-finder";
 import {
 	getProjectDefinitions,
-	isEnabledInWorkspaceFolder,
+	isEnabled,
 	workspaceFolderRequiresConfigFile,
 } from "./config";
-import { error, info, warn } from "./logger";
+import { debug, error, info, warn } from "./logger";
 import { state } from "./state";
 import { directoryExists, fileExists, mode, supportedLanguages } from "./utils";
 
@@ -30,8 +30,6 @@ export type ProjectDefinition = {
 };
 
 export const createProjects = async () => {
-	info("=== Creating projects ===");
-
 	if (mode === "single-file") {
 		const project = await createSingleFileProject();
 		return project ? [project] : [];
@@ -120,11 +118,8 @@ const configFileExistsIfRequired = async (
 	// If the workspace folders does not require a configuration file, none of
 	// the projects in the workspace folder do, so we return early.
 	if (!workspaceFolderRequiresConfigFile(folder)) {
-		info("Project does not require a configuration file.");
 		return true;
 	}
-
-	info("Project requires a configuration file.");
 
 	const acceptedConfigFiles = [
 		...(project.configFile
@@ -135,11 +130,10 @@ const configFileExistsIfRequired = async (
 	];
 
 	let configFileExists = false;
-	info("Checking for existence of configuration files");
 	for (const configFile of acceptedConfigFiles) {
-		info(`Checking for existence of ${configFile.fsPath}`);
+		debug(`Checking for existence of ${configFile.fsPath}`);
 		if (await fileExists(configFile)) {
-			info(`Found ${configFile.fsPath}. Configuration file exists.`);
+			debug(`Found ${configFile.fsPath}. Configuration file exists.`);
 			configFileExists = true;
 			break;
 		}
@@ -167,7 +161,7 @@ const configFileExistsIfRequired = async (
 const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 	// If Biome is disabled in the workspace folder, we skip project creation
 	// entirely for that workspace folder.
-	if (!isEnabledInWorkspaceFolder(folder)) {
+	if (!isEnabled(folder)) {
 		info(
 			`Biome is disabled in workspace folder ${folder.name}. Skipping project creation.`,
 		);

@@ -1,4 +1,3 @@
-import { ProgressLocation, window } from "vscode";
 import { error, info } from "./logger";
 import { createGlobalSession, createProjectSessions } from "./session";
 import { state } from "./state";
@@ -7,18 +6,16 @@ import { state } from "./state";
  * Starts the Biome extension
  */
 export const start = async () => {
-	info("🚀 Starting Biome extension");
 	state.state = "starting";
 	await doStart();
 	state.state = "started";
-	info("✅ Starting Biome extension");
+	info("Biome extension started");
 };
 
 /**
  * Stops the Biome extension
  */
 export const stop = async () => {
-	info("🛑 Stopping Biome extension");
 	state.state = "stopping";
 	await doStop();
 	state.state = "stopped";
@@ -29,20 +26,11 @@ export const stop = async () => {
  * Restarts the Biome extension
  */
 export const restart = async () => {
-	info("🔄 Restarting Biome extension");
 	state.state = "restarting";
-	await window.withProgress(
-		{
-			title: "Restarting Biome extension",
-			location: ProgressLocation.Notification,
-		},
-		async () => {
-			await doStop();
-			await doStart();
-		},
-	);
-	state.state = "running";
-	info("✅ Biome extension restarted");
+	await doStop();
+	await doStart();
+	state.state = "started";
+	info("Biome extension restarted");
 };
 
 /**
@@ -62,9 +50,18 @@ const doStart = async () => {
  * Runs the shutdown logic
  */
 const doStop = async () => {
+	// If we end up here following a configuration change, we need to wait
+	// for the notification to be processed before we can stop the LSP session,
+	// otherwise we will get an error. This is a workaround for a race condition
+	// that occurs when the configuration change notification is sent while the
+	// LSP session is already stopped.
+	await new Promise((resolve) => setTimeout(resolve, 1000));
+
 	await state.globalSession?.client.stop();
+
 	for (const session of state.sessions.values()) {
 		await session.client.stop();
 	}
+
 	state.sessions.clear();
 };

@@ -30,11 +30,11 @@ export const config = <T>(
 	return workspace.getConfiguration("biome", options?.scope).get<T>(key);
 };
 
-export const isEnabled = () => {
-	return config("enabled", { default: true }) === true;
-};
+export const isEnabled = (folder?: WorkspaceFolder) => {
+	if (!folder) {
+		return config("enabled", { default: true }) === true;
+	}
 
-export const isEnabledInWorkspaceFolder = (folder: WorkspaceFolder) => {
 	return config("enabled", { default: true, scope: folder.uri }) === true;
 };
 

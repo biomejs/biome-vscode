@@ -42,6 +42,7 @@ export type State = {
 
 const _state: State = {
 	state: "initializing",
+	activeProject: undefined,
 	sessions: new Map<Project, Session>([]),
 	globalSession: undefined,
 	hidden: false,

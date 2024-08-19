@@ -1,4 +1,4 @@
-import { window } from "vscode";
+import { LogLevel, window } from "vscode";
 import { displayName } from "../package.json";
 
 /**
@@ -15,18 +15,41 @@ export const logger = window.createOutputChannel(displayName, {
 	log: true,
 });
 
-// biome-ignore lint/suspicious/noExplicitAny: unknown ahead of time
-export const info = (message: string, ...args: any[]) =>
-	logger.info(message, ...args);
+type LogArguments = Record<string, unknown>;
 
-// biome-ignore lint/suspicious/noExplicitAny: unknown ahead of time
-export const warn = (message: string, ...args: any[]) =>
-	logger.warn(message, ...args);
+export const log = (
+	message: string,
+	level: LogLevel = LogLevel.Info,
+	args?: LogArguments,
+) => {
+	if (args) {
+		message = `${message} ${Object.entries(args)
+			.map(([key, value]) => `${key}=${value}`)
+			.join(", ")}`.trim();
+	}
 
-// biome-ignore lint/suspicious/noExplicitAny: unknown ahead of time
-export const error = (message: string, ...args: any[]) =>
-	logger.error(message, ...args);
+	switch (level) {
+		case LogLevel.Error:
+			return logger.error(message);
+		case LogLevel.Warning:
+			return logger.warn(message);
+		case LogLevel.Info:
+			return logger.info(message);
+		case LogLevel.Debug:
+			return logger.debug(message);
+		default:
+			return logger.debug(message);
+	}
+};
 
-// biome-ignore lint/suspicious/noExplicitAny: unknown ahead of time
-export const debug = (message: string, ...args: any[]) =>
-	logger.debug(message, ...args);
+export const info = (message: string, args?: LogArguments) =>
+	log(message, LogLevel.Info, args);
+
+export const warn = (message: string, args?: LogArguments) =>
+	log(message, LogLevel.Warning, args);
+
+export const error = (message: string, args?: LogArguments) =>
+	log(message, LogLevel.Error, args);
+
+export const debug = (message: string, args?: LogArguments) =>
+	log(message, LogLevel.Debug, args);

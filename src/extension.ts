@@ -6,6 +6,7 @@ import {
 	stopCommand,
 } from "./commands";
 import { restart, start, stop } from "./lifecycle";
+import { info } from "./logger";
 import { updateActiveProject } from "./project";
 import { state } from "./state";
 
@@ -18,6 +19,7 @@ import { state } from "./state";
 export const createExtension = async () => {
 	await start();
 	registerUserFacingCommands();
+	listenForLockfilesChanges();
 	listenForConfigurationChanges();
 	listenForActiveTextEditorChange();
 };
@@ -43,6 +45,8 @@ const registerUserFacingCommands = () => {
 		commands.registerCommand("biome.restart", restartCommand),
 		commands.registerCommand("biome.download", downloadCommand),
 	);
+
+	info("User-facing commands registered");
 };
 
 /**
@@ -56,23 +60,14 @@ const listenForConfigurationChanges = () => {
 	state.context.subscriptions.push(
 		workspace.onDidChangeConfiguration(async (event) => {
 			if (event.affectsConfiguration("biome")) {
-				// Only restart the extension if we're not alreary in the middle
-				// of a restart or stop operation.
-				if (
-					state.state !== "restarting" &&
-					state.state !== "stopping"
-				) {
-					// This is a hack to ensure that we don't restart the LSP session until
-					// the workspace/didChangeConfiguration notification. This is necessary
-					// to prevent a race condition where the configuration change is received
-					// while the LSP session has already been stopped.
-					await new Promise((resolve) => setTimeout(resolve, 1000));
-
+				if (!["restarting", "stopping"].includes(state.state)) {
 					restart();
 				}
 			}
 		}),
 	);
+
+	info("Listening for configuration changes");
 };
 
 /**
@@ -90,5 +85,38 @@ const listenForActiveTextEditorChange = () => {
 		}),
 	);
 
+	info("Listening for active text editor changes");
+
 	updateActiveProject(window.activeTextEditor);
+};
+
+/**
+ * Listens for changes to lockfiles in the workspace
+ *
+ * We use this watcher to detect changes to lockfiles and restart the extension
+ * when they occur. We currently rely on this strategy to detect if Biome has been
+ * installed or updated in the workspace until VS Code provides a better way to
+ * detect this.
+ */
+const listenForLockfilesChanges = () => {
+	const watcher = workspace.createFileSystemWatcher("**/*lock*");
+
+	watcher.onDidChange((event) => {
+		info(`Lockfile ${event.fsPath} changed.`);
+		restart();
+	});
+
+	watcher.onDidCreate((event) => {
+		info(`Lockfile ${event.fsPath} created.`);
+		restart();
+	});
+
+	watcher.onDidDelete((event) => {
+		info(`Lockfile ${event.fsPath} deleted.`);
+		restart();
+	});
+
+	info("Listening for lockfile changes");
+
+	state.context.subscriptions.push(watcher);
 };
