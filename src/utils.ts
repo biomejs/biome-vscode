@@ -1,4 +1,5 @@
 import { type ConfigurationScope, FileType, Uri, workspace } from "vscode";
+import type { Project } from "./project";
 
 /**
  * Returns the platform-specific NPM package name of the Biome CLI
@@ -129,6 +130,11 @@ export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
 	result = result === "" ? "/" : result;
 
 	return Uri.parse(result);
+};
+
+export const shortURI = (project: Project) => {
+	const prefix = mode === "multi-root" ? `${project.folder.name}::` : "";
+	return `${prefix}${subtractURI(project.path, project.folder.uri).fsPath}`;
 };
 
 export const determineMode = ():

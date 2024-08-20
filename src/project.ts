@@ -90,10 +90,6 @@ const createSingleFileProject = async (): Promise<Project> => {
 		Utils.resolvePath(singleFileURI, "..").fsPath,
 	);
 
-	info(
-		`Creating project for single file at ${singleFileURI.fsPath} in parent folder ${parentFolderURI.fsPath}`,
-	);
-
 	return await createProject({
 		path: parentFolderURI,
 		folder: undefined,
@@ -131,9 +127,7 @@ const configFileExistsIfRequired = async (
 
 	let configFileExists = false;
 	for (const configFile of acceptedConfigFiles) {
-		debug(`Checking for existence of ${configFile.fsPath}`);
 		if (await fileExists(configFile)) {
-			debug(`Found ${configFile.fsPath}. Configuration file exists.`);
 			configFileExists = true;
 			break;
 		}
@@ -162,9 +156,6 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 	// If Biome is disabled in the workspace folder, we skip project creation
 	// entirely for that workspace folder.
 	if (!isEnabled(folder)) {
-		info(
-			`Biome is disabled in workspace folder ${folder.name}. Skipping project creation.`,
-		);
 		return [];
 	}
 

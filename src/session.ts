@@ -14,6 +14,7 @@ import { state } from "./state";
 import {
 	hasUntitledDocuments,
 	mode,
+	shortURI,
 	subtractURI,
 	supportedLanguages,
 } from "./utils";
@@ -39,10 +40,6 @@ export const createSession = async (
 		return;
 	}
 
-	info(
-		`Found Biome binary at ${findResult.bin.fsPath} using strategy [${findResult.strategy.name}]`,
-	);
-
 	debug("Creating new Biome LSP session");
 
 	return {
@@ -57,7 +54,6 @@ export const createSession = async (
  */
 export const createGlobalSession = async () => {
 	if (hasUntitledDocuments()) {
-		debug("Found Untitled files at startup, creating global session.");
 		state.globalSession = await createSession();
 		state.globalSession?.client.start();
 		info("Global LSP session created");
@@ -68,7 +64,6 @@ export const createGlobalSession = async () => {
 		// If the workspace has untitled files open and there is no global session
 		// create a new global session
 		if (hasUntitledDocuments() && !state.globalSession) {
-			debug("Found untitle files, creating global session.");
 			state.globalSession = await createSession();
 			state.globalSession?.client.start();
 			info("Global LSP session created");
@@ -79,7 +74,6 @@ export const createGlobalSession = async () => {
 		// If the workspace has no untitled files open and there is a global session
 		// stop and destroy the global session
 		if (!hasUntitledDocuments() && state.globalSession) {
-			debug("No untitled files left, stopping global session.");
 			await state.globalSession.client.stop();
 			state.globalSession = undefined;
 			info("Global LSP session stopped");
@@ -96,11 +90,15 @@ export const createProjectSessions = async () => {
 	for (const project of projects) {
 		const session = await createSession(project);
 		if (session) {
-			info(`Created session for project ${project.path}.`);
 			sessions.set(project, session);
 			await session.client.start();
+			info("Created session for project.", {
+				project: shortURI(project),
+			});
 		} else {
-			error(`Failed to create session for project ${project.path}`);
+			error("Failed to create session for project.", {
+				project: project.path.fsPath,
+			});
 		}
 	}
 
@@ -111,11 +109,8 @@ export const createProjectSessions = async () => {
  * Creates a new Biome LSP client
  */
 const createLanguageClient = (bin: Uri, project?: Project) => {
-	debug("Creating new Biome LSP client");
-
 	let args = ["lsp-proxy"];
 	if (project?.configFile) {
-		info(`Using custom config file: ${project.configFile.fsPath}`);
 		args = [...args, "--config", project.configFile.fsPath];
 	}
 
@@ -127,11 +122,6 @@ const createLanguageClient = (bin: Uri, project?: Project) => {
 		},
 		args,
 	};
-
-	debug(
-		`Starting LSP with command: ${serverOptions.command} ${args.join(" ")}`,
-		serverOptions,
-	);
 
 	const clientOptions: LanguageClientOptions = {
 		outputChannel: createLspLogger(project),

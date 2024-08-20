@@ -42,6 +42,10 @@ export const log = (
 	}
 };
 
+export const clear = () => {
+	logger.append("\n\n\n\n\n");
+};
+
 export const info = (message: string, args?: LogArguments) =>
 	log(message, LogLevel.Info, args);
 

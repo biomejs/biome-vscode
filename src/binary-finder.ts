@@ -274,12 +274,6 @@ export const findBiomeLocally = async (
 ): Promise<BinaryFinderResult> => {
 	const binPathInSettings = await vsCodeSettingsStrategy.find(path);
 	if (binPathInSettings) {
-		info("Found biome binary", {
-			project: path.fsPath,
-			bin: binPathInSettings.fsPath,
-			strategy: vsCodeSettingsStrategy.name,
-		});
-
 		return {
 			bin: binPathInSettings,
 			strategy: vsCodeSettingsStrategy,
@@ -288,12 +282,6 @@ export const findBiomeLocally = async (
 
 	const binPathInNodeModules = await nodeModulesStrategy.find(path);
 	if (binPathInNodeModules) {
-		info("Found biome binary", {
-			project: path.fsPath,
-			bin: binPathInNodeModules.fsPath,
-			strategy: nodeModulesStrategy.name,
-		});
-
 		return {
 			bin: binPathInNodeModules,
 			strategy: nodeModulesStrategy,
@@ -302,12 +290,6 @@ export const findBiomeLocally = async (
 
 	const binPathInYarnPnP = await yarnPnpStrategy.find(path);
 	if (binPathInYarnPnP) {
-		info("Found biome binary", {
-			project: path.fsPath,
-			bin: binPathInYarnPnP.fsPath,
-			strategy: yarnPnpStrategy.name,
-		});
-
 		return {
 			bin: binPathInYarnPnP,
 			strategy: yarnPnpStrategy,
@@ -317,12 +299,6 @@ export const findBiomeLocally = async (
 	const binPathInPathEnvironmentVariable =
 		await pathEnvironmentVariableStrategy.find();
 	if (binPathInPathEnvironmentVariable) {
-		info("Found biome binary", {
-			project: path.fsPath,
-			bin: binPathInPathEnvironmentVariable.fsPath,
-			strategy: pathEnvironmentVariableStrategy.name,
-		});
-
 		return {
 			bin: binPathInPathEnvironmentVariable,
 			strategy: pathEnvironmentVariableStrategy,
@@ -331,12 +307,6 @@ export const findBiomeLocally = async (
 
 	const downloadedBinPath = await downloadBiomeStrategy.find();
 	if (downloadedBinPath) {
-		info("Found biome binary", {
-			project: path.fsPath,
-			bin: downloadedBinPath.fsPath,
-			strategy: downloadBiomeStrategy.name,
-		});
-
 		return {
 			bin: downloadedBinPath,
 			strategy: downloadBiomeStrategy,

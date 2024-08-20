@@ -60,6 +60,7 @@ const listenForConfigurationChanges = () => {
 	state.context.subscriptions.push(
 		workspace.onDidChangeConfiguration(async (event) => {
 			if (event.affectsConfiguration("biome")) {
+				info("Configuration change detected.");
 				if (!["restarting", "stopping"].includes(state.state)) {
 					restart();
 				}
