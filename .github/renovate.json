@@ -2,11 +2,23 @@
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"timezone": "Europe/Zurich",
 	"schedule": ["before 9am on monday"],
-	"extends": ["config:best-practices", ":semanticCommitTypeAll(chore)"],
+	"extends": [
+		"config:best-practices",
+		":semanticCommitTypeAll(chore)",
+		":pinAllExceptPeerDependencies"
+	],
 	"rangeStrategy": "pin",
 	"lockFileMaintenance": {
 		"enabled": false
 	},
 	"assignees": ["@biomejs/maintainers", "@biomejs/core-contributors"],
-	"ignoreScripts": true
+	"ignoreScripts": true,
+	"packageRules": [
+		{
+			"description": "Do not pin @types/vscode because it must follow the value set in engines.vscode.",
+			"matchPackageNames": ["@types/vscode"],
+			"matchUpdateTypes": ["pin"],
+			"enabled": false
+		}
+	]
 }
