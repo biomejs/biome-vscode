@@ -4,7 +4,7 @@ import { delimiter } from "node:path";
 import { Uri } from "vscode";
 import { getLspBin } from "./config";
 import { downloadBiome } from "./downloader";
-import { info } from "./logger";
+
 import {
 	binaryName,
 	fileExists,
@@ -149,7 +149,7 @@ const nodeModulesStrategy: LocatorStrategy = {
 				biomePackage.resolve(`${getPackageName()}/package.json`),
 			);
 
-			const binPath = Uri.file(join(binPackage, binaryName));
+			const binPath = Uri.file(join(binPackage, binaryName()));
 
 			if (!(await fileExists(binPath))) {
 				return undefined;
@@ -192,7 +192,7 @@ const yarnPnpStrategy: LocatorStrategy = {
 				}
 
 				return yarnPnpApi.resolveRequest(
-					`${packageName}/${binaryName}`,
+					`${packageName}/${binaryName()}`,
 					biomePackage,
 				);
 			} catch {
@@ -222,7 +222,7 @@ const pathEnvironmentVariableStrategy: LocatorStrategy = {
 		}
 
 		for (const dir of pathEnv.split(delimiter)) {
-			const biome = Uri.joinPath(Uri.file(dir), binaryName);
+			const biome = Uri.joinPath(Uri.file(dir), binaryName());
 
 			if (await fileExists(biome)) {
 				return biome;

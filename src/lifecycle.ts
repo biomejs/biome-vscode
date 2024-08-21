@@ -1,5 +1,10 @@
 import { error, info } from "./logger";
-import { createGlobalSession, createProjectSessions } from "./session";
+import {
+	clearTemporaryBinaries,
+	createGlobalSession,
+	createProjectSessions,
+	destroySession,
+} from "./session";
 import { state } from "./state";
 
 /**
@@ -38,6 +43,7 @@ export const restart = async () => {
  */
 const doStart = async () => {
 	try {
+		await clearTemporaryBinaries();
 		await createGlobalSession();
 		await createProjectSessions();
 	} catch (e) {
@@ -57,10 +63,12 @@ const doStop = async () => {
 	// LSP session is already stopped.
 	await new Promise((resolve) => setTimeout(resolve, 1000));
 
-	await state.globalSession?.client.stop();
+	if (state.globalSession) {
+		destroySession(state.globalSession);
+	}
 
 	for (const session of state.sessions.values()) {
-		await session.client.stop();
+		await destroySession(session);
 	}
 
 	state.sessions.clear();

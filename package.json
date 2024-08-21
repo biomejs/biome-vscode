@@ -216,6 +216,7 @@
 		"@biomejs/version-utils": "^0.3.0",
 		"@vscode/test-electron": "^2.4.1",
 		"ky": "^1.5.0",
+		"nanoid": "^5.0.7",
 		"undici": "^5",
 		"vscode-languageclient": "^8",
 		"vscode-uri": "^3.0.8"

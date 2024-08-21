@@ -1,4 +1,6 @@
-import { type LogOutputChannel, type Uri, window, workspace } from "vscode";
+import { chmodSync } from "node:fs";
+import { customAlphabet } from "nanoid";
+import { type LogOutputChannel, Uri, window, workspace } from "vscode";
 import {
 	type DocumentFilter,
 	LanguageClient,
@@ -8,10 +10,11 @@ import {
 } from "vscode-languageclient/node";
 import { displayName } from "../package.json";
 import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
-import { debug, error, info } from "./logger";
+import { debug, error, info, warn } from "./logger";
 import { type Project, createProjects } from "./project";
 import { state } from "./state";
 import {
+	binaryName,
 	hasUntitledDocuments,
 	mode,
 	shortURI,
@@ -21,6 +24,7 @@ import {
 
 export type Session = {
 	bin: Uri;
+	tempBin?: Uri;
 	project: Project;
 	client: LanguageClient;
 };
@@ -40,13 +44,77 @@ export const createSession = async (
 		return;
 	}
 
-	debug("Creating new Biome LSP session");
+	// Copy the binary to a temporary location, and run it from there
+	// so that the original binary can updated without locking issues.
+	// We'll keep track of that temporary location in the session and
+	// delete it when the session is stopped.
+	const tempBin = await copyBinaryToTemporaryLocation(findResult.bin);
+
+	if (!tempBin) {
+		warn("Failed to copy binary to temporary location. Using original.");
+	}
 
 	return {
 		bin: findResult.bin,
+		tempBin: tempBin,
 		project: project,
-		client: createLanguageClient(findResult.bin, project),
+		client: createLanguageClient(tempBin ?? findResult.bin, project),
 	};
+};
+
+export const destroySession = async (session: Session) => {
+	// Stop the LSP session
+	session.client.stop();
+
+	// Delete the temporary binary
+	if (session.tempBin) {
+		try {
+			workspace.fs.delete(session.tempBin);
+			debug("Deleted temporary binary.", {
+				path: session.tempBin.fsPath,
+			});
+		} catch (error) {
+			error("Failed to delete temporary binary.", {
+				path: session.tempBin.fsPath,
+			});
+		}
+	}
+};
+
+export const clearTemporaryBinaries = async () => {
+	workspace.fs.delete(Uri.joinPath(state.context.globalStorageUri, "bin"), {
+		recursive: true,
+	});
+	debug("Cleared temporary binaries.", {
+		path: Uri.joinPath(state.context.globalStorageUri, "bin").fsPath,
+	});
+};
+
+const copyBinaryToTemporaryLocation = async (
+	bin: Uri,
+): Promise<Uri | undefined> => {
+	const nanoid = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyz", 10);
+
+	const location = Uri.joinPath(
+		state.context.globalStorageUri,
+		"bin",
+		binaryName(`biome-${nanoid()}`),
+	);
+
+	try {
+		await workspace.fs.createDirectory(
+			Uri.joinPath(state.context.globalStorageUri, "bin"),
+		);
+		await workspace.fs.copy(bin, location);
+		chmodSync(location.fsPath, 0o755);
+		debug("Copied binary to temporary location.", {
+			original: bin.fsPath,
+			destination: location.fsPath,
+		});
+		return location;
+	} catch (error) {
+		return undefined;
+	}
 };
 
 /**

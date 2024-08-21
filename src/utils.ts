@@ -102,7 +102,8 @@ export const supportedLanguages: string[] = [
  * This constant contains the name of the Biome executable. The name is suffixed
  * with ".exe" on Windows, and is returned as-is on other platforms.
  */
-export const binaryName = `biome${process.platform === "win32" ? ".exe" : ""}`;
+
+export const binaryName = (name = "biome") => `${name}${binaryExtension}`;
 
 export const binaryExtension = process.platform === "win32" ? ".exe" : "";
 
