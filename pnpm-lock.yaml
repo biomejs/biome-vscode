@@ -9,59 +9,59 @@ importers:
   .:
     dependencies:
       '@biomejs/version-utils':
-        specifier: ^0.3.0
+        specifier: 0.3.0
         version: 0.3.0
       '@vscode/test-electron':
-        specifier: ^2.4.1
+        specifier: 2.4.1
         version: 2.4.1
       ky:
-        specifier: ^1.5.0
+        specifier: 1.5.0
         version: 1.5.0
       nanoid:
-        specifier: ^5.0.7
+        specifier: 5.0.7
         version: 5.0.7
       vscode-languageclient:
-        specifier: ^8
+        specifier: 8.1.0
         version: 8.1.0
       vscode-uri:
-        specifier: ^3.0.8
+        specifier: 3.0.8
         version: 3.0.8
     devDependencies:
       '@biomejs/biome':
         specifier: 1.8.3
         version: 1.8.3
       '@rollup/plugin-commonjs':
-        specifier: ^25.0.7
+        specifier: 25.0.8
         version: 25.0.8(rollup@4.19.0)
       '@rollup/plugin-json':
-        specifier: ^6.1.0
+        specifier: 6.1.0
         version: 6.1.0(rollup@4.19.0)
       '@rollup/plugin-node-resolve':
-        specifier: ^15.2.3
+        specifier: 15.2.3
         version: 15.2.3(rollup@4.19.0)
       '@types/vscode':
         specifier: 1.80.0
         version: 1.80.0
       '@vscode/vsce':
-        specifier: ^2.32.0
+        specifier: 2.32.0
         version: 2.32.0
       lefthook:
-        specifier: ^1.6.1
+        specifier: 1.7.4
         version: 1.7.4
       ovsx:
-        specifier: ^0.8.3
+        specifier: 0.8.4
         version: 0.8.4
       rollup:
-        specifier: ^4.12.0
+        specifier: 4.19.0
         version: 4.19.0
       rollup-plugin-esbuild:
-        specifier: ^6.1.1
+        specifier: 6.1.1
         version: 6.1.1(esbuild@0.23.0)(rollup@4.19.0)
       ts-node:
-        specifier: ^10.9.2
+        specifier: 10.9.2
         version: 10.9.2(@types/node@20.12.14)(typescript@5.5.3)
       typescript:
-        specifier: ^5.3.3
+        specifier: 5.5.3
         version: 5.5.3
 
   test/fixtures/multi-root-workspace/workspace-folder-1:

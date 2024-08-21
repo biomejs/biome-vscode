@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
@@ -32,7 +32,7 @@ jobs:
       - name: Package VSIX
         run: pnpm vsce package --pre-release -o biome.vsix
       - name: Upload the artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4
         with:
           name: biome.vsix
           path: biome.vsix
