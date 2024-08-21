@@ -212,7 +212,7 @@
 	"dependencies": {
 		"@biomejs/version-utils": "0.4.0",
 		"@vscode/test-electron": "2.4.1",
-		"ky": "1.5.0",
+		"ky": "1.7.0",
 		"nanoid": "5.0.7",
 		"vscode-languageclient": "8.1.0",
 		"vscode-uri": "3.0.8"
