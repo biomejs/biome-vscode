@@ -26,11 +26,16 @@
 		"ts-node": "^10.9.2",
 		"typescript": "^5.3.3"
 	},
-	"activationEvents": ["onStartupFinished"],
+	"activationEvents": [
+		"onStartupFinished"
+	],
 	"bugs": {
 		"url": "https://github.com/biomejs/biome-vscode/issues"
 	},
-	"categories": ["Formatters", "Linters"],
+	"categories": [
+		"Formatters",
+		"Linters"
+	],
 	"contributes": {
 		"commands": [
 			{
@@ -86,7 +91,9 @@
 										"description": "Path (relative to the workspace folder) to the Biome configuration file. Biome will use the default biome.json(c) or fallback to defaults if left unspecified."
 									}
 								},
-								"required": ["folder"]
+								"required": [
+									"folder"
+								]
 							}
 						},
 						{
@@ -104,7 +111,9 @@
 										"description": "Path to the Biome configuration file. Biome will use the default biome.json(c) or fallback to defaults if left unspecified."
 									}
 								},
-								"required": ["path"]
+								"required": [
+									"path"
+								]
 							}
 						}
 					],
@@ -116,7 +125,9 @@
 							"type": "string",
 							"description": "Path to the Biome Language Server binary",
 							"default": "",
-							"examples": ["/path/to/biome"]
+							"examples": [
+								"/path/to/biome"
+							]
 						},
 						{
 							"type": "object",
@@ -136,7 +147,12 @@
 				},
 				"biome.lsp.trace.server": {
 					"type": "string",
-					"enum": ["off", "messages", "compact", "verbose"],
+					"enum": [
+						"off",
+						"messages",
+						"compact",
+						"verbose"
+					],
 					"description": "Tracing level of the communications between the extension and the Biome Language Server.",
 					"default": "off"
 				},
@@ -167,8 +183,16 @@
 				"biome_lsp.trace.server": {
 					"type": "string",
 					"scope": "window",
-					"enum": ["off", "messages", "verbose"],
-					"enumDescriptions": ["No traces", "Error only", "Full log"],
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"enumDescriptions": [
+						"No traces",
+						"Error only",
+						"Full log"
+					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server.",
 					"deprecationMessage": "This setting has been deprecated and will be removed in a future version of the extension. Please use the `biome.lsp.trace.server` setting instead."
@@ -178,7 +202,9 @@
 		"languages": [
 			{
 				"id": "biome_syntax_tree",
-				"extensions": [".rast"]
+				"extensions": [
+					".rast"
+				]
 			}
 		],
 		"grammars": [
@@ -196,7 +222,10 @@
 	},
 	"homepage": "https://github.com/biomejs/biome-vscode#readme",
 	"icon": "resources/icons/biome.png",
-	"keywords": ["formatter", "linter"],
+	"keywords": [
+		"formatter",
+		"linter"
+	],
 	"license": "MIT OR Apache-2.0",
 	"publisher": "biomejs",
 	"readme": "https://github.com/biomejs/biome-vscode#readme",
