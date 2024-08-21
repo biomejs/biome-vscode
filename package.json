@@ -1,6 +1,6 @@
 {
 	"name": "biome",
-	"version": "3.0.0",
+	"version": "",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/biomejs/biome-vscode.git"
