@@ -21,6 +21,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: biome.vsix
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          run_install: true
       - name: Publish to Visual Studio Marketplace
         run: pnpm exec vsce publish --packagePath biome.vsix
         env:
