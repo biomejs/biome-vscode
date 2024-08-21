@@ -1,9 +1,9 @@
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { delimiter } from "node:path";
-import { Uri } from "vscode";
+import { Uri, window } from "vscode";
 import { getLspBin } from "./config";
-import { downloadBiome } from "./downloader";
+import { downloadBiome, getDownloadedVersion } from "./downloader";
 
 import {
 	binaryName,
@@ -236,6 +236,26 @@ const pathEnvironmentVariableStrategy: LocatorStrategy = {
 const downloadBiomeStrategy: LocatorStrategy = {
 	name: "Download Biome",
 	find: async (): Promise<Uri | undefined> => {
+		const downloadedVersion = await getDownloadedVersion();
+
+		if (downloadedVersion) {
+			info(
+				`Using previously downloaded version ${downloadedVersion.version}: ${downloadedVersion.binPath.fsPath}`,
+			);
+			return downloadedVersion.binPath;
+		}
+
+		const proceed =
+			(await window.showInformationMessage(
+				"Biome could not be found on you system. Would you like to download it?",
+				"Yes",
+				"No",
+			)) === "Yes";
+
+		if (!proceed) {
+			return undefined;
+		}
+
 		const binPath = await downloadBiome();
 
 		if (binPath) {
@@ -347,6 +367,14 @@ export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 		return {
 			bin: binPathInPathEnvironmentVariable,
 			strategy: pathEnvironmentVariableStrategy,
+		};
+	}
+
+	const downloadedBinPath = await downloadBiomeStrategy.find();
+	if (downloadedBinPath) {
+		return {
+			bin: downloadedBinPath,
+			strategy: downloadBiomeStrategy,
 		};
 	}
 };
