@@ -37,7 +37,7 @@ jobs:
       - name: Generate release notes
         run: |
           git-cliff \
-            --config .git-cliff/changelog.toml \
+            --config .git-cliff/release-notes.toml \
             --latest \
             > RELEASE_NOTES.md
           cat RELEASE_NOTES.md
