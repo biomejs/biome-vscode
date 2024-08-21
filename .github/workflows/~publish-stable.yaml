@@ -17,13 +17,13 @@ jobs:
   package:
     name: Package
     uses: ./.github/workflows/~package-stable.yaml
-  # publish-to-github-releases:
-  #   needs: [package]
-  #   name: Publish to GitHub Releases
-  #   uses: ./.github/workflows/~publish-to-github-releases.yaml
-  #   with:
-  #     version: ${{ inputs.version }}
-  #     channel: stable
+  publish-to-github-releases:
+    needs: [package]
+    name: Publish to GitHub Releases
+    uses: ./.github/workflows/~publish-to-github-releases.yaml
+    with:
+      version: ${{ inputs.version }}
+      channel: stable
   # publish-to-vs-marketplace:
   #   needs: [package]
   #   name: Publish to Visual Studio Marketplace
