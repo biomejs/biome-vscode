@@ -13,6 +13,7 @@ import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
 import { debug, error, info, warn } from "./logger";
 import { type Project, createProjects } from "./project";
 import { state } from "./state";
+import { updateStatusBar } from "./status-bar";
 import {
 	binaryName,
 	hasUntitledDocuments,
@@ -130,11 +131,21 @@ export const createGlobalSession = async () => {
 
 	// Listen for untitled files being opened
 	workspace.onDidOpenTextDocument(async (document) => {
+		// If the document is not an untitled or user data document, we don't
+		// need to create a global session.
+		if (!["untitled", "vscode-userdata"].includes(document.uri.scheme)) {
+			return;
+		}
+
 		// If the workspace has untitled files open and there is no global session
 		// create a new global session
-		if (hasUntitledDocuments() && !state.globalSession) {
+		if (
+			(hasUntitledDocuments() || hasVSCodeUserDataDocuments()) &&
+			!state.globalSession
+		) {
 			state.globalSession = await createSession();
-			state.globalSession?.client.start();
+			await state.globalSession?.client.start();
+			updateStatusBar();
 			info("Global LSP session created");
 		}
 	});
@@ -142,7 +153,11 @@ export const createGlobalSession = async () => {
 	workspace.onDidCloseTextDocument(async () => {
 		// If the workspace has no untitled files open and there is a global session
 		// stop and destroy the global session
-		if (!hasUntitledDocuments() && state.globalSession) {
+		if (
+			!hasUntitledDocuments() &&
+			!hasVSCodeUserDataDocuments() &&
+			state.globalSession
+		) {
 			await state.globalSession.client.stop();
 			state.globalSession = undefined;
 			info("Global LSP session stopped");

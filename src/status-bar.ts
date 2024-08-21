@@ -44,7 +44,7 @@ const getBiomeVersion = () => {
 	const session = state.activeProject
 		? state.sessions.get(state.activeProject)
 		: state.globalSession;
-	return session?.client.initializeResult?.serverInfo.version;
+	return session?.client.initializeResult?.serverInfo.version ?? "";
 };
 
 const getStateText = (): string => {
