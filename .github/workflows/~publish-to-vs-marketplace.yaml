@@ -22,6 +22,6 @@ jobs:
         with:
           name: biome.vsix
       - name: Publish to Visual Studio Marketplace
-        run: pnpm execvsce publish --packagePath biome.vsix
+        run: pnpm exec vsce publish --packagePath biome.vsix
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
