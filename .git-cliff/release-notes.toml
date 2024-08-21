@@ -1,0 +1,65 @@
+[changelog]
+header = ""
+body = """
+{% for commit in commits %}
+  {% if commit.github.pr_title -%}
+    {%- set commit_message = commit.github.pr_title -%}
+  {%- else -%}
+    {%- set commit_message = commit.message -%}
+  {%- endif -%}
+  - {{ commit_message | split(pat="\n") | first | trim }}\
+    {% if commit.github.username %} by @{{ commit.github.username }}{%- endif -%}
+    {% if commit.github.pr_number %} in \
+      [#{{ commit.github.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.github.pr_number }}) \
+    {%- endif %}
+{%- endfor -%}
+
+{%- if github -%}
+{% if github.contributors | filter(attribute="is_first_time", value=true) | length != 0 %}
+  {% raw %}\n{% endraw -%}
+  ## New Contributors
+{%- endif %}\
+{% for contributor in github.contributors | filter(attribute="is_first_time", value=true) %}
+  - @{{ contributor.username }} made their first contribution
+    {%- if contributor.pr_number %} in \
+      [#{{ contributor.pr_number }}]({{ self::remote_url() }}/pull/{{ contributor.pr_number }}) \
+    {%- endif %}
+{%- endfor -%}
+{%- endif -%}
+
+{% if version %}
+    {% if previous.version %}
+      **Full Changelog**: {{ self::remote_url() }}/compare/{{ previous.version }}...{{ version }}
+    {% endif %}
+{% else -%}
+  {% raw %}\n{% endraw %}
+{% endif %}
+
+{%- macro remote_url() -%}
+  https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}
+{%- endmacro -%}
+"""
+footer = ""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+commit_parsers = [
+    { message = "^feat", group = "<!-- 0 -->🚀 Features" },
+    { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes" },
+    { message = "^refactor", group = "<!-- 2 -->🚜 Refactor" },
+    { message = "^perf", group = "<!-- 3 -->⚡ Performance" },
+    { message = "^chore\\(deps.*\\)", skip = true },
+    { message = "^chore|^ci", group = "<!-- 4 -->⚙️ Miscellaneous" },
+    { message = "^revert", group = "<!-- 5 -->◀️ Revert" },
+]
+sort_commits = "oldest"
+
+[bump]
+initial_tag = "0.1.0"
+
+[remote.github]
+owner = "biomejs"
+repo = "biome-vscode"

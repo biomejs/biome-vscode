@@ -7,6 +7,7 @@
 		":semanticCommitTypeAll(chore)",
 		":pinAllExceptPeerDependencies"
 	],
+	"rangeStrategy": "pin",
 	"lockFileMaintenance": {
 		"enabled": false
 	},
@@ -14,7 +15,7 @@
 	"ignoreScripts": true,
 	"packageRules": [
 		{
-			"description": "Do not ping @types/vscode because it must follow the value set in engines.vscode.",
+			"description": "Do not pin @types/vscode because it must follow the value set in engines.vscode.",
 			"matchPackageNames": ["@types/vscode"],
 			"matchUpdateTypes": ["pin"],
 			"enabled": false

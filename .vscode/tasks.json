@@ -3,9 +3,32 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "watch",
+			"script": "dev",
 			"isBackground": true,
-			"problemMatcher": "$ts-esbuild-watch",
+			"problemMatcher": [
+				{
+					"owner": "typescript",
+					"source": "ts",
+					"applyTo": "allDocuments",
+					"fileLocation": ["relative", "${cwd}"],
+					"pattern": {
+						"regexp": "^\\[!\\] (plugin esbuild) Error: (?<message>.+)\\r?\\n(?<file>.*?):\\s*\\((?<line>\\d+):(?<column>\\d+)\\)",
+						"message": 1,
+						"file": 2,
+						"line": 3,
+						"column": 4
+					},
+					"background": {
+						"activeOnStart": true,
+						"beginsPattern": {
+							"regexp": "^rollup v\\d+\\.\\d+\\.\\d+$"
+						},
+						"endsPattern": {
+							"regexp": "^\\[[:-\\s\\d]+\\] waiting for changes\\.\\.\\.$"
+						}
+					}
+				}
+			],
 			"options": {
 				"cwd": "${workspaceFolder}"
 			},

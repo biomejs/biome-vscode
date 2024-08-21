@@ -1,7 +1,6 @@
 **
 !resources
 !LICENSE*
-!out/main.js
+!out/index.js
 !package.json
-!configuration_schema.json
 !README.md

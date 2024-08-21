@@ -1,155 +1,144 @@
-import { chmodSync } from "node:fs";
-import { fetch } from "undici";
+import { getAllVersions } from "@biomejs/version-utils";
+import ky from "ky";
 import {
-	type ExtensionContext,
-	type OutputChannel,
 	ProgressLocation,
+	type QuickPickItem,
 	Uri,
-	commands,
 	window,
 	workspace,
 } from "vscode";
-import { Commands } from "./commands";
-import { getVersions } from "./version";
+import { restart } from "./lifecycle";
+import { error, info } from "./logger";
+import { state } from "./state";
+import { binaryExtension, fileExists, platformPackageName } from "./utils";
 
-export const selectAndDownload = async (
-	context: ExtensionContext,
-	outputChannel?: OutputChannel,
-): Promise<string | undefined> => {
-	const versions = await window.withProgress(
-		{
-			location: ProgressLocation.Notification,
-			title: "Fetching Biome versions",
-			cancellable: false,
-		},
-		async () => {
-			return await getVersions(context, outputChannel);
-		},
-	);
+export const downloadBiome = async (): Promise<Uri | undefined> => {
+	const downloadedVersion = await getDownloadedVersion();
 
-	if (!versions) {
+	if (downloadedVersion) {
+		info(
+			`Using previously downloaded version ${downloadedVersion.version}: ${downloadedVersion.binPath.fsPath}`,
+		);
+		return downloadedVersion.binPath;
+	}
+
+	const version = await promptVersionToDownload();
+
+	if (!version) {
 		return;
 	}
 
-	const version = await askVersion(versions);
-
-	if (!version) {
-		return undefined;
-	}
-
-	return await window.withProgress(
-		{
-			location: ProgressLocation.Notification,
-			title: `Downloading Biome ${version}`,
-			cancellable: false,
-		},
-		async () => {
-			await commands.executeCommand(Commands.StopServer);
-			await download(version, context);
-			await commands.executeCommand(Commands.RestartLspServer);
-			return version;
-		},
-	);
-};
-
-export const updateToLatest = async (
-	context: ExtensionContext,
-	outputChannel?: OutputChannel,
-) => {
 	await window.withProgress(
 		{
+			title: `Downloading Biome ${version.label}`,
 			location: ProgressLocation.Notification,
-			title: "Updating Biome version",
-			cancellable: false,
 		},
-		async () => {
-			const versions = await getVersions(context, outputChannel);
-			if (!versions) {
-				return;
-			}
-			const version = versions[0];
-			await commands.executeCommand(Commands.StopServer);
-			await download(version, context);
-			await commands.executeCommand(Commands.RestartLspServer);
-		},
+		async () => await downloadBiomeVersion(version.label),
 	);
+
+	await restart();
 };
 
-/**
- * Download the Biome CLI from GitHub
- *
- * @param version The version to download
- */
-const download = async (version: string, context: ExtensionContext) => {
-	const releases = (await (
-		await fetch(
+const downloadBiomeVersion = async (
+	version: string,
+): Promise<Uri | undefined> => {
+	const releases: {
+		assets: { name: string; browser_download_url: string }[];
+	} = await ky
+		.get(
 			`https://api.github.com/repos/biomejs/biome/releases/tags/cli/v${version}`,
 		)
-	).json()) as {
-		assets: { name: string; browser_download_url: string }[];
-	};
+		.json();
 
-	const assetName = `biome-${process.platform}-${process.arch}${
-		process.platform === "linux" ? "-musl" : ""
-	}${process.platform === "win32" ? ".exe" : ""}`;
-
-	// Find the asset for the current platform
-	const asset = releases.assets.find((asset) => asset.name === assetName);
+	const asset = releases.assets.find((asset) => {
+		return asset.name === platformPackageName;
+	});
 
 	if (!asset) {
 		window.showErrorMessage(
-			`The specified version is not available for your system (${assetName}).`,
+			`Could not find Biome ${version} for your platform.`,
 		);
 		return;
 	}
 
 	let bin: ArrayBuffer;
 	try {
-		const blob = await fetch(asset.browser_download_url);
+		const blob = await ky.get(asset.browser_download_url).blob();
 		bin = await blob.arrayBuffer();
-	} catch {
-		window.showErrorMessage(
-			`Could not download the binary for your system (${assetName}).`,
-		);
+	} catch (error) {
+		window.showErrorMessage(`Failed to download Biome ${version}.`);
 		return;
 	}
 
-	// Write binary file to disk
-	await workspace.fs.writeFile(
-		Uri.joinPath(
-			context.globalStorageUri,
-			"server",
-			`biome${process.platform === "win32" ? ".exe" : ""}`,
-		),
-		new Uint8Array(bin),
+	const binPath = Uri.joinPath(
+		state.context.globalStorageUri,
+		"bin",
+		`biome${binaryExtension}`,
 	);
 
-	// Make biome executable
-	chmodSync(
-		Uri.joinPath(
-			context.globalStorageUri,
-			"server",
-			`biome${process.platform === "win32" ? ".exe" : ""}`,
-		).fsPath,
-		0o755,
+	try {
+		await workspace.fs.writeFile(binPath, new Uint8Array(bin));
+		info(`Downloaded Biome ${version} to ${binPath.fsPath}`);
+		state.context.globalState.update("downloadedVersion", version);
+	} catch (e) {
+		window.showErrorMessage(`Failed to save Biome ${version}.`);
+		error(e);
+		return;
+	}
+};
+
+const getDownloadedVersion = async (): Promise<
+	{ version: string; binPath: Uri } | undefined
+> => {
+	// Retrieve the list of downloaded version from the global state
+	const version = state.context.globalState.get<string>("downloadedVersion");
+
+	const binPath = Uri.joinPath(
+		state.context.globalStorageUri,
+		"bin",
+		`biome${binaryExtension}`,
 	);
 
-	// Record latest version
-	await context.globalState.update("bundled_biome_version", version);
+	if (!(await fileExists(binPath))) {
+		return;
+	}
+
+	return {
+		version,
+		binPath,
+	};
 };
 
 /**
- * Display the VS Code prompt for selection the version
+ * Prompts the user to select which versions of the Biome CLI to download
+ *
+ * This function will display a QuickPick dialog to the user, allowing them to
+ * select which versions of the Biome CLI they would like to download. Versions
+ * that have already been downloaded will be pre-selected.
  */
-const askVersion = async (versions: string[]): Promise<string | undefined> => {
-	const options = versions.map((version, index) => ({
-		label: version,
-		description: index === 0 ? "(latest)" : "",
-	}));
+const promptVersionToDownload = async () => {
+	// Get the list of versions
+	const compileItems = async (): Promise<QuickPickItem[]> => {
+		const downloadedVersion = (await getDownloadedVersion())?.version;
 
-	const result = await window.showQuickPick(options, {
-		placeHolder: "Select the version of the biome CLI to install",
+		// Get the list of available versions
+		const availableVersions = await getAllVersions(false);
+
+		return availableVersions.map((version, index) => {
+			return {
+				label: version,
+				description: index === 0 ? "(latest)" : "",
+				detail:
+					downloadedVersion === version
+						? "(currently installed)"
+						: "",
+				alwaysShow: index < 3,
+			};
+		});
+	};
+
+	return window.showQuickPick(compileItems(), {
+		title: "Select Biome version to download",
+		placeHolder: "Select Biome version to download",
 	});
-
-	return result?.label;
 };
