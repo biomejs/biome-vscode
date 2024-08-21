@@ -22,6 +22,6 @@ jobs:
         with:
           name: biome.vsix
       - name: Publish to Open VSX Registry
-        run: pnpm ovsx publish --packagePath biome.vsix
+        run: pnpm exec ovsx publish --packagePath biome.vsix
         env:
           OVSX_PATH: ${{ secrets.OVSX_PATH }}
