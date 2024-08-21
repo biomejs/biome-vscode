@@ -58,9 +58,9 @@ jobs:
           git tag -a v${{ steps.next-version.outputs.version }} -m "v${{ steps.next-version.outputs.version }}"
           git push --follow-tags
 
-  # publish:
-  #   name: Publish
-  #   needs: [tag]
-  #   uses: ./.github/workflows/~publish-stable.yaml
-  #   with:
-  #     version: ${{ needs.tag.outputs.version }}
+  publish:
+    name: Publish
+    needs: [tag]
+    uses: ./.github/workflows/~publish-stable.yaml
+    with:
+      version: ${{ needs.tag.outputs.version }}
