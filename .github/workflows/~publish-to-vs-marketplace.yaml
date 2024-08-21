@@ -17,6 +17,8 @@ jobs:
     name: Publish
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Retrieve packaged VSIX
         uses: actions/download-artifact@v4
         with:
