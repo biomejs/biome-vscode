@@ -24,5 +24,6 @@ jobs:
     name: Release nightly
     needs: [generate-nightly-version]
     uses: ./.github/workflows/~publish-nightly.yaml
+    secrets: inherit
     with:
       version: ${{ needs.generate-nightly-version.outputs.version }}

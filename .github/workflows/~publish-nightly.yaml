@@ -15,17 +15,20 @@ jobs:
   package:
     name: Package
     uses: ./.github/workflows/~package-nightly.yaml
+    secrets: inherit
     with:
       version: ${{ inputs.version }}
   publish-to-vs-marketplace:
     needs: [package]
     name: Publish to Visual Studio Marketplace
     uses: ./.github/workflows/~publish-to-vs-marketplace.yaml
+    secrets: inherit
     with:
       channel: nightly
   publish-to-ovsx-registry:
     needs: [package]
     name: Publish to Open VSX Registry
     uses: ./.github/workflows/~publish-to-ovsx-registry.yaml
+    secrets: inherit
     with:
       channel: nightly

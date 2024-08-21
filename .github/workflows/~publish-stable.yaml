@@ -17,10 +17,12 @@ jobs:
   package:
     name: Package
     uses: ./.github/workflows/~package-stable.yaml
+    secrets: inherit
   publish-to-github-releases:
     needs: [package]
     name: Publish to GitHub Releases
     uses: ./.github/workflows/~publish-to-github-releases.yaml
+    secrets: inherit
     with:
       version: ${{ inputs.version }}
       channel: stable

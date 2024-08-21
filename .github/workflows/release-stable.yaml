@@ -61,5 +61,6 @@ jobs:
     name: Publish
     needs: [tag]
     uses: ./.github/workflows/~publish-stable.yaml
+    secrets: inherit
     with:
       version: ${{ needs.tag.outputs.version }}
