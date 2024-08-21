@@ -47,7 +47,7 @@ jobs:
           git-cliff \
             --config .git-cliff/changelog.toml \
             --unreleased \
-            > CHANGELOG.md
+            > CHANGELOG.md 5014d9d9291a7de6c11afbe154ce73225c45aefb..
           cat CHANGELOG.md
       # - name: Commit, tag, and push
       #   run: |
