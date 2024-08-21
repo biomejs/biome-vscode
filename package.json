@@ -14,17 +14,17 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
-		"@rollup/plugin-commonjs": "^25.0.7",
-		"@rollup/plugin-json": "^6.1.0",
-		"@rollup/plugin-node-resolve": "^15.2.3",
+		"@rollup/plugin-commonjs": "25.0.8",
+		"@rollup/plugin-json": "6.1.0",
+		"@rollup/plugin-node-resolve": "15.2.3",
 		"@types/vscode": "1.80.0",
-		"@vscode/vsce": "^2.32.0",
-		"lefthook": "^1.6.1",
-		"ovsx": "^0.8.3",
-		"rollup": "^4.12.0",
-		"rollup-plugin-esbuild": "^6.1.1",
-		"ts-node": "^10.9.2",
-		"typescript": "^5.3.3"
+		"@vscode/vsce": "2.32.0",
+		"lefthook": "1.7.4",
+		"ovsx": "0.8.4",
+		"rollup": "4.19.0",
+		"rollup-plugin-esbuild": "6.1.1",
+		"ts-node": "10.9.2",
+		"typescript": "5.5.3"
 	},
 	"activationEvents": ["onStartupFinished"],
 	"bugs": {
@@ -210,12 +210,12 @@
 		"skipLicense": true
 	},
 	"dependencies": {
-		"@biomejs/version-utils": "^0.3.0",
-		"@vscode/test-electron": "^2.4.1",
-		"ky": "^1.5.0",
-		"nanoid": "^5.0.7",
-		"vscode-languageclient": "^8",
-		"vscode-uri": "^3.0.8"
+		"@biomejs/version-utils": "0.3.0",
+		"@vscode/test-electron": "2.4.1",
+		"ky": "1.5.0",
+		"nanoid": "5.0.7",
+		"vscode-languageclient": "8.1.0",
+		"vscode-uri": "3.0.8"
 	},
 	"packageManager": "pnpm@9.5.0"
 }
