@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up git-cliff
         uses: kenji-miyake/setup-git-cliff@v2
       - name: Determine next version
