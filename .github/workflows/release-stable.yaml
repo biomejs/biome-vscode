@@ -24,9 +24,7 @@ jobs:
       - name: Determine next version
         id: next-version
         run: |
-         version=$(git-cliff \
-          --bumped-version \
-          --config .git-cliff/release-notes.toml 2>/dev/null)
+         echo "version=$(git-cliff --bumped-version --config .git-cliff/release-notes.toml 2>/dev/null)" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Patch package.json version with stable identifier
