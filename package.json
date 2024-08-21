@@ -210,7 +210,7 @@
 		"skipLicense": true
 	},
 	"dependencies": {
-		"@biomejs/version-utils": "0.3.0",
+		"@biomejs/version-utils": "0.4.0",
 		"@vscode/test-electron": "2.4.1",
 		"ky": "1.5.0",
 		"nanoid": "5.0.7",

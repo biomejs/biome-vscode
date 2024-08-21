@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@biomejs/version-utils':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 0.4.0
+        version: 0.4.0
       '@vscode/test-electron':
         specifier: 2.4.1
         version: 2.4.1
@@ -232,8 +232,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@biomejs/version-utils@0.3.0':
-    resolution: {integrity: sha512-VxX+Zhs7AdyrfOWCZStSYKVOUEIwY7dre7lGkgv8lJ42IVK2e5WFfqEAaOljqaZgUh0ER8+s3vM9rh7PRt3+pg==}
+  '@biomejs/version-utils@0.4.0':
+    resolution: {integrity: sha512-jboDhjZY8/bAPl2kgvjrbbyXyM6uimPsasY3TvFhSpPaNorij0UZROi/NjDQqQeZFSaIK3ieiRZXWwoBZh6rQQ==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -1605,7 +1605,7 @@ snapshots:
   '@biomejs/cli-win32-x64@1.8.3':
     optional: true
 
-  '@biomejs/version-utils@0.3.0':
+  '@biomejs/version-utils@0.4.0':
     dependencies:
       semver: 7.6.3
       undici: 6.19.4
