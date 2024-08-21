@@ -82,7 +82,7 @@ export const destroySession = async (session: Session) => {
 };
 
 export const clearTemporaryBinaries = async () => {
-	const binDirPath = Uri.joinPath(state.context.globalStorageUri, "bin");
+	const binDirPath = Uri.joinPath(state.context.globalStorageUri, "tmp-bin");
 	if (await directoryExists(binDirPath)) {
 		workspace.fs.delete(binDirPath, {
 			recursive: true,
@@ -100,13 +100,13 @@ const copyBinaryToTemporaryLocation = async (
 
 	const location = Uri.joinPath(
 		state.context.globalStorageUri,
-		"bin",
+		"tmp-bin",
 		binaryName(`biome-${nanoid()}`),
 	);
 
 	try {
 		await workspace.fs.createDirectory(
-			Uri.joinPath(state.context.globalStorageUri, "bin"),
+			Uri.joinPath(state.context.globalStorageUri, "tmp-bin"),
 		);
 		await workspace.fs.copy(bin, location);
 		chmodSync(location.fsPath, 0o755);

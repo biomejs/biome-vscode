@@ -9,7 +9,12 @@ import {
 } from "vscode";
 import { error, info } from "./logger";
 import { state } from "./state";
-import { binaryExtension, fileExists, platformPackageName } from "./utils";
+import {
+	binaryExtension,
+	binaryName,
+	fileExists,
+	platformPackageName,
+} from "./utils";
 
 export const downloadBiome = async (): Promise<Uri | undefined> => {
 	const version = await promptVersionToDownload();
@@ -86,7 +91,7 @@ export const getDownloadedVersion = async (): Promise<
 	const binPath = Uri.joinPath(
 		state.context.globalStorageUri,
 		"bin",
-		`biome${binaryExtension}`,
+		binaryName(),
 	);
 
 	if (!(await fileExists(binPath))) {
