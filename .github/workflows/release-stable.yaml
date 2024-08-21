@@ -42,14 +42,21 @@ jobs:
             package.json > package.json.tmp \
             && mv package.json.tmp package.json
           biome format --write package.json
-      - name: Commit, tag, and push
+      - name: Generate changelog
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json
-          git commit -m "chore(release): v${{ steps.next-version.outputs.version }}"
-          git tag -a v${{ steps.next-version.outputs.version }} -m "v${{ steps.next-version.outputs.version }}"
-          git push --follow-tags
+          git-cliff \
+            --config .git-cliff/changelog.toml \
+            --unreleased \
+            > CHANGELOG.md
+          cat CHANGELOG.md
+      # - name: Commit, tag, and push
+      #   run: |
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+      #     git add package.json CHANGELOG.md
+      #     git commit -m "chore(release): v${{ steps.next-version.outputs.version }}"
+      #     git tag -a v${{ steps.next-version.outputs.version }} -m "v${{ steps.next-version.outputs.version }}"
+      #     git push --follow-tags
 
   # publish:
   #   name: Publish

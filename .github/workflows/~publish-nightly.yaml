@@ -17,15 +17,15 @@ jobs:
     uses: ./.github/workflows/~package-nightly.yaml
     with:
       version: ${{ inputs.version }}
-  # publish-to-vs-marketplace:
-  #   needs: [package]
-  #   name: Publish to Visual Studio Marketplace
-  #   uses: ./.github/workflows/~publish-to-vs-marketplace.yaml
-  #   with:
-  #     channel: nightly
-  # publish-to-ovsx-registry:
-  #   needs: [package]
-  #   name: Publish to Visual Studio Marketplace
-  #   uses: ./.github/workflows/~publish-to-ovsx-registry.yaml
-  #   with:
-  #     channel: nightly
+  publish-to-vs-marketplace:
+    needs: [package]
+    name: Publish to Visual Studio Marketplace
+    uses: ./.github/workflows/~publish-to-vs-marketplace.yaml
+    with:
+      channel: nightly
+  publish-to-ovsx-registry:
+    needs: [package]
+    name: Publish to Visual Studio Marketplace
+    uses: ./.github/workflows/~publish-to-ovsx-registry.yaml
+    with:
+      channel: nightly
