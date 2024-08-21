@@ -20,7 +20,7 @@ jobs:
       - name: Retrieve packaged VSIX
         uses: actions/download-artifact@v4
         with:
-          name: biome-${{ inputs.channel }}-${{ github.sha }}.vsix
+          name: biome.vsix
       - name: Publish to Visual Studio Marketplace
         run: pnpm vsce publish --packagePath biome.vsix
         env:
