@@ -25,7 +25,7 @@ jobs:
       channel: nightly
   publish-to-ovsx-registry:
     needs: [package]
-    name: Publish to Visual Studio Marketplace
+    name: Publish to Open VSX Registry
     uses: ./.github/workflows/~publish-to-ovsx-registry.yaml
     with:
       channel: nightly

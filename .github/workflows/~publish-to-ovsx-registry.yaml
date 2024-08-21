@@ -16,6 +16,7 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
+    environment: vscode
     steps:
       - name: Checkout
         uses: actions/checkout@v4
