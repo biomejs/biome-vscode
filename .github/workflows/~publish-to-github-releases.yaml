@@ -21,19 +21,29 @@ jobs:
     name: Publish
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Fetch the whole history so we can determine the next version number
+          # based on the commit history.
+          fetch-depth: 0
+          ref: main
       - name: Retrieve packaged VSIX
         uses: actions/download-artifact@v4
         with:
-          name: biome-${{ inputs.channel }}-${{ github.sha }}.vsix
+          name: biome.vsix
       - name: Generate release notes
-        id: release-notes
-        uses: orhun/git-cliff-action@v2
-        with:
-          config: ./.git-cliff/release-notes.toml
-      - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@v2
-        with:
-          name: "${{ format('v{0}', inputs.version) }}"
-          tag_name: "${{ format('v{0}', inputs.version) }}"
-          body_path: RELEASE_NOTES.md
-          files: biome.vsix
+        run: |
+          git-cliff \
+            --config .git-cliff/changelog.toml \
+            --latest \
+            > RELEASE_NOTES.md
+          cat RELEASE_NOTES.md
+          
+      # - name: Publish to GitHub Releases
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     name: "${{ format('v{0}', inputs.version) }}"
+      #     tag_name: "${{ format('v{0}', inputs.version) }}"
+      #     body_path: RELEASE_NOTES.md
+      #     files: biome.vsix
