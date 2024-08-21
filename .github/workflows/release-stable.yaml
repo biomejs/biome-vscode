@@ -4,7 +4,7 @@
 # use to create a new tag. Publication of the new version will be handled by
 # the `publish-stable.yaml` workflows.
 
-name: Release new stable version
+name: 🚀 Release new stable version
 
 on:
   workflow_dispatch:

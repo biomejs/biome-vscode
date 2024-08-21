@@ -1,7 +1,7 @@
 # This workflow is responsible for releasing a new nightly version of the 
 # extension. It is meant to be triggered manually.
 
-name: Release new nightly version
+name: 🌙 Release new nightly version
 
 on:
   workflow_dispatch:
