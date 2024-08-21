@@ -4,11 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
-  workflow_dispatch:
-    
-jobs:
+    branches: [main]
 
-  # Check quality of the code
+jobs:
   quality:
     name: Quality
     runs-on: ubuntu-latest
@@ -17,7 +15,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Biome
         uses: biomejs/setup-biome@v2
-      - name: Run Biome
+      - name: Run Biome checks
         run: biome ci --reporter=github
-      
-
+  package:
+    name: Package
+    uses: ./.github/workflows/~package-stable.yaml

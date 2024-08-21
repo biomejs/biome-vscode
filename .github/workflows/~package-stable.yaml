@@ -1,0 +1,27 @@
+# This workflow is responsible for packaging the extension as a VSIX artifact
+# for the stable release.
+name: ~Package stable release
+
+on:
+  workflow_call:
+    
+jobs:
+  package:
+    name: Package stable release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: true
+      - name: Build
+        run: pnpm run build
+      - name: Package VSIX
+        run: pnpm vsce package -o biome.vsix
+      - name: Upload the artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: biome.vsix
+          path: biome.vsix

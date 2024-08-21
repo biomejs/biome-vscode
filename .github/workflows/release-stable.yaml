@@ -1,0 +1,53 @@
+# This workflow is responsible for releasing a new stable version of the 
+# extension. It is meant to be triggered manually and will automatically
+# determine the next version number based on the commit history, which it will
+# use to create a new tag. Publication of the new version will be handled by
+# the `publish-stable.yaml` workflows.
+
+name: Release new stable version
+
+on:
+  workflow_dispatch:
+
+jobs:
+  tag:
+    name: Tag stable
+    runs-on: ubuntu-latest
+    permissions: write-all
+    outputs:
+      version: ${{ steps.next-version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up git-cliff
+        uses: kenji-miyake/setup-git-cliff@v2
+      - name: Determine next version
+        id: next-version
+        run: |
+         version=$(git-cliff \
+          --bumped-version \
+          --config .git-cliff/release-notes.toml)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Patch package.json version with stable identifier
+        run: |
+          jq \
+            --arg version "${{ steps.next-version.outputs.version }}" \
+            --tab '.version = $version' \
+            package.json > package.json.tmp \
+            && mv package.json.tmp package.json
+      # - name: Commit, tag, and push
+      #   run: |
+      #     git config user.name "GitHub Actions"
+      #     git config user.email "actions@github.com"
+      #     git add package.json
+      #     git commit -m "chore(release): v${{ steps.next-version.outputs.version }}"
+      #     git tag v${{ steps.next-version.outputs.version }}
+      #     git push --follow-tags
+
+  publish:
+    name: Publish
+    needs: [tag]
+    uses: ./.github/workflows/~publish-stable.yaml
+    with:
+      version: ${{ needs.tag.outputs.version }}

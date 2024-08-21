@@ -1,0 +1,31 @@
+# This workflow is responsible for publishing nightly releases of the extension
+# to the Visual Studio Marketplace, the Open VSX Registry. It is triggered 
+# manually by the user.
+
+name: ~Publish nightly release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  package:
+    name: Package
+    uses: ./.github/workflows/~package-nightly.yaml
+    with:
+      version: ${{ inputs.version }}
+  # publish-to-vs-marketplace:
+  #   needs: [package]
+  #   name: Publish to Visual Studio Marketplace
+  #   uses: ./.github/workflows/~publish-to-vs-marketplace.yaml
+  #   with:
+  #     channel: nightly
+  # publish-to-ovsx-registry:
+  #   needs: [package]
+  #   name: Publish to Visual Studio Marketplace
+  #   uses: ./.github/workflows/~publish-to-ovsx-registry.yaml
+  #   with:
+  #     channel: nightly
