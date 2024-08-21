@@ -12,6 +12,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # We fetch the latest commit on the main branch to ensure that our
+          # package.json version contains the patched version number from the
+          # previous step.
+          ref: ${{ github.ref }}
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:

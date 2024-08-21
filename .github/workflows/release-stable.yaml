@@ -20,6 +20,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # Fetch the whole history so we can determine the next version number
+          # based on the commit history.
           fetch-depth: 0
       - name: Set up git-cliff
         uses: kenji-miyake/setup-git-cliff@v2
@@ -37,18 +39,18 @@ jobs:
             --tab '.version = $version' \
             package.json > package.json.tmp \
             && mv package.json.tmp package.json
-      # - name: Commit, tag, and push
-      #   run: |
-      #     git config user.name "GitHub Actions"
-      #     git config user.email "actions@github.com"
-      #     git add package.json
-      #     git commit -m "chore(release): v${{ steps.next-version.outputs.version }}"
-      #     git tag v${{ steps.next-version.outputs.version }}
-      #     git push --follow-tags
+      - name: Commit, tag, and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore(release): v${{ steps.next-version.outputs.version }}"
+          git tag v${{ steps.next-version.outputs.version }}
+          git push --follow-tags
 
-  publish:
-    name: Publish
-    needs: [tag]
-    uses: ./.github/workflows/~publish-stable.yaml
-    with:
-      version: ${{ needs.tag.outputs.version }}
+  # publish:
+  #   name: Publish
+  #   needs: [tag]
+  #   uses: ./.github/workflows/~publish-stable.yaml
+  #   with:
+  #     version: ${{ needs.tag.outputs.version }}
