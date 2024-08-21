@@ -16,6 +16,7 @@ import { state } from "./state";
 import {
 	binaryName,
 	hasUntitledDocuments,
+	hasVSCodeUserDataDocuments,
 	mode,
 	shortURI,
 	subtractURI,
@@ -121,7 +122,7 @@ const copyBinaryToTemporaryLocation = async (
  * Creates a new global session
  */
 export const createGlobalSession = async () => {
-	if (hasUntitledDocuments()) {
+	if (hasUntitledDocuments() || hasVSCodeUserDataDocuments()) {
 		state.globalSession = await createSession();
 		state.globalSession?.client.start();
 		info("Global LSP session created");
@@ -267,9 +268,18 @@ const createLspTraceLogger = (project?: Project): LogOutputChannel => {
  * not yet been saved to disk (untitled).
  */
 const createDocumentSelector = (project?: Project): DocumentFilter[] => {
-	return supportedLanguages.map((language) => ({
-		language,
-		scheme: project ? "file" : "untitled",
-		...(project && { pattern: `${project.path.fsPath}**/*` }),
-	}));
+	if (project) {
+		return supportedLanguages.map((language) => ({
+			language,
+			scheme: "file",
+			pattern: `${project.path.fsPath}**/*`,
+		}));
+	}
+
+	return supportedLanguages.flatMap((language) => {
+		return ["untitled", "vscode-userdata"].map((scheme) => ({
+			language,
+			scheme,
+		}));
+	});
 };

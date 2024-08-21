@@ -162,4 +162,9 @@ export const mode = determineMode();
 export const hasUntitledDocuments = (): boolean =>
 	workspace.textDocuments.find((doc) => doc.isUntitled) !== undefined;
 
+export const hasVSCodeUserDataDocuments = (): boolean =>
+	workspace.textDocuments.find(
+		(doc) => doc.uri.scheme === "vscode-userdata",
+	) !== undefined;
+
 export const platformPackageName = `biome-${platform}`;
