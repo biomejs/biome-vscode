@@ -1,5 +1,8 @@
 {
 	"name": "biome",
+	"displayName": "Biome",
+	"publisher": "biomejs",
+	"description": "Toolchain of the web",
 	"version": "3.0.0",
 	"repository": {
 		"type": "git",
@@ -189,17 +192,15 @@
 			}
 		]
 	},
-	"description": "Toolchain of the web",
-	"displayName": "Biome",
+
 	"engines": {
 		"vscode": "^1.80.0"
 	},
 	"homepage": "https://github.com/biomejs/biome-vscode#readme",
+	"readme": "https://github.com/biomejs/biome-vscode#readme",
 	"icon": "resources/icons/biome.png",
 	"keywords": ["formatter", "linter"],
 	"license": "MIT OR Apache-2.0",
-	"publisher": "biomejs",
-	"readme": "https://github.com/biomejs/biome-vscode#readme",
 	"scripts": {
 		"build": "rollup --config rollup.config.ts --configPlugin esbuild",
 		"dev": "rollup --watch --config rollup.config.ts --configPlugin esbuild",
