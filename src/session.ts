@@ -13,11 +13,9 @@ import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
 import { debug, error, info, warn } from "./logger";
 import { type Project, createProjects } from "./project";
 import { state } from "./state";
-import { updateStatusBar } from "./status-bar";
 import {
 	binaryName,
-	hasUntitledDocuments,
-	hasVSCodeUserDataDocuments,
+	directoryExists,
 	mode,
 	shortURI,
 	subtractURI,
@@ -84,12 +82,15 @@ export const destroySession = async (session: Session) => {
 };
 
 export const clearTemporaryBinaries = async () => {
-	workspace.fs.delete(Uri.joinPath(state.context.globalStorageUri, "bin"), {
-		recursive: true,
-	});
-	debug("Cleared temporary binaries.", {
-		path: Uri.joinPath(state.context.globalStorageUri, "bin").fsPath,
-	});
+	const binDirPath = Uri.joinPath(state.context.globalStorageUri, "bin");
+	if (await directoryExists(binDirPath)) {
+		workspace.fs.delete(binDirPath, {
+			recursive: true,
+		});
+		debug("Cleared temporary binaries.", {
+			path: binDirPath.fsPath,
+		});
+	}
 };
 
 const copyBinaryToTemporaryLocation = async (

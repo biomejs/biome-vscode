@@ -7,21 +7,11 @@ import {
 	window,
 	workspace,
 } from "vscode";
-import { restart } from "./lifecycle";
 import { error, info } from "./logger";
 import { state } from "./state";
 import { binaryExtension, fileExists, platformPackageName } from "./utils";
 
 export const downloadBiome = async (): Promise<Uri | undefined> => {
-	const downloadedVersion = await getDownloadedVersion();
-
-	if (downloadedVersion) {
-		info(
-			`Using previously downloaded version ${downloadedVersion.version}: ${downloadedVersion.binPath.fsPath}`,
-		);
-		return downloadedVersion.binPath;
-	}
-
 	const version = await promptVersionToDownload();
 
 	if (!version) {
@@ -36,7 +26,7 @@ export const downloadBiome = async (): Promise<Uri | undefined> => {
 		async () => await downloadBiomeVersion(version.label),
 	);
 
-	await restart();
+	return (await getDownloadedVersion()).binPath;
 };
 
 const downloadBiomeVersion = async (
@@ -87,7 +77,7 @@ const downloadBiomeVersion = async (
 	}
 };
 
-const getDownloadedVersion = async (): Promise<
+export const getDownloadedVersion = async (): Promise<
 	{ version: string; binPath: Uri } | undefined
 > => {
 	// Retrieve the list of downloaded version from the global state

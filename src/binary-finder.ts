@@ -4,7 +4,7 @@ import { delimiter } from "node:path";
 import { Uri, window } from "vscode";
 import { getLspBin } from "./config";
 import { downloadBiome, getDownloadedVersion } from "./downloader";
-
+import { info } from "./logger";
 import {
 	binaryName,
 	fileExists,
