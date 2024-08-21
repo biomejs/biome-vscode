@@ -19,7 +19,7 @@
 		"@rollup/plugin-node-resolve": "15.2.3",
 		"@types/vscode": "1.80.0",
 		"@vscode/vsce": "2.32.0",
-		"lefthook": "1.7.4",
+		"lefthook": "1.7.14",
 		"ovsx": "0.8.4",
 		"rollup": "4.19.0",
 		"rollup-plugin-esbuild": "6.1.1",
