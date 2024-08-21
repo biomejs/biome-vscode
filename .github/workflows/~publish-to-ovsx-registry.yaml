@@ -25,7 +25,7 @@ jobs:
         with:
           name: biome.vsix
       - name: Setup PNPM
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           run_install: true
       - name: Publish to Open VSX Registry
