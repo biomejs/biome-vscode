@@ -46,6 +46,7 @@ jobs:
         run: |
           git-cliff \
             --config .git-cliff/changelog.toml \
+            --tag v${{ steps.next-version.outputs.version }} \
             > CHANGELOG.md 5014d9d9291a7de6c11afbe154ce73225c45aefb..
           cat CHANGELOG.md
       - name: Commit, tag, and push
