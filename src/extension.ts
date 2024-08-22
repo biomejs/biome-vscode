@@ -100,7 +100,9 @@ const listenForActiveTextEditorChange = () => {
  * detect this.
  */
 const listenForLockfilesChanges = () => {
-	const watcher = workspace.createFileSystemWatcher("**/*lock*");
+	const watcher = workspace.createFileSystemWatcher(
+		"**/{package-lock.json,yarn.lock,bun.lockb,pnpm-lock.yaml}",
+	);
 
 	watcher.onDidChange((event) => {
 		info(`Lockfile ${event.fsPath} changed.`);
