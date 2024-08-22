@@ -1,3 +1,4 @@
+import { chmodSync } from "node:fs";
 import { getAllVersions } from "@biomejs/version-utils";
 import ky from "ky";
 import {
@@ -73,6 +74,7 @@ const downloadBiomeVersion = async (
 
 	try {
 		await workspace.fs.writeFile(binPath, new Uint8Array(bin));
+		chmodSync(binPath.fsPath, 0o755);
 		info(`Downloaded Biome ${version} to ${binPath.fsPath}`);
 		state.context.globalState.update("downloadedVersion", version);
 	} catch (e) {
