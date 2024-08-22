@@ -3,6 +3,7 @@ import { customAlphabet } from "nanoid";
 import { type LogOutputChannel, Uri, window, workspace } from "vscode";
 import {
 	type DocumentFilter,
+	type InitializeParams,
 	LanguageClient,
 	type LanguageClientOptions,
 	type ServerOptions,
@@ -182,9 +183,14 @@ const createLanguageClient = (bin: Uri, project?: Project) => {
 		outputChannel: createLspLogger(project),
 		traceOutputChannel: createLspTraceLogger(project),
 		documentSelector: createDocumentSelector(project),
+		initializationOptions: {
+			rootUri: project?.path,
+			rootPath: project?.path?.fsPath,
+		},
+		workspaceFolder: undefined,
 	};
 
-	return new LanguageClient(
+	return new BiomeLanguageClient(
 		"biome.lsp",
 		"biome",
 		serverOptions,
@@ -269,3 +275,17 @@ const createDocumentSelector = (project?: Project): DocumentFilter[] => {
 		}));
 	});
 };
+
+class BiomeLanguageClient extends LanguageClient {
+	protected fillInitializeParams(params: InitializeParams): void {
+		super.fillInitializeParams(params);
+
+		if (params.initializationOptions?.rootUri) {
+			params.rootUri = params.initializationOptions?.rootUri.toString();
+		}
+
+		if (params.initializationOptions?.rootPath) {
+			params.rootPath = params.initializationOptions?.rootPath;
+		}
+	}
+}
