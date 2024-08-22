@@ -27,6 +27,10 @@ The documentation for the extension is available on the [official website](https
 
 - [📖 Documentation](https://biomejs.dev/reference/vscode/).
 
+## Contributing
+
+Contributions are welcome! Please see the [contribution guidelines](CONTRIBUTING.md) for more information.
+
 ## License
 
 This open source project is dual-licensed under the [MIT License](LICENSE-MIT) and the [Apache License, Version 2.0](LICENSE-APACHE).
