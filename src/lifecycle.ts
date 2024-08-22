@@ -31,6 +31,10 @@ export const stop = async () => {
  * Restarts the Biome extension
  */
 export const restart = async () => {
+	if (state.state === "restarting") {
+		// If we are already restarting, we can skip the restart
+		return;
+	}
 	state.state = "restarting";
 	await doStop();
 	await doStart();
