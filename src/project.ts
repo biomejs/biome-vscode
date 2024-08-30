@@ -12,7 +12,7 @@ import {
 	isEnabled,
 	workspaceFolderRequiresConfigFile,
 } from "./config";
-import { debug, error, info, warn } from "./logger";
+import { error, warn } from "./logger";
 import { state } from "./state";
 import { directoryExists, fileExists, mode, supportedLanguages } from "./utils";
 
