@@ -1,5 +1,5 @@
 import { constants, accessSync } from "node:fs";
-import { FileType, Uri, workspace } from "vscode";
+import { FileType, RelativePattern, Uri, workspace } from "vscode";
 import type { Project } from "./project";
 
 /**
@@ -188,4 +188,12 @@ export const fileIsExecutable = (uri: Uri): boolean => {
 	} catch {
 		return false;
 	}
+};
+
+export const hasNodeDependencies = async (path: Uri) => {
+	const results = await workspace.findFiles(
+		new RelativePattern(path, "**/package.json"),
+	);
+
+	return results.length > 0;
 };

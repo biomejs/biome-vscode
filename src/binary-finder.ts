@@ -4,11 +4,12 @@ import { delimiter } from "node:path";
 import { Uri, window } from "vscode";
 import { getLspBin } from "./config";
 import { downloadBiome, getDownloadedVersion } from "./downloader";
-import { info } from "./logger";
+import { debug, info } from "./logger";
 import {
 	binaryName,
 	fileExists,
 	getPackageName,
+	hasNodeDependencies,
 	packageName,
 	platform,
 } from "./utils";
@@ -294,6 +295,11 @@ export const findBiomeLocally = async (
 ): Promise<BinaryFinderResult> => {
 	const binPathInSettings = await vsCodeSettingsStrategy.find(path);
 	if (binPathInSettings) {
+		debug("Found Biome binary in VS Code settings (biome.lsp.bin)", {
+			path: binPathInSettings.fsPath,
+			strategy: vsCodeSettingsStrategy.name,
+		});
+
 		return {
 			bin: binPathInSettings,
 			strategy: vsCodeSettingsStrategy,
@@ -302,6 +308,11 @@ export const findBiomeLocally = async (
 
 	const binPathInNodeModules = await nodeModulesStrategy.find(path);
 	if (binPathInNodeModules) {
+		debug("Found Biome binary in Node Modules", {
+			path: binPathInNodeModules.fsPath,
+			strategy: nodeModulesStrategy.name,
+		});
+
 		return {
 			bin: binPathInNodeModules,
 			strategy: nodeModulesStrategy,
@@ -310,6 +321,11 @@ export const findBiomeLocally = async (
 
 	const binPathInYarnPnP = await yarnPnpStrategy.find(path);
 	if (binPathInYarnPnP) {
+		debug("Found Biome binary in Yarn PnP", {
+			path: binPathInYarnPnP.fsPath,
+			strategy: yarnPnpStrategy.name,
+		});
+
 		return {
 			bin: binPathInYarnPnP,
 			strategy: yarnPnpStrategy,
@@ -319,18 +335,32 @@ export const findBiomeLocally = async (
 	const binPathInPathEnvironmentVariable =
 		await pathEnvironmentVariableStrategy.find();
 	if (binPathInPathEnvironmentVariable) {
+		debug("Found Biome binary in PATH environment variable", {
+			path: binPathInPathEnvironmentVariable.fsPath,
+			strategy: pathEnvironmentVariableStrategy.name,
+		});
 		return {
 			bin: binPathInPathEnvironmentVariable,
 			strategy: pathEnvironmentVariableStrategy,
 		};
 	}
 
-	const downloadedBinPath = await downloadBiomeStrategy.find();
-	if (downloadedBinPath) {
-		return {
-			bin: downloadedBinPath,
-			strategy: downloadBiomeStrategy,
-		};
+	// We do not want to suggest downloading the binary if the project has node
+	// dependencies, because we want to encourage users to install biome as a
+	// dev dependency. We however we do want to suggest downloading the binary if
+	// the project does not use node dependencies.
+	if (!(await hasNodeDependencies(path))) {
+		const downloadedBinPath = await downloadBiomeStrategy.find();
+		if (downloadedBinPath) {
+			debug("Found downloaded Biome binary", {
+				path: downloadedBinPath.fsPath,
+				strategy: downloadBiomeStrategy.name,
+			});
+			return {
+				bin: downloadedBinPath,
+				strategy: downloadBiomeStrategy,
+			};
+		}
 	}
 };
 
@@ -355,6 +385,11 @@ export const findBiomeLocally = async (
 export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 	const binPathInSettings = await vsCodeSettingsStrategy.find();
 	if (binPathInSettings) {
+		debug("Found Biome binary in VS Code settings (biome.lsp.bin)", {
+			path: binPathInSettings.fsPath,
+			strategy: vsCodeSettingsStrategy.name,
+		});
+
 		return {
 			bin: binPathInSettings,
 			strategy: vsCodeSettingsStrategy,
@@ -364,6 +399,11 @@ export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 	const binPathInPathEnvironmentVariable =
 		await pathEnvironmentVariableStrategy.find();
 	if (binPathInPathEnvironmentVariable) {
+		debug("Found Biome binary in PATH environment variable", {
+			path: binPathInPathEnvironmentVariable.fsPath,
+			strategy: pathEnvironmentVariableStrategy.name,
+		});
+
 		return {
 			bin: binPathInPathEnvironmentVariable,
 			strategy: pathEnvironmentVariableStrategy,
@@ -372,6 +412,11 @@ export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 
 	const downloadedBinPath = await downloadBiomeStrategy.find();
 	if (downloadedBinPath) {
+		debug("Found downloaded Biome binary", {
+			path: downloadedBinPath.fsPath,
+			strategy: downloadBiomeStrategy.name,
+		});
+
 		return {
 			bin: downloadedBinPath,
 			strategy: downloadBiomeStrategy,
