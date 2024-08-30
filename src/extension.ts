@@ -5,6 +5,7 @@ import {
 	workspace,
 } from "vscode";
 import {
+	clearCommand,
 	downloadCommand,
 	restartCommand,
 	startCommand,
@@ -50,6 +51,7 @@ const registerUserFacingCommands = () => {
 		commands.registerCommand("biome.stop", stopCommand),
 		commands.registerCommand("biome.restart", restartCommand),
 		commands.registerCommand("biome.download", downloadCommand),
+		commands.registerCommand("biome.clear", clearCommand),
 	);
 
 	info("User-facing commands registered");

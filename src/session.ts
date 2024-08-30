@@ -1,5 +1,5 @@
-import { chmodSync } from "node:fs";
-import { customAlphabet } from "nanoid";
+import { spawnSync } from "node:child_process";
+import { chmodSync, copyFileSync } from "node:fs";
 import { type LogOutputChannel, Uri, window, workspace } from "vscode";
 import {
 	type DocumentFilter,
@@ -17,6 +17,8 @@ import { state } from "./state";
 import {
 	binaryName,
 	directoryExists,
+	fileExists,
+	fileIsExecutable,
 	mode,
 	shortURI,
 	subtractURI,
@@ -94,27 +96,68 @@ export const clearTemporaryBinaries = async () => {
 	}
 };
 
+/**
+ * Copies the binary to a temporary location if necessary
+ *
+ * This function will copy the binary to a temporary location if it is not already
+ * present in the global storage directory. It will then return the location of
+ * the copied binary.
+ *
+ * This approach allows the user to update the original binary that would otherwise
+ * be locked if we ran the binary directly from the original location.
+ *
+ * Binaries copied in the temp location are uniquely identified by their name and version
+ * identifier.
+ */
 const copyBinaryToTemporaryLocation = async (
 	bin: Uri,
 ): Promise<Uri | undefined> => {
-	const nanoid = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyz", 10);
+	// Retrieve the the version of the binary
+	// We call biome with --version which outputs the version in the format
+	// of "Version: 1.0.0"
+	const version = spawnSync(bin.fsPath, ["--version"])
+		.stdout.toString()
+		.split(":")[1]
+		.trim();
 
 	const location = Uri.joinPath(
 		state.context.globalStorageUri,
 		"tmp-bin",
-		binaryName(`biome-${nanoid()}`),
+		binaryName(`biome-${version}`),
 	);
 
 	try {
 		await workspace.fs.createDirectory(
 			Uri.joinPath(state.context.globalStorageUri, "tmp-bin"),
 		);
-		await workspace.fs.copy(bin, location);
+
+		if (!(await fileExists(location))) {
+			info("Copying binary to temporary location.", {
+				original: bin.fsPath,
+				destination: location.fsPath,
+			});
+			copyFileSync(bin.fsPath, location.fsPath);
+			debug("Copied binary to temporary location.", {
+				original: bin.fsPath,
+				destination: location.fsPath,
+			});
+		} else {
+			debug("Binary already exists in temporary location.", {
+				original: bin.fsPath,
+				destination: location.fsPath,
+			});
+		}
+
+		const isExecutableBefore = fileIsExecutable(bin);
 		chmodSync(location.fsPath, 0o755);
-		debug("Copied binary to temporary location.", {
-			original: bin.fsPath,
-			destination: location.fsPath,
+		const isExecutableAfter = fileIsExecutable(bin);
+
+		debug("Ensure binary is executable", {
+			binary: bin.fsPath,
+			before: `is executable: ${isExecutableBefore}`,
+			after: `is executable: ${isExecutableAfter}`,
 		});
+
 		return location;
 	} catch (error) {
 		return undefined;

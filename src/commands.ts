@@ -1,5 +1,7 @@
 import { downloadBiome } from "./downloader";
 import { restart, start, stop } from "./lifecycle";
+import { clearTemporaryBinaries } from "./session";
+import { state } from "./state";
 
 /**
  * Starts the Biome extension
@@ -39,4 +41,9 @@ export const restartCommand = async () => {
  */
 export const downloadCommand = async () => {
 	await downloadBiome();
+};
+
+export const clearCommand = async () => {
+	await clearTemporaryBinaries();
+	state.context.globalState.update("downloadedVersion", undefined);
 };

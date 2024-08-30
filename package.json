@@ -48,6 +48,10 @@
 			{
 				"title": "Biome: Download CLI",
 				"command": "biome.download"
+			},
+			{
+				"title": "Biome: Clear cache",
+				"command": "biome.clear"
 			}
 		],
 		"configuration": {

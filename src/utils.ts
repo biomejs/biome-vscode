@@ -1,4 +1,5 @@
-import { type ConfigurationScope, FileType, Uri, workspace } from "vscode";
+import { constants, accessSync } from "node:fs";
+import { FileType, Uri, workspace } from "vscode";
 import type { Project } from "./project";
 
 /**
@@ -178,4 +179,13 @@ export const debounce = <TArgs extends unknown[]>(
 		clearTimeout(timeout);
 		timeout = setTimeout(() => fn(...args), delay);
 	};
+};
+
+export const fileIsExecutable = (uri: Uri): boolean => {
+	try {
+		accessSync(uri.fsPath, constants.X_OK);
+		return true;
+	} catch {
+		return false;
+	}
 };

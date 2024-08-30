@@ -47,7 +47,6 @@ export const restart = async () => {
  */
 const doStart = async () => {
 	try {
-		await clearTemporaryBinaries();
 		await createGlobalSession();
 		await createProjectSessions();
 	} catch (e) {
