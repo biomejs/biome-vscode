@@ -168,3 +168,14 @@ export const hasVSCodeUserDataDocuments = (): boolean =>
 	) !== undefined;
 
 export const platformPackageName = `biome-${platform}`;
+
+export const debounce = <TArgs extends unknown[]>(
+	fn: (...args: TArgs) => void,
+	delay = 300,
+) => {
+	let timeout: NodeJS.Timeout | undefined;
+	return (...args: TArgs) => {
+		clearTimeout(timeout);
+		timeout = setTimeout(() => fn(...args), delay);
+	};
+};
