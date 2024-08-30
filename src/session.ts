@@ -46,7 +46,7 @@ export const createSession = async (
 	}
 
 	// Copy the binary to a temporary location, and run it from there
-	// so that the original binary can updated without locking issues.
+	// so that the original binary can be updated without locking issues.
 	// We'll keep track of that temporary location in the session and
 	// delete it when the session is stopped.
 	const tempBin = await copyBinaryToTemporaryLocation(findResult.bin);
