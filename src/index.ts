@@ -8,7 +8,7 @@ import { state } from "./state";
  */
 export const activate = async (context: ExtensionContext) => {
 	clear();
-	info("Biome extension activated");
+	info(`Biome extension ${context.extension.packageJSON.version} activated`);
 	state.context = context;
 	await createExtension();
 };
