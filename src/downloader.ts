@@ -68,7 +68,7 @@ const downloadBiomeVersion = async (
 
 	const binPath = Uri.joinPath(
 		state.context.globalStorageUri,
-		"bin",
+		"global-bin",
 		`biome${binaryExtension}`,
 	);
 
@@ -87,13 +87,13 @@ const downloadBiomeVersion = async (
 export const getDownloadedVersion = async (): Promise<
 	{ version: string; binPath: Uri } | undefined
 > => {
-	// Retrieve the list of downloaded version from the global state
+	// Retrieve the downloaded version from the global state
 	const version = state.context.globalState.get<string>("downloadedVersion");
 
 	const binPath = Uri.joinPath(
 		state.context.globalStorageUri,
-		"bin",
-		binaryName(),
+		"global-bin",
+		binaryName("biome"),
 	);
 
 	if (!(await fileExists(binPath))) {

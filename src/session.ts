@@ -19,6 +19,8 @@ import {
 	directoryExists,
 	fileExists,
 	fileIsExecutable,
+	hasUntitledDocuments,
+	hasVSCodeUserDataDocuments,
 	mode,
 	shortURI,
 	subtractURI,
@@ -137,15 +139,18 @@ const copyBinaryToTemporaryLocation = async (
 				destination: location.fsPath,
 			});
 			copyFileSync(bin.fsPath, location.fsPath);
-			debug("Copied binary to temporary location.", {
+			debug("Copied Biome binary binary to temporary location.", {
 				original: bin.fsPath,
-				destination: location.fsPath,
+				temporary: location.fsPath,
 			});
 		} else {
-			debug("Binary already exists in temporary location.", {
-				original: bin.fsPath,
-				destination: location.fsPath,
-			});
+			debug(
+				`A Biome binary for the same version ${version} already exists in the temporary location.`,
+				{
+					original: bin.fsPath,
+					temporary: location.fsPath,
+				},
+			);
 		}
 
 		const isExecutableBefore = fileIsExecutable(bin);
@@ -167,17 +172,29 @@ const copyBinaryToTemporaryLocation = async (
 /**
  * Creates a new global session
  */
-export const createGlobalSession = async () => {
-	state.globalSession = await createSession();
+export const createGlobalSessionWhenNecessary = async () => {
+	const createGlobalSessionIfNotExists = async () => {
+		if (state.globalSession) {
+			return;
+		}
+		state.globalSession = await createSession();
+		state.globalSession?.client.start();
+		info("Created a global LSP session");
+	};
 
-	if (!state.globalSession) {
-		warn("Could not create global session");
-		return;
+	// If the editor has open Untitled documents, or VS Code User Data documents,
+	// we create a global session immeditaley so that the user can work with them.
+	if (hasUntitledDocuments() || hasVSCodeUserDataDocuments()) {
+		await createGlobalSessionIfNotExists();
 	}
 
-	state.globalSession?.client.start();
-
-	info("Global LSP session created");
+	// Register a listener for text documents being opened so that we can create
+	// a global session if necessary.
+	workspace.onDidOpenTextDocument(async (document) => {
+		if (hasUntitledDocuments() || hasVSCodeUserDataDocuments()) {
+			await createGlobalSessionIfNotExists();
+		}
+	});
 };
 
 /**
@@ -249,9 +266,12 @@ const createLspLogger = (project?: Project): LogOutputChannel => {
 	// session. In this case, we don't have a workspace folder to display in the
 	// logger name, so we just use the display name of the extension.
 	if (!project?.folder) {
-		return window.createOutputChannel(`${displayName} LSP`, {
-			log: true,
-		});
+		return window.createOutputChannel(
+			`${displayName} LSP (global session)`,
+			{
+				log: true,
+			},
+		);
 	}
 
 	// If the project is present, we're creating a logger for a specific project.
@@ -274,9 +294,12 @@ const createLspTraceLogger = (project?: Project): LogOutputChannel => {
 	// session. In this case, we don't have a workspace folder to display in the
 	// logger name, so we just use the display name of the extension.
 	if (!project?.folder) {
-		return window.createOutputChannel(`${displayName} LSP trace`, {
-			log: true,
-		});
+		return window.createOutputChannel(
+			`${displayName} LSP trace (global session)`,
+			{
+				log: true,
+			},
+		);
 	}
 
 	// If the project is present, we're creating a logger for a specific project.

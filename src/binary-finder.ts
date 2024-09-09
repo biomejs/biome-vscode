@@ -248,10 +248,10 @@ const downloadBiomeStrategy: LocatorStrategy = {
 
 		const proceed =
 			(await window.showInformationMessage(
-				"Biome could not be found on you system. Would you like to download it?",
-				"Yes",
+				"You've opened a supported file outside of a Biome project, and a globally installed Biome binary could not be found on your system. Would you like to download and install Biome?",
+				"Download and install",
 				"No",
-			)) === "Yes";
+			)) === "Download and install";
 
 		if (!proceed) {
 			return undefined;
@@ -380,6 +380,10 @@ export const findBiomeLocally = async (
  *  2. Path Environment Variable Strategy. We then try to find the binary in the
  *     system's PATH environment variable. This strategy is the least specific
  *     and is used as a last resort to find any globally installed binaries.
+ *
+ *  3. Use a previously downloaded binary, or prompt the user to download one.
+ *     This strategy is used as a last resort to find any previously downloaded
+ *     binaries.
  *
  */
 export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {

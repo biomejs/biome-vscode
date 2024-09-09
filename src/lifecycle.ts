@@ -1,7 +1,6 @@
 import { error, info } from "./logger";
 import {
-	clearTemporaryBinaries,
-	createGlobalSession,
+	createGlobalSessionWhenNecessary,
 	createProjectSessions,
 	destroySession,
 } from "./session";
@@ -47,8 +46,8 @@ export const restart = async () => {
  */
 const doStart = async () => {
 	try {
-		await createGlobalSession();
 		await createProjectSessions();
+		await createGlobalSessionWhenNecessary();
 	} catch (e) {
 		error("Failed to start Biome extension");
 		state.state = "error";
