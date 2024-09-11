@@ -1,0 +1,15 @@
+{
+	"name": "biome-vscode",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"overrideCommand": true,
+	"privileged": true,
+	"containerEnv": {
+		"TZ": "UTC"
+	},
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	],
+	"remoteUser": "root"
+}
