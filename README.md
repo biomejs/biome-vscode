@@ -22,7 +22,7 @@ and the **Open VSX Registry**:
 
 ## Documentation
 
-The documentation for the extension is available on the [official website](https://biome.dev/).
+The documentation for the extension is available on the [official website](https://biomejs.dev/).
 
 - [📖 Documentation](https://biomejs.dev/reference/vscode/)
 
