@@ -43,7 +43,9 @@ export const downloadCommand = async () => {
 	await downloadBiome();
 };
 
-export const clearCommand = async () => {
+export const resetCommand = async () => {
+	await stop();
 	await clearTemporaryBinaries();
 	state.context.globalState.update("downloadedVersion", undefined);
+	await start();
 };

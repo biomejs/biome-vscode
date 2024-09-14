@@ -50,8 +50,8 @@
 				"command": "biome.download"
 			},
 			{
-				"title": "Biome: Clear cache",
-				"command": "biome.clear"
+				"title": "Biome: Troubleshoot - Reset",
+				"command": "biome.reset"
 			}
 		],
 		"configuration": {
