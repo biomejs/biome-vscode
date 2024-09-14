@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { delimiter } from "node:path";
 import { Uri, window } from "vscode";
-import { getLspBin } from "./config";
+import { config, getLspBin } from "./config";
 import { downloadBiome, getDownloadedVersion } from "./downloader";
 import { debug, info } from "./logger";
 import {
@@ -332,17 +332,20 @@ export const findBiomeLocally = async (
 		};
 	}
 
-	const binPathInPathEnvironmentVariable =
-		await pathEnvironmentVariableStrategy.find();
-	if (binPathInPathEnvironmentVariable) {
-		debug("Found Biome binary in PATH environment variable", {
-			path: binPathInPathEnvironmentVariable.fsPath,
-			strategy: pathEnvironmentVariableStrategy.name,
-		});
-		return {
-			bin: binPathInPathEnvironmentVariable,
-			strategy: pathEnvironmentVariableStrategy,
-		};
+	// Todo: remove this conditional when we remove the deprecated `biome.searchInPath` setting
+	if (config("searchInPath", { default: true })) {
+		const binPathInPathEnvironmentVariable =
+			await pathEnvironmentVariableStrategy.find();
+		if (binPathInPathEnvironmentVariable) {
+			debug("Found Biome binary in PATH environment variable", {
+				path: binPathInPathEnvironmentVariable.fsPath,
+				strategy: pathEnvironmentVariableStrategy.name,
+			});
+			return {
+				bin: binPathInPathEnvironmentVariable,
+				strategy: pathEnvironmentVariableStrategy,
+			};
+		}
 	}
 
 	// We do not want to suggest downloading the binary if the project has node
@@ -400,18 +403,21 @@ export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 		};
 	}
 
-	const binPathInPathEnvironmentVariable =
-		await pathEnvironmentVariableStrategy.find();
-	if (binPathInPathEnvironmentVariable) {
-		debug("Found Biome binary in PATH environment variable", {
-			path: binPathInPathEnvironmentVariable.fsPath,
-			strategy: pathEnvironmentVariableStrategy.name,
-		});
+	// Todo: remove this conditional when we remove the deprecated `biome.searchInPath` setting
+	if (config("searchInPath", { default: true })) {
+		const binPathInPathEnvironmentVariable =
+			await pathEnvironmentVariableStrategy.find();
+		if (binPathInPathEnvironmentVariable) {
+			debug("Found Biome binary in PATH environment variable", {
+				path: binPathInPathEnvironmentVariable.fsPath,
+				strategy: pathEnvironmentVariableStrategy.name,
+			});
 
-		return {
-			bin: binPathInPathEnvironmentVariable,
-			strategy: pathEnvironmentVariableStrategy,
-		};
+			return {
+				bin: binPathInPathEnvironmentVariable,
+				strategy: pathEnvironmentVariableStrategy,
+			};
+		}
 	}
 
 	const downloadedBinPath = await downloadBiomeStrategy.find();
