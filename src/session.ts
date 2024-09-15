@@ -73,33 +73,7 @@ export const createSession = async (
 
 export const destroySession = async (session: Session) => {
 	// Stop the LSP session
-	session.client.stop();
-
-	// Delete the temporary binary
-	if (session.tempBin) {
-		try {
-			workspace.fs.delete(session.tempBin);
-			debug("Deleted temporary binary.", {
-				path: session.tempBin.fsPath,
-			});
-		} catch (error) {
-			error("Failed to delete temporary binary.", {
-				path: session.tempBin.fsPath,
-			});
-		}
-	}
-};
-
-export const clearTemporaryBinaries = async () => {
-	const binDirPath = Uri.joinPath(state.context.globalStorageUri, "tmp-bin");
-	if (await directoryExists(binDirPath)) {
-		workspace.fs.delete(binDirPath, {
-			recursive: true,
-		});
-		debug("Cleared temporary binaries.", {
-			path: binDirPath.fsPath,
-		});
-	}
+	await session.client.stop();
 };
 
 /**

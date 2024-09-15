@@ -1,6 +1,8 @@
 import { constants, accessSync } from "node:fs";
 import { FileType, RelativePattern, Uri, workspace } from "vscode";
+import { debug } from "./logger";
 import type { Project } from "./project";
+import { state } from "./state";
 
 /**
  * Returns the platform-specific NPM package name of the Biome CLI
@@ -196,4 +198,16 @@ export const hasNodeDependencies = async (path: Uri) => {
 	);
 
 	return results.length > 0;
+};
+
+export const clearTemporaryBinaries = async () => {
+	const binDirPath = Uri.joinPath(state.context.globalStorageUri, "tmp-bin");
+	if (await directoryExists(binDirPath)) {
+		workspace.fs.delete(binDirPath, {
+			recursive: true,
+		});
+		debug("Cleared temporary binaries.", {
+			path: binDirPath.fsPath,
+		});
+	}
 };
