@@ -2,7 +2,11 @@ import { spawnSync } from "node:child_process";
 import { chmodSync, copyFileSync } from "node:fs";
 import { type LogOutputChannel, Uri, window, workspace } from "vscode";
 import {
+	CloseAction,
+	type CloseHandlerResult,
 	type DocumentFilter,
+	ErrorAction,
+	type ErrorHandlerResult,
 	type InitializeParams,
 	LanguageClient,
 	type LanguageClientOptions,
@@ -11,7 +15,7 @@ import {
 } from "vscode-languageclient/node";
 import { displayName } from "../package.json";
 import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
-import { debug, error, info, warn } from "./logger";
+import { debug, info, error as logError, warn } from "./logger";
 import { type Project, createProjects } from "./project";
 import { state } from "./state";
 import {
@@ -45,7 +49,7 @@ export const createSession = async (
 		: await findBiomeGlobally();
 
 	if (!findResult) {
-		error("Could not find the Biome binary");
+		logError("Could not find the Biome binary");
 		return;
 	}
 
@@ -212,7 +216,7 @@ export const createProjectSessions = async () => {
 				project: shortURI(project),
 			});
 		} else {
-			error("Failed to create session for project.", {
+			logError("Failed to create session for project.", {
 				project: project.path.fsPath,
 			});
 		}
@@ -243,6 +247,40 @@ const createLanguageClient = (bin: Uri, project?: Project) => {
 		outputChannel: createLspLogger(project),
 		traceOutputChannel: createLspTraceLogger(project),
 		documentSelector: createDocumentSelector(project),
+		progressOnInitialization: true,
+
+		initializationFailedHandler: (e): boolean => {
+			logError("Failed to initialize the Biome language server", {
+				error: e.toString(),
+			});
+
+			return false;
+		},
+		errorHandler: {
+			error: (
+				error,
+				message,
+				count,
+			): ErrorHandlerResult | Promise<ErrorHandlerResult> => {
+				logError("Biome language server error", {
+					error: error.toString(),
+					message: message.toString(),
+					count: count,
+				});
+
+				return {
+					action: ErrorAction.Shutdown,
+					message: "Biome language server error",
+				};
+			},
+			closed: (): CloseHandlerResult | Promise<CloseHandlerResult> => {
+				debug("Biome language server closed");
+				return {
+					action: CloseAction.DoNotRestart,
+					message: "Biome language server closed",
+				};
+			},
+		},
 		initializationOptions: {
 			rootUri: project?.path,
 			rootPath: project?.path?.fsPath,
