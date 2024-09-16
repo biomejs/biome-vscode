@@ -18,14 +18,14 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true,
-			"nursery": {
-				"noConsole": "warn"
-			},
 			"style": {
 				"noParameterAssign": "off"
 			},
 			"complexity": {
 				"noStaticOnlyClass": "off"
+			},
+			"suspicious": {
+				"noConsole": "warn"
 			}
 		}
 	},
