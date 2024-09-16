@@ -15,7 +15,7 @@ import {
 } from "vscode-languageclient/node";
 import { displayName } from "../package.json";
 import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
-import { debug, info, error as logError, warn } from "./logger";
+import { debug, error, info, error as logError, warn } from "./logger";
 import { type Project, createProjects } from "./project";
 import { state } from "./state";
 import {
@@ -156,8 +156,16 @@ export const createGlobalSessionWhenNecessary = async () => {
 			return;
 		}
 		state.globalSession = await createSession();
-		state.globalSession?.client.start();
-		info("Created a global LSP session");
+		try {
+			await state.globalSession?.client.start();
+			info("Created a global LSP session");
+		} catch (e) {
+			error("Failed to create global LSP session", {
+				error: e.toString(),
+			});
+			state.globalSession?.client.dispose();
+			state.globalSession = undefined;
+		}
 	};
 
 	// If the editor has open Untitled documents, or VS Code User Data documents,
