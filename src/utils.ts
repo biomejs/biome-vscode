@@ -89,6 +89,7 @@ export const anyFileExists = async (uris: Uri[]): Promise<boolean> => {
 export const supportedLanguages: string[] = [
 	"astro",
 	"css",
+	"graphql",
 	"javascript",
 	"javascriptreact",
 	"json",
