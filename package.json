@@ -65,7 +65,7 @@
 				},
 				"biome.requireConfigFile": {
 					"type": "boolean",
-					"markdownDescription": "Require a Biome configuration file to be present at the root of a Biome project to starts an LSP session for that project.",
+					"markdownDescription": "Require a Biome configuration file to be present at the root of a Biome project to start an LSP session for that project.",
 					"default": false,
 					"scope": "resource"
 				},
