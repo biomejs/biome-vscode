@@ -213,7 +213,7 @@ export const createProjectSessions = async () => {
 const createLanguageClient = (bin: Uri, project?: Project) => {
 	let args = ["lsp-proxy"];
 	if (project?.configFile) {
-		args = [...args, "--config", project.configFile.fsPath];
+		args = [...args, "--config-path", project.configFile.fsPath];
 	}
 
 	const serverOptions: ServerOptions = {
