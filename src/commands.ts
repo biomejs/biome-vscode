@@ -52,7 +52,7 @@ export const resetCommand = async () => {
 	await start();
 };
 
-export const initializeWorkspaceCommand = async (args: { path: string }) => {
+export const initializeWorkspaceCommand = async (args: Uri) => {
 	const subconfigs = [
 		"[javascript]",
 		"[typescript]",
