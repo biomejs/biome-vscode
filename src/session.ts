@@ -350,7 +350,10 @@ const createDocumentSelector = (project?: Project): DocumentFilter[] => {
 		return supportedLanguages.map((language) => ({
 			language,
 			scheme: "file",
-			pattern: `${project.path.fsPath}**/*`,
+			pattern: Uri.joinPath(project.path, "**", "*").fsPath.replace(
+				"\\",
+				"/",
+			),
 		}));
 	}
 
