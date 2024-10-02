@@ -1,4 +1,4 @@
-import { ConfigurationTarget, workspace } from "vscode";
+import { ConfigurationTarget, Uri, workspace } from "vscode";
 import { downloadBiome } from "./downloader";
 import { restart, start, stop } from "./lifecycle";
 import { info } from "./logger";
@@ -52,7 +52,7 @@ export const resetCommand = async () => {
 	await start();
 };
 
-export const initializeWorkspaceCommand = async () => {
+export const initializeWorkspaceCommand = async (args: { path: string }) => {
 	const subconfigs = [
 		"[javascript]",
 		"[typescript]",
@@ -60,10 +60,15 @@ export const initializeWorkspaceCommand = async () => {
 		"[javascriptreact]",
 		"[json]",
 		"[jsonc]",
+		"[vue]",
+		"[astro]",
+		"[svelte]",
+		"[css]",
+		"[graphql]",
 	].join("");
 
-	// Get the root workspace configuration
-	const config = workspace.getConfiguration();
+	// Scopes the config down to the current workspace folder
+	const config = workspace.getConfiguration(undefined, Uri.parse(args.path));
 	try {
 		const configsToUpdate = [
 			{ name: "biome.enabled", value: true },
@@ -84,7 +89,11 @@ export const initializeWorkspaceCommand = async () => {
 			},
 		];
 		for (const { name, value } of configsToUpdate) {
-			await config.update(name, value, ConfigurationTarget.Workspace);
+			await config.update(
+				name,
+				value,
+				ConfigurationTarget.WorkspaceFolder,
+			);
 		}
 
 		info("Workspace configuration updated");
