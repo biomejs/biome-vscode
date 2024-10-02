@@ -200,7 +200,7 @@
 			"explorer/context": [
 				{
 					"command": "biome.initializeWorkspace",
-					"when": "resourceFilename =~ /(\\.biome|biome.json|biome.jsonc)$/ || resourceFilename =~ /settings.json/ || resourceFilename =~ /.code-workspace/"
+					"when": "resourceFilename =~ /(\\.biome|biome.json|biome.jsonc)$/ || resourceFilename =~ /settings.json/"
 				}
 			]
 		}
