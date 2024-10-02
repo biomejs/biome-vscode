@@ -65,31 +65,28 @@ export const initializeWorkspaceCommand = async () => {
 	// Get the root workspace configuration
 	const config = workspace.getConfiguration();
 	try {
-		// Set biome to enabled
-		await config.update(
-			"biome.enabled",
-			true,
-			ConfigurationTarget.Workspace,
-		);
+		const configsToUpdate = [
+			{ name: "biome.enabled", value: true },
+			{
+				name: "editor.codeActionsOnSave",
+				value: {
+					...config.get<object | undefined>(
+						"editor.codeActionsOnSave",
+					),
+					"source.organizeImports.biome": "always",
+					"quickfix.biome": "always",
+				},
+			},
+			{ name: "editor.defaultFormatter", value: "biomejs.biome" },
+			{
+				name: `${subconfigs}`,
+				value: { "editor.defaultFormatter": "biomejs.biome" },
+			},
+		];
+		for (const { name, value } of configsToUpdate) {
+			await config.update(name, value, ConfigurationTarget.Workspace);
+		}
 
-		await config.update("editor.codeActionsOnSave", {
-			...config.get("editor.codeActionsOnSave"),
-			"source.organizeImports.biome": "always",
-			"quickfix.biome": "always",
-		});
-
-		// Set it to default formatter
-		await config.update(
-			"editor.defaultFormatter",
-			"biomejs.biome",
-			ConfigurationTarget.Workspace,
-		);
-		// Set it to default formatter for all languages it supports
-		await config.update(
-			`${subconfigs}`,
-			{ "editor.defaultFormatter": "biomejs.biome" },
-			ConfigurationTarget.Workspace,
-		);
 		info("Workspace configuration updated");
 	} catch (e) {}
 };
