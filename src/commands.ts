@@ -1,9 +1,9 @@
+import { ConfigurationTarget, workspace } from "vscode";
 import { downloadBiome } from "./downloader";
 import { restart, start, stop } from "./lifecycle";
 import { info } from "./logger";
 import { state } from "./state";
 import { clearTemporaryBinaries } from "./utils";
-
 /**
  * Starts the Biome extension
  *
@@ -50,4 +50,46 @@ export const resetCommand = async () => {
 	await state.context.globalState.update("downloadedVersion", undefined);
 	info("Biome extension was reset");
 	await start();
+};
+
+export const initializeWorkspaceCommand = async () => {
+	const subconfigs = [
+		"[javascript]",
+		"[typescript]",
+		"[typescriptreact]",
+		"[javascriptreact]",
+		"[json]",
+		"[jsonc]",
+	].join("");
+
+	// Get the root workspace configuration
+	const config = workspace.getConfiguration();
+	try {
+		// Set biome to enabled
+		await config.update(
+			"biome.enabled",
+			true,
+			ConfigurationTarget.Workspace,
+		);
+
+		await config.update("editor.codeActionsOnSave", {
+			...config.get("editor.codeActionsOnSave"),
+			"source.organizeImports.biome": "always",
+			"quickfix.biome": "always",
+		});
+
+		// Set it to default formatter
+		await config.update(
+			"editor.defaultFormatter",
+			"biomejs.biome",
+			ConfigurationTarget.Workspace,
+		);
+		// Set it to default formatter for all languages it supports
+		await config.update(
+			`${subconfigs}`,
+			{ "editor.defaultFormatter": "biomejs.biome" },
+			ConfigurationTarget.Workspace,
+		);
+		info("Workspace configuration updated");
+	} catch (e) {}
 };

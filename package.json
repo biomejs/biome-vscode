@@ -52,6 +52,10 @@
 			{
 				"title": "Biome: Troubleshoot - Reset",
 				"command": "biome.reset"
+			},
+			{
+				"title": "Biome: Initialize Workspace",
+				"command": "biome.initializeWorkspace"
 			}
 		],
 		"configuration": {
@@ -191,7 +195,15 @@
 				"scopeName": "source.biome_syntax_tree",
 				"path": "./resources/grammars/biome-syntax-tree.tmGrammar.json"
 			}
-		]
+		],
+		"menus": {
+			"explorer/context": [
+				{
+					"command": "biome.initializeWorkspace",
+					"when": "resourceFilename =~ /(\\.biome|biome.json|biome.jsonc)$/ || resourceFilename =~ /settings.json/"
+				}
+			]
+		}
 	},
 	"engines": {
 		"vscode": "^1.80.0"
