@@ -54,8 +54,8 @@
 				"command": "biome.reset"
 			},
 			{
-				"title": "Biome: Initialize Workspace",
-				"command": "biome.initializeWorkspace"
+				"title": "Biome: Initialize",
+				"command": "biome.initialize"
 			}
 		],
 		"configuration": {
@@ -199,7 +199,7 @@
 		"menus": {
 			"explorer/context": [
 				{
-					"command": "biome.initializeWorkspace",
+					"command": "biome.initialize",
 					"when": "resourceFilename =~ /(\\.biome|biome.json|biome.jsonc)$/ || resourceFilename =~ /settings.json/"
 				}
 			]
