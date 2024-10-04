@@ -15,6 +15,7 @@ import {
 } from "vscode-languageclient/node";
 import { displayName } from "../package.json";
 import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
+import { isEnabledGlobally } from "./config";
 import { debug, error, info, error as logError, warn } from "./logger";
 import { type Project, createProjects } from "./project";
 import { state } from "./state";
@@ -170,14 +171,20 @@ export const createGlobalSessionWhenNecessary = async () => {
 
 	// If the editor has open Untitled documents, or VS Code User Data documents,
 	// we create a global session immeditaley so that the user can work with them.
-	if (hasUntitledDocuments() || hasVSCodeUserDataDocuments()) {
+	if (
+		isEnabledGlobally() &&
+		(hasUntitledDocuments() || hasVSCodeUserDataDocuments())
+	) {
 		await createGlobalSessionIfNotExists();
 	}
 
 	// Register a listener for text documents being opened so that we can create
 	// a global session if necessary.
 	workspace.onDidOpenTextDocument(async (document) => {
-		if (hasUntitledDocuments() || hasVSCodeUserDataDocuments()) {
+		if (
+			isEnabledGlobally() &&
+			(hasUntitledDocuments() || hasVSCodeUserDataDocuments())
+		) {
 			await createGlobalSessionIfNotExists();
 		}
 	});
