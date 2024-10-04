@@ -71,8 +71,10 @@ export const createSession = async (
 };
 
 export const destroySession = async (session: Session) => {
-	// Stop the LSP session
-	await session.client.stop();
+	// Stop the LSP client if it is still running
+	if (session.client.needsStop()) {
+		await session.client.stop();
+	}
 };
 
 /**
