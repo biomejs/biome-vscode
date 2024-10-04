@@ -16,20 +16,18 @@ import {
 import { displayName } from "../package.json";
 import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
 import { isEnabledGlobally } from "./config";
+import { operatingMode, supportedLanguageIdentifiers } from "./constants";
 import { debug, error, info, error as logError, warn } from "./logger";
 import { type Project, createProjects } from "./project";
 import { state } from "./state";
 import {
-	binaryName,
-	directoryExists,
 	fileExists,
 	fileIsExecutable,
+	generatePlatformSpecificVersionedBinaryName,
 	hasUntitledDocuments,
 	hasVSCodeUserDataDocuments,
-	mode,
 	shortURI,
 	subtractURI,
-	supportedLanguages,
 } from "./utils";
 
 export type Session = {
@@ -104,7 +102,7 @@ const copyBinaryToTemporaryLocation = async (
 	const location = Uri.joinPath(
 		state.context.globalStorageUri,
 		"tmp-bin",
-		binaryName(`biome-${version}`),
+		generatePlatformSpecificVersionedBinaryName(version),
 	);
 
 	try {
@@ -305,7 +303,8 @@ const createLspLogger = (project?: Project): LogOutputChannel => {
 	// In this case, we display the name of the project and the relative path to
 	// the project root in the logger name. Additionally, when in a multi-root
 	// workspace, we prefix the path with the name of the workspace folder.
-	const prefix = mode === "multi-root" ? `${project.folder.name}::` : "";
+	const prefix =
+		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
 	const path = subtractURI(project.path, project.folder.uri).fsPath;
 
 	return window.createOutputChannel(`${displayName} LSP (${prefix}${path})`, {
@@ -333,7 +332,8 @@ const createLspTraceLogger = (project?: Project): LogOutputChannel => {
 	// In this case, we display the name of the project and the relative path to
 	// the project root in the logger name. Additionally, when in a multi-root
 	// workspace, we prefix the path with the name of the workspace folder.
-	const prefix = mode === "multi-root" ? `${project.folder.name}::` : "";
+	const prefix =
+		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
 	const path = subtractURI(project.path, project.folder.uri).fsPath;
 
 	return window.createOutputChannel(
@@ -354,7 +354,7 @@ const createLspTraceLogger = (project?: Project): LogOutputChannel => {
  */
 const createDocumentSelector = (project?: Project): DocumentFilter[] => {
 	if (project) {
-		return supportedLanguages.map((language) => ({
+		return supportedLanguageIdentifiers.map((language) => ({
 			language,
 			scheme: "file",
 			pattern: Uri.joinPath(project.path, "**", "*").fsPath.replace(
@@ -364,7 +364,7 @@ const createDocumentSelector = (project?: Project): DocumentFilter[] => {
 		}));
 	}
 
-	return supportedLanguages.flatMap((language) => {
+	return supportedLanguageIdentifiers.flatMap((language) => {
 		return ["untitled", "vscode-userdata"].map((scheme) => ({
 			language,
 			scheme,
