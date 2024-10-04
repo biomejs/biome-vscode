@@ -1,0 +1,29 @@
+# This workflow is responsible for releasing a new prerelease version of the 
+# extension. It is meant to be triggered manually.
+
+name: 🌙 Release new prerelease version
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-prerelease-version:
+    name: Generate prerelease version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.generate-prerelease-version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+      - name: Generate prerelease version
+        id: generate-prerelease-version
+        run: |
+          version=$(date +"%Y.%-m.%-d%H%M")
+          echo "version=$version" >> $GITHUB_OUTPUT
+  publish:
+    name: Release prerelease
+    needs: [generate-prerelease-version]
+    uses: ./.github/workflows/~publish-prerelease.yaml
+    secrets: inherit
+    with:
+      version: ${{ needs.generate-prerelease-version.outputs.version }}

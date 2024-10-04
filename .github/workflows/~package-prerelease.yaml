@@ -1,6 +1,6 @@
 # This workflow is responsible for packaging the extension as a VSIX artifact
-# for the nightly release.
-name: ~Package nightly release
+# for the prerelease release.
+name: ~Package prerelease
 
 on:
   workflow_call:
@@ -22,7 +22,7 @@ jobs:
           run_install: true
       - name: Build
         run: pnpm run build
-      - name: Patch package.json version with nightly identifier
+      - name: Patch package.json version with prerelease identifier
         run: |
           jq \
             --arg version "${{ inputs.version }}" \

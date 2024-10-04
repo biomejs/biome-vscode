@@ -25,17 +25,12 @@ jobs:
     secrets: inherit
     with:
       version: ${{ inputs.version }}
-      channel: stable
   # publish-to-vs-marketplace:
   #   needs: [package]
   #   name: Publish to Visual Studio Marketplace
   #   uses: ./.github/workflows/~publish-to-vs-marketplace.yaml
-  #   with:
-  #     channel: stable
   # publish-to-ovsx-registry:
   #   needs: [package]
   #   name: Publish to Visual Studio Marketplace
   #   uses: ./.github/workflows/~publish-to-ovsx-registry.yaml
-  #   with:
-  #     channel: stable
     

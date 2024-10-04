@@ -6,12 +6,6 @@ name: ~Publish to Open VSX Registry
 
 on:
   workflow_call:
-    
-    inputs:
-      channel:
-        type: string
-        required: true
-        description: The channel to publish to (nightly, stable)
 
 jobs:
   publish:

@@ -1,8 +1,8 @@
-# This workflow is responsible for publishing nightly releases of the extension
+# This workflow is responsible for publishing a prerelease version of the extension
 # to the Visual Studio Marketplace, the Open VSX Registry. It is triggered 
 # manually by the user.
 
-name: ~Publish nightly release
+name: ~Publish prerelease
 
 on:
   workflow_call:
@@ -14,7 +14,7 @@ on:
 jobs:
   package:
     name: Package
-    uses: ./.github/workflows/~package-nightly.yaml
+    uses: ./.github/workflows/~package-prerelease.yaml
     secrets: inherit
     with:
       version: ${{ inputs.version }}
@@ -23,12 +23,8 @@ jobs:
     name: Publish to Visual Studio Marketplace
     uses: ./.github/workflows/~publish-to-vs-marketplace.yaml
     secrets: inherit
-    with:
-      channel: nightly
   publish-to-ovsx-registry:
     needs: [package]
     name: Publish to Open VSX Registry
     uses: ./.github/workflows/~publish-to-ovsx-registry.yaml
     secrets: inherit
-    with:
-      channel: nightly

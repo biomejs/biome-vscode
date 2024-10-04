@@ -11,10 +11,6 @@ on:
         type: string
         required: true
         description: The version of the extension to publish
-      channel:
-        type: string
-        required: true
-        description: The channel to publish to (nightly, stable)
 
 jobs:
   publish:
@@ -48,4 +44,4 @@ jobs:
       #     name: "${{ format('v{0}', inputs.version) }}"
       #     tag_name: "${{ format('v{0}', inputs.version) }}"
       #     body_path: RELEASE_NOTES.md
-      #     files: biome.vsix
+      #     files: biome.vsix 
