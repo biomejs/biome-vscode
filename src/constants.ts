@@ -33,9 +33,23 @@ export const platformSpecificBinaryName = (() => {
 })();
 
 /**
+ * Platform-specific asset name
+ *
+ * This constant contains the name of Biome CLI GitHub release asset for the
+ * current platform.
+ *
+ * @example "cli-linux-x64"
+ * @example "cli-darwin-x64"
+ * @example "cli-win32-x64.exe"
+ */
+export const platformSpecificAssetName = (() => {
+	return `cli-${platformIdentifier}${process.platform === "win32" ? ".exe" : ""}`;
+})();
+
+/**
  * Platform-specific package name
  *
- * This constant contains the name of the Biome CLI asset for the current
+ * This constant contains the name of the Biome CLI package for the current
  * platform.
  *
  * @example "cli-linux-x64"

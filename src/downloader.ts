@@ -9,8 +9,8 @@ import {
 	workspace,
 } from "vscode";
 import {
+	platformSpecificAssetName,
 	platformSpecificBinaryName,
-	platformSpecificPackageName,
 } from "./constants";
 import { error, info } from "./logger";
 import { state } from "./state";
@@ -44,10 +44,11 @@ const downloadBiomeVersion = async (
 			`https://api.github.com/repos/biomejs/biome/releases/tags/cli/v${version}`,
 		)
 		.json();
-	const ext = process.platform === "win32" ? ".exe" : "";
+
 	const asset = releases.assets.find((asset) => {
-		return asset.name === platformSpecificPackageName + ext;
+		return asset.name === platformSpecificAssetName;
 	});
+
 	if (!asset) {
 		window.showErrorMessage(
 			`Could not find Biome ${version} for your platform.`,
