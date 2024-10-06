@@ -9,8 +9,8 @@ import {
 	workspace,
 } from "vscode";
 import {
+	platformSpecificAssetName,
 	platformSpecificBinaryName,
-	platformSpecificPackageName,
 } from "./constants";
 import { error, info } from "./logger";
 import { state } from "./state";
@@ -46,7 +46,7 @@ const downloadBiomeVersion = async (
 		.json();
 
 	const asset = releases.assets.find((asset) => {
-		return asset.name === platformSpecificPackageName;
+		return asset.name === platformSpecificAssetName;
 	});
 
 	if (!asset) {
