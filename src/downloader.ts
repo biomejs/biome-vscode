@@ -44,10 +44,11 @@ const downloadBiomeVersion = async (
 			`https://api.github.com/repos/biomejs/biome/releases/tags/cli/v${version}`,
 		)
 		.json();
-
-	const asset = releases.assets.find((asset) => {
-		return asset.name === platformSpecificPackageName;
-	});
+		
+		const ext = process.platform === "win32" ? ".exe" : "";
+		const asset = releases.assets.find((asset) => {
+			return asset.name === platformSpecificPackageName + ext;
+		});
 
 	if (!asset) {
 		window.showErrorMessage(
