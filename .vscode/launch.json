@@ -83,6 +83,20 @@
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: dev",
 			"sourceMapRenames": true
+		},
+		{
+			"name": "🧩 Debug Extension (yarn pnp)",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentKind=node",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/test/fixtures/yarn-pnp"
+			],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"preLaunchTask": "npm: dev",
+			"sourceMapRenames": true
 		}
 	]
 }
