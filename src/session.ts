@@ -184,7 +184,8 @@ export const createGlobalSessionWhenNecessary = async () => {
 			editor: editor?.document.uri.fsPath,
 		});
 		if (
-			editor?.document.uri.scheme === "untitled" ||
+			(isEnabledGlobally() &&
+				editor?.document.uri.scheme === "untitled") ||
 			editor?.document.uri.scheme === "vscode-userdata"
 		) {
 			await createGlobalSessionIfNotExists();
