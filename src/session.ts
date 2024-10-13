@@ -172,18 +172,20 @@ export const createGlobalSessionWhenNecessary = async () => {
 	// If the editor has open Untitled documents, or VS Code User Data documents,
 	// we create a global session immeditaley so that the user can work with them.
 	if (
-		isEnabledGlobally() &&
-		(hasUntitledDocuments() || hasVSCodeUserDataDocuments())
+		(isEnabledGlobally() &&
+			window.activeTextEditor?.document.uri.scheme === "untitled") ||
+		window.activeTextEditor?.document.uri.scheme === "vscode-userdata"
 	) {
 		await createGlobalSessionIfNotExists();
 	}
 
-	// Register a listener for text documents being opened so that we can create
-	// a global session if necessary.
-	workspace.onDidOpenTextDocument(async (document) => {
+	window.onDidChangeActiveTextEditor(async (editor) => {
+		debug("Active text editor changed.", {
+			editor: editor?.document.uri.fsPath,
+		});
 		if (
-			isEnabledGlobally() &&
-			(hasUntitledDocuments() || hasVSCodeUserDataDocuments())
+			editor?.document.uri.scheme === "untitled" ||
+			editor?.document.uri.scheme === "vscode-userdata"
 		) {
 			await createGlobalSessionIfNotExists();
 		}
