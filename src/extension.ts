@@ -29,6 +29,7 @@ export const createExtension = async () => {
 	listenForLockfilesChanges();
 	listenForConfigurationChanges();
 	listenForActiveTextEditorChange();
+	listenForFileSave();
 };
 
 /**
@@ -134,4 +135,30 @@ const listenForLockfilesChanges = () => {
 	info("Started listening for lockfile changes");
 
 	state.context.subscriptions.push(watcher);
+};
+
+/**
+ * Listens for file save events and triggers document formatting.
+ *
+ * This function listens for file save events in the editor and triggers
+ * document formatting when a file is saved. It checks if the active file is
+ * a TypeScript or JavaScript file before formatting.
+ */
+const listenForFileSave = () => {
+	state.context.subscriptions.push(
+		workspace.onWillSaveTextDocument((event) => {
+			const editor = window.activeTextEditor;
+			if (
+				editor &&
+				(editor.document.languageId === "typescript" ||
+					editor.document.languageId === "javascript")
+			) {
+				// Execute the format document command on save
+				commands.executeCommand("editor.action.formatDocument");
+				info("Formatting document on save");
+			}
+		}),
+	);
+
+	info("Started listening for file saves");
 };
