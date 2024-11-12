@@ -3,16 +3,14 @@ import { dirname, join } from "node:path";
 import { delimiter } from "node:path";
 import { Uri, window } from "vscode";
 import { config, getLspBin } from "./config";
+import {
+	platformIdentifier,
+	platformSpecificBinaryName,
+	platformSpecificNodePackageName,
+} from "./constants";
 import { downloadBiome, getDownloadedVersion } from "./downloader";
 import { debug, info } from "./logger";
-import {
-	binaryName,
-	fileExists,
-	getPackageName,
-	hasNodeDependencies,
-	packageName,
-	platform,
-} from "./utils";
+import { fileExists, hasNodeDependencies } from "./utils";
 
 export type LocatorStrategy = {
 	/**
@@ -94,8 +92,8 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 		const findPlatformSpecificBinary = async (
 			bin: Record<string, string>,
 		): Promise<Uri | undefined> => {
-			if (platform in bin) {
-				return findBinary(bin[platform]);
+			if (platformIdentifier in bin) {
+				return findBinary(bin[platformIdentifier]);
 			}
 
 			return undefined;
@@ -147,10 +145,14 @@ const nodeModulesStrategy: LocatorStrategy = {
 			// We need to resolve the package.json file here because the
 			// platform-specific packages do not have an entry point.
 			const binPackage = dirname(
-				biomePackage.resolve(`${getPackageName()}/package.json`),
+				biomePackage.resolve(
+					`${platformSpecificNodePackageName}/package.json`,
+				),
 			);
 
-			const binPath = Uri.file(join(binPackage, binaryName()));
+			const binPath = Uri.file(
+				join(binPackage, platformSpecificBinaryName),
+			);
 
 			if (!(await fileExists(binPath))) {
 				return undefined;
@@ -193,7 +195,7 @@ const yarnPnpStrategy: LocatorStrategy = {
 				}
 
 				return yarnPnpApi.resolveRequest(
-					`${packageName}/${binaryName()}`,
+					`${platformSpecificNodePackageName}/${platformSpecificBinaryName}`,
 					biomePackage,
 				);
 			} catch {
@@ -223,7 +225,10 @@ const pathEnvironmentVariableStrategy: LocatorStrategy = {
 		}
 
 		for (const dir of pathEnv.split(delimiter)) {
-			const biome = Uri.joinPath(Uri.file(dir), binaryName());
+			const biome = Uri.joinPath(
+				Uri.file(dir),
+				platformSpecificBinaryName,
+			);
 
 			if (await fileExists(biome)) {
 				return biome;

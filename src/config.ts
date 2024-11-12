@@ -39,6 +39,20 @@ export const isEnabled = (folder?: WorkspaceFolder) => {
 };
 
 /**
+ * Determines whether the extension is enabled globally
+ *
+ * This function determines whether the extension is enabled globally. This is
+ * useful to conditional enable or disable functionality based on the extension's
+ * configuration at the global/user level.
+ */
+export const isEnabledGlobally = (): boolean => {
+	return (
+		workspace.getConfiguration("biome").inspect<boolean>("enabled")
+			.globalValue === true
+	);
+};
+
+/**
  * Determines whether a Biome configuration file is required in the given
  * workspace folder for the extension to start.
  */

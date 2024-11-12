@@ -78,16 +78,16 @@ pull request against the `main` branch.
 The release process is mostly automated. The only manual step is to trigger
 the release workflows.
 
-We usually release a nightly version of the extension before promoting the 
+We usually release a prerelease version of the extension before promoting the 
 changes to a stable version, unless there are critical security or performance
 issues that need to be addressed.
 
-### 🌙 Releasing a nightly version
+### 🌙 Releasing a prerelease version
 
-To release a nightly version of the extension, trigger the [**🌙 Release new nightly version**](https://github.com/biomejs/biome-vscode/actions/workflows/release-nightly.yaml) workflow manually.
+To release a prerelease version of the extension, trigger the [**🌙 Release new prerelease version**](https://github.com/biomejs/biome-vscode/actions/workflows/release-prerelease.yaml) workflow manually.
 
 This workflow:
-- Patches the `package.json` version with a date-based nightly identifier (e.g. `2024.08.221005`).
+- Patches the `package.json` version with a date-based prerelease identifier (e.g. `2024.08.221005`).
 - Builds and packages the extension.
 - Publishes the extension to the Visual Studio Marketplace and Open VSX Registry.
 

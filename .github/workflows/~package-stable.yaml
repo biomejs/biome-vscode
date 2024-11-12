@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           # We fetch the latest commit on the main branch to ensure that our
           # package.json version contains the patched version number from the
@@ -26,7 +26,7 @@ jobs:
       - name: Package VSIX
         run: pnpm vsce package -o biome.vsix
       - name: Upload the artifact
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: biome.vsix
           path: biome.vsix

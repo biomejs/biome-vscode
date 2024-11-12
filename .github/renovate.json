@@ -15,9 +15,8 @@
 	"ignoreScripts": true,
 	"packageRules": [
 		{
-			"description": "Do not pin @types/vscode because it must follow the value set in engines.vscode.",
+			"description": "Do not update or pin @types/vscode because it must follow the value set in engines.vscode.",
 			"matchPackageNames": ["@types/vscode"],
-			"matchUpdateTypes": ["pin"],
 			"enabled": false
 		}
 	]

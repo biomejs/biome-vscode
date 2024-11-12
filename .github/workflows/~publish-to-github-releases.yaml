@@ -11,10 +11,6 @@ on:
         type: string
         required: true
         description: The version of the extension to publish
-      channel:
-        type: string
-        required: true
-        description: The channel to publish to (nightly, stable)
 
 jobs:
   publish:
@@ -22,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           # Fetch the whole history so we can determine the next version number
           # based on the commit history.
@@ -48,4 +44,4 @@ jobs:
       #     name: "${{ format('v{0}', inputs.version) }}"
       #     tag_name: "${{ format('v{0}', inputs.version) }}"
       #     body_path: RELEASE_NOTES.md
-      #     files: biome.vsix
+      #     files: biome.vsix 
