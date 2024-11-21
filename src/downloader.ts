@@ -39,7 +39,7 @@ export const downloadBiome = async (): Promise<Uri | undefined> => {
 const downloadBiomeVersion = async (
 	version: string,
 ): Promise<Uri | undefined> => {
-	debug("Downloading Biome version", { version});
+	debug("Downloading Biome version", { version });
 
 	const releases: {
 		assets: { name: string; browser_download_url: string }[];

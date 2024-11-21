@@ -96,9 +96,12 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 		const findPlatformSpecificBinary = async (
 			bin: Record<string, string>,
 		): Promise<Uri | undefined> => {
-			debug("Trying to find platform-specific Biome binary in VS Code settings", {
-				bin,
-			})
+			debug(
+				"Trying to find platform-specific Biome binary in VS Code settings",
+				{
+					bin,
+				},
+			);
 
 			if (platformIdentifier in bin) {
 				return findBinary(bin[platformIdentifier]);
@@ -144,7 +147,7 @@ const nodeModulesStrategy: LocatorStrategy = {
 	name: "Node Modules",
 	find: async (path: Uri): Promise<Uri | undefined> => {
 		debug("Trying to find Biome binary in Node Modules", {
-			path
+			path,
 		});
 		try {
 			const biomePackage = createRequire(
@@ -187,7 +190,7 @@ const yarnPnpStrategy: LocatorStrategy = {
 	name: "Yarn Plug'n'Play",
 	find: async (path: Uri): Promise<Uri | undefined> => {
 		debug("Trying to find Biome binary in Yarn Plug'n'Play", {
-			path
+			path,
 		});
 
 		for (const extension of ["cjs", "js"]) {
