@@ -76,6 +76,10 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 		const bin = getLspBin(path);
 
 		const findBinary = async (bin: string): Promise<Uri | undefined> => {
+			debug("Trying to find Biome binary in VS Code settings", {
+				bin,
+			});
+
 			if (bin === "") {
 				return undefined;
 			}
@@ -92,6 +96,10 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 		const findPlatformSpecificBinary = async (
 			bin: Record<string, string>,
 		): Promise<Uri | undefined> => {
+			debug("Trying to find platform-specific Biome binary in VS Code settings", {
+				bin,
+			})
+
 			if (platformIdentifier in bin) {
 				return findBinary(bin[platformIdentifier]);
 			}
@@ -135,6 +143,9 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 const nodeModulesStrategy: LocatorStrategy = {
 	name: "Node Modules",
 	find: async (path: Uri): Promise<Uri | undefined> => {
+		debug("Trying to find Biome binary in Node Modules", {
+			path
+		});
 		try {
 			const biomePackage = createRequire(
 				require.resolve("@biomejs/biome/package.json", {
@@ -175,6 +186,10 @@ const nodeModulesStrategy: LocatorStrategy = {
 const yarnPnpStrategy: LocatorStrategy = {
 	name: "Yarn Plug'n'Play",
 	find: async (path: Uri): Promise<Uri | undefined> => {
+		debug("Trying to find Biome binary in Yarn Plug'n'Play", {
+			path
+		});
+
 		for (const extension of ["cjs", "js"]) {
 			const yarnPnpFile = Uri.file(`${path}/.pnp.${extension}`);
 
@@ -218,6 +233,8 @@ const yarnPnpStrategy: LocatorStrategy = {
 const pathEnvironmentVariableStrategy: LocatorStrategy = {
 	name: "Path Environment Variable",
 	find: async (): Promise<Uri | undefined> => {
+		debug("Trying to find Biome binary in PATH environment variable");
+
 		const pathEnv = process.env.PATH;
 
 		if (!pathEnv) {
@@ -242,6 +259,8 @@ const pathEnvironmentVariableStrategy: LocatorStrategy = {
 const downloadBiomeStrategy: LocatorStrategy = {
 	name: "Download Biome",
 	find: async (): Promise<Uri | undefined> => {
+		debug("Trying to find downloaded Biome binary");
+
 		const downloadedVersion = await getDownloadedVersion();
 
 		if (downloadedVersion) {
