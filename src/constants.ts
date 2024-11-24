@@ -90,6 +90,7 @@ export const supportedLanguageIdentifiers: string[] = [
 	"json",
 	"jsonc",
 	"svelte",
+	"tailwindcss",
 	"typescript",
 	"typescriptreact",
 	"vue",
