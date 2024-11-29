@@ -256,7 +256,9 @@ const createLanguageClient = (bin: Uri, project?: Project) => {
 			): ErrorHandlerResult | Promise<ErrorHandlerResult> => {
 				logError("Biome language server error", {
 					error: error.toString(),
-					message: message.toString(),
+					stack: error.stack,
+					errorMessage: error.message,
+					message: message.jsonrpc,
 					count: count,
 				});
 
