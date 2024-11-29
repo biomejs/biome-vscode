@@ -258,7 +258,7 @@ const createLanguageClient = (bin: Uri, project?: Project) => {
 					error: error.toString(),
 					stack: error.stack,
 					errorMessage: error.message,
-					message: message.jsonrpc,
+					message: message?.jsonrpc,
 					count: count,
 				});
 
