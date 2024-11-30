@@ -21,7 +21,6 @@ export type Project = {
 	folder?: WorkspaceFolder;
 	path: Uri;
 	configFile?: Uri;
-	bin: Uri;
 };
 
 export type ProjectDefinition = {
@@ -58,20 +57,10 @@ const createProject = async ({
 	path: Uri;
 	configFile?: Uri;
 }): Promise<Project | undefined> => {
-	// Resolve the path to the Biome binary
-	const findResult = await findBiomeLocally(path);
-
-	// If the Biome binary could not be found, error out
-	if (!findResult) {
-		error("Could not find the Biome binary");
-		return;
-	}
-
 	return {
 		folder: folder,
 		path: path,
 		configFile: configFile,
-		bin: findResult.bin,
 	};
 };
 
