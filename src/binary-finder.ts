@@ -392,6 +392,10 @@ export const findBiomeLocally = async (
 			};
 		}
 	}
+
+	debug("Could not find Biome locally using any of the strategies.");
+
+	return undefined;
 };
 
 /**
@@ -459,4 +463,8 @@ export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 			strategy: downloadBiomeStrategy,
 		};
 	}
+
+	debug("Could not find Biome globally using any of the strategies");
+
+	return undefined;
 };
