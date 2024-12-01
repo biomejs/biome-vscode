@@ -197,7 +197,7 @@ const yarnPnpStrategy: LocatorStrategy = {
 		});
 
 		for (const extension of ["cjs", "js"]) {
-			const yarnPnpFile = Uri.file(`${path}/.pnp.${extension}`);
+			const yarnPnpFile = Uri.joinPath(path, `.pnp.${extension}`);
 
 			if (!(await fileExists(yarnPnpFile))) {
 				continue;
@@ -215,9 +215,11 @@ const yarnPnpStrategy: LocatorStrategy = {
 					continue;
 				}
 
-				return yarnPnpApi.resolveRequest(
-					`${platformSpecificNodePackageName}/${platformSpecificBinaryName}`,
-					biomePackage,
+				return Uri.file(
+					yarnPnpApi.resolveRequest(
+						`${platformSpecificNodePackageName}/${platformSpecificBinaryName}`,
+						biomePackage,
+					) as string,
 				);
 			} catch {
 				return undefined;
