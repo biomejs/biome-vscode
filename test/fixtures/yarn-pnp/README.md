@@ -1,7 +1,7 @@
 # Yarn PnP
 
 This folder contains an example single-root workspace used as a test fixture for
-the Biome extension. The workspace folder is setup as a yarn pnp project.
+the Biome extension. The workspace folder is setup as a Yarn PnP project.
 
 ## Expectations
 
