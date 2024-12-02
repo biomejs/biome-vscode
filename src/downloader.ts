@@ -33,7 +33,7 @@ export const downloadBiome = async (): Promise<Uri | undefined> => {
 		async () => await downloadBiomeVersion(version.label),
 	);
 
-	return (await getDownloadedVersion()).binPath;
+	return (await getDownloadedVersion())?.binPath;
 };
 
 const downloadBiomeVersion = async (
