@@ -6,14 +6,13 @@ import {
 	workspace,
 } from "vscode";
 import { Utils } from "vscode-uri";
-import { findBiomeLocally } from "./binary-finder";
 import {
 	getProjectDefinitions,
 	isEnabled,
 	workspaceFolderRequiresConfigFile,
 } from "./config";
 import { operatingMode, supportedLanguageIdentifiers } from "./constants";
-import { error, warn } from "./logger";
+import { warn } from "./logger";
 import { state } from "./state";
 import { directoryExists, fileExists } from "./utils";
 

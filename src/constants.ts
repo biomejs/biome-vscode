@@ -1,4 +1,4 @@
-import { version, workspace } from "vscode";
+import { workspace } from "vscode";
 
 /**
  * Platform identifier

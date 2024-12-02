@@ -24,8 +24,6 @@ import {
 	fileExists,
 	fileIsExecutable,
 	generatePlatformSpecificVersionedBinaryName,
-	hasUntitledDocuments,
-	hasVSCodeUserDataDocuments,
 	shortURI,
 	subtractURI,
 } from "./utils";
