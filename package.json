@@ -217,7 +217,7 @@
 		"@biomejs/version-utils": "0.4.0",
 		"@vscode/test-electron": "2.4.1",
 		"ky": "1.7.2",
-		"nanoid": "5.0.8",
+		"nanoid": "5.0.9",
 		"vscode-languageclient": "8.1.0",
 		"vscode-uri": "3.0.8"
 	},
