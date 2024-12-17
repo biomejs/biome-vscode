@@ -12,11 +12,13 @@ import {
 	platformSpecificAssetName,
 	platformSpecificBinaryName,
 } from "./constants";
-import { error, info } from "./logger";
+import { debug, error, info } from "./logger";
 import { state } from "./state";
 import { fileExists } from "./utils";
 
 export const downloadBiome = async (): Promise<Uri | undefined> => {
+	debug("Downloading Biome");
+
 	const version = await promptVersionToDownload();
 
 	if (!version) {
@@ -31,12 +33,14 @@ export const downloadBiome = async (): Promise<Uri | undefined> => {
 		async () => await downloadBiomeVersion(version.label),
 	);
 
-	return (await getDownloadedVersion()).binPath;
+	return (await getDownloadedVersion())?.binPath;
 };
 
 const downloadBiomeVersion = async (
 	version: string,
 ): Promise<Uri | undefined> => {
+	debug("Downloading Biome version", { version });
+
 	const releases: {
 		assets: { name: string; browser_download_url: string }[];
 	} = await ky
@@ -86,6 +90,8 @@ const downloadBiomeVersion = async (
 export const getDownloadedVersion = async (): Promise<
 	{ version: string; binPath: Uri } | undefined
 > => {
+	debug("Getting downloaded version");
+
 	// Retrieve the downloaded version from the global state
 	const version = state.context.globalState.get<string>("downloadedVersion");
 
@@ -113,6 +119,8 @@ export const getDownloadedVersion = async (): Promise<
  * that have already been downloaded will be pre-selected.
  */
 const promptVersionToDownload = async () => {
+	debug("Prompting user to select Biome version to download");
+
 	// Get the list of versions
 	const compileItems = async (): Promise<QuickPickItem[]> => {
 		const downloadedVersion = (await getDownloadedVersion())?.version;

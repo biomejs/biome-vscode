@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { delimiter } from "node:path";
 import { Uri, window } from "vscode";
+import { Utils } from "vscode-uri";
 import { config, getLspBin } from "./config";
 import {
 	platformIdentifier,
@@ -76,11 +77,17 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 		const bin = getLspBin(path);
 
 		const findBinary = async (bin: string): Promise<Uri | undefined> => {
+			debug("Trying to find Biome binary in VS Code settings", {
+				bin,
+			});
+
 			if (bin === "") {
 				return undefined;
 			}
 
-			const biome = Uri.file(bin);
+			const resolvedBinPath = Utils.resolvePath(path, bin).toString();
+
+			const biome = Uri.file(resolvedBinPath);
 
 			if (await fileExists(biome)) {
 				return biome;
@@ -92,6 +99,13 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 		const findPlatformSpecificBinary = async (
 			bin: Record<string, string>,
 		): Promise<Uri | undefined> => {
+			debug(
+				"Trying to find platform-specific Biome binary in VS Code settings",
+				{
+					bin,
+				},
+			);
+
 			if (platformIdentifier in bin) {
 				return findBinary(bin[platformIdentifier]);
 			}
@@ -135,6 +149,9 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 const nodeModulesStrategy: LocatorStrategy = {
 	name: "Node Modules",
 	find: async (path: Uri): Promise<Uri | undefined> => {
+		debug("Trying to find Biome binary in Node Modules", {
+			path,
+		});
 		try {
 			const biomePackage = createRequire(
 				require.resolve("@biomejs/biome/package.json", {
@@ -175,8 +192,12 @@ const nodeModulesStrategy: LocatorStrategy = {
 const yarnPnpStrategy: LocatorStrategy = {
 	name: "Yarn Plug'n'Play",
 	find: async (path: Uri): Promise<Uri | undefined> => {
+		debug("Trying to find Biome binary in Yarn Plug'n'Play", {
+			path,
+		});
+
 		for (const extension of ["cjs", "js"]) {
-			const yarnPnpFile = Uri.file(`${path}/.pnp.${extension}`);
+			const yarnPnpFile = Uri.joinPath(path, `.pnp.${extension}`);
 
 			if (!(await fileExists(yarnPnpFile))) {
 				continue;
@@ -194,9 +215,11 @@ const yarnPnpStrategy: LocatorStrategy = {
 					continue;
 				}
 
-				return yarnPnpApi.resolveRequest(
-					`${platformSpecificNodePackageName}/${platformSpecificBinaryName}`,
-					biomePackage,
+				return Uri.file(
+					yarnPnpApi.resolveRequest(
+						`${platformSpecificNodePackageName}/${platformSpecificBinaryName}`,
+						biomePackage,
+					) as string,
 				);
 			} catch {
 				return undefined;
@@ -218,6 +241,8 @@ const yarnPnpStrategy: LocatorStrategy = {
 const pathEnvironmentVariableStrategy: LocatorStrategy = {
 	name: "Path Environment Variable",
 	find: async (): Promise<Uri | undefined> => {
+		debug("Trying to find Biome binary in PATH environment variable");
+
 		const pathEnv = process.env.PATH;
 
 		if (!pathEnv) {
@@ -242,6 +267,8 @@ const pathEnvironmentVariableStrategy: LocatorStrategy = {
 const downloadBiomeStrategy: LocatorStrategy = {
 	name: "Download Biome",
 	find: async (): Promise<Uri | undefined> => {
+		debug("Trying to find downloaded Biome binary");
+
 		const downloadedVersion = await getDownloadedVersion();
 
 		if (downloadedVersion) {
@@ -370,6 +397,10 @@ export const findBiomeLocally = async (
 			};
 		}
 	}
+
+	debug("Could not find Biome locally using any of the strategies.");
+
+	return undefined;
 };
 
 /**
@@ -437,4 +468,8 @@ export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 			strategy: downloadBiomeStrategy,
 		};
 	}
+
+	debug("Could not find Biome globally using any of the strategies");
+
+	return undefined;
 };

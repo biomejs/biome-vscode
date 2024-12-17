@@ -206,6 +206,8 @@ export const hasNodeDependencies = async (path: Uri) => {
  * directory.
  */
 export const clearTemporaryBinaries = async () => {
+	debug("Clearing temporary binaries");
+
 	const binDirPath = Uri.joinPath(state.context.globalStorageUri, "tmp-bin");
 	if (await directoryExists(binDirPath)) {
 		workspace.fs.delete(binDirPath, {
