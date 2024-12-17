@@ -197,6 +197,12 @@
 			}
 		],
 		"menus": {
+			"commandPalette": [
+				{
+					"command": "biome.initialize",
+					"when": "false"
+				}
+			],
 			"explorer/context": [
 				{
 					"command": "biome.initialize",
