@@ -24,7 +24,7 @@ jobs:
           # based on the commit history.
           fetch-depth: 0
       - name: Setup Biome
-        uses: biomejs/setup-biome@1cbe33ead22c7a2fded3b52fa2893611c815c9b5 # v2
+        uses: biomejs/setup-biome@c016c38f26f2c4a6eb3662679143614a254263fd # v2
       - name: Set up git-cliff
         uses: kenji-miyake/setup-git-cliff@2778609c643a39a2576c4bae2e493b855eb4aee8 # v2
       - name: Determine next version
