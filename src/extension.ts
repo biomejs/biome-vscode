@@ -113,7 +113,7 @@ const listenForActiveTextEditorChange = () => {
  */
 const listenForLockfilesChanges = () => {
 	const watcher = workspace.createFileSystemWatcher(
-		"**/{package-lock.json,yarn.lock,bun.lockb,pnpm-lock.yaml}",
+		"**/{package-lock.json,yarn.lock,bun.lockb,bun.lock,pnpm-lock.yaml}",
 	);
 
 	watcher.onDidChange((event) => {
