@@ -220,5 +220,5 @@
 		"vscode-languageclient": "8.1.0",
 		"vscode-uri": "3.0.8"
 	},
-	"packageManager": "pnpm@9.15.3"
+	"packageManager": "pnpm@9.15.4"
 }
