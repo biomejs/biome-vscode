@@ -1,0 +1,99 @@
+# This workflow is responsible for releasing a new stable version of the
+# extension. It is meant to be triggered manually and will automatically
+# determine the next version number based on the commit history, which it will
+# use to create a new tag
+
+name: 🚀 Release new stable version
+
+on: [workflow_dispatch]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          # Fetch the whole history so we can determine the next version number
+          # based on the commit history.
+          fetch-depth: 0
+
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: 🔧 Setup Biome
+        uses: biomejs/setup-biome@c016c38f26f2c4a6eb3662679143614a254263fd # v2
+
+      - name: 🔧 Set up git-cliff
+        uses: kenji-miyake/setup-git-cliff@2778609c643a39a2576c4bae2e493b855eb4aee8 # v2
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔧 Configure Git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global push.followTags true
+
+      - name: 🔍 Determine next version
+        run: |
+         NEW_VERSION="$(git-cliff --bumped-version --config .git-cliff/release-notes.toml 2>/dev/null)"
+         echo "NEW_VERSION=${NEW_VERSION:1}" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📝 Patch package.json version
+        run: |
+          jq \
+            --arg version "${{ steps.next-version.outputs.version }}" \
+            --tab '.version = $version' \
+            package.json > package.json.tmp \
+            && mv package.json.tmp package.json
+          biome format --write package.json
+
+      - name: 🛠️ Build extension
+        run: bun run build
+
+      - name: 📦 Package VSIX
+        run: bun run package
+
+      - name: 📜 Generate changelog and release notes
+        run: |
+          git-cliff --config .git-cliff/changelog.toml --tag v$NEW_VERSION > CHANGELOG.md 5014d9d9291a7de6c11afbe154ce73225c45aefb..
+          git-cliff --config .git-cliff/release-notes.toml --latest > RELEASE_NOTES.md
+
+      - name: 📝 Commit changes and tag
+        run: |
+          bun run format
+          git add .
+          git commit -m "chore(release): v$NEW_VERSION"
+          git tag -a v$NEW_VERSION -m "v$NEW_VERSION"
+          git push --follow-tags
+
+      - name: 🚀 Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ env.NEW_VERSION }}
+          tag_name: v${{ env.NEW_VERSION }}
+          body_path: RELEASE_NOTES.md
+          files: biome.vsix
+
+      - name: 🌐 Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@28e2d3f5817fccf23c1f219eb0cecc903132d1a2 # v1.6.2
+        with:
+          pat: ${{ secrets.OVSX_PAT }}
+          extensionFile: biome.vsix
+
+      - name: 🌐 Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@28e2d3f5817fccf23c1f219eb0cecc903132d1a2 # v1.6.2
+        with:
+          pat: ${{ secrets.VSCE_PAT }}
+          registryUrl: https://marketplace.visualstudio.com
+          extensionFile: biome.vsix
