@@ -8,15 +8,45 @@ on:
 
 jobs:
   quality:
-    name: Quality
+    name: 🔍 Quality
+
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: 📥 Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - name: Setup Biome
+        with:
+          # Disable credentials
+          persist-credentials: false
+
+      - name: 🔧 Setup Biome
         uses: biomejs/setup-biome@c016c38f26f2c4a6eb3662679143614a254263fd # v2
-      - name: Run Biome checks
+
+      - name: 🏃 Run Biome checks
         run: biome ci --reporter=github
+
   package:
     name: Package
-    uses: ./.github/workflows/~package-stable.yaml
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          # Disable credentials
+          persist-credentials: false
+
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🛠️ Build extension
+        run: bun run build
+
+      - name: 📦 Package VSIX
+        run: bunx @vscode/vsce package -o biome.vsix

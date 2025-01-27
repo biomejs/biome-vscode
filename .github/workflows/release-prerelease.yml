@@ -1,0 +1,57 @@
+# This workflow is responsible for releasing a new prerelease version of the
+# extension. It is meant to be triggered manually.
+
+name: 🌙 Release new prerelease version
+
+on: [workflow_dispatch]
+
+permissions:
+  contents: write
+
+jobs:
+  publish-prerelease:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🛠️ Generate prerelease version
+        run: |
+          version=$(date +"%Y.%-m.%-d%H%M")
+          echo "version=$version" >> $GITHUB_ENV
+
+      - name: 🛠️ Build extension
+        run: bun run build
+
+      - name: 📝 Patch package.json version with prerelease identifier
+        run: |
+          jq \
+            --arg version "${{ inputs.version }}" \
+            --tab '.version = $version' \
+            package.json > package.json.tmp \
+            && mv package.json.tmp package.json
+
+      - name: 📦 Package VSIX
+        run: bunx vsce package --pre-release -o biome.vsix
+
+      - name: 🌐 Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@28e2d3f5817fccf23c1f219eb0cecc903132d1a2 # v1.6.2
+        with:
+          pat: ${{ secrets.OVSX_PAT }}
+          extensionFile: biome.vsix
+
+      - name: 🌐 Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@28e2d3f5817fccf23c1f219eb0cecc903132d1a2 # v1.6.2
+        with:
+          pat: ${{ secrets.VSCE_PAT }}
+          registryUrl: https://marketplace.visualstudio.com
+          extensionFile: biome.vsix

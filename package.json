@@ -8,23 +8,16 @@
 		"type": "git",
 		"url": "https://github.com/biomejs/biome-vscode.git"
 	},
-	"main": "./out/index.js",
+	"main": "dist/index.js",
 	"sponsor": {
 		"url": "https://github.com/sponsors/biomejs"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
-		"@rollup/plugin-commonjs": "28.0.2",
-		"@rollup/plugin-json": "6.1.0",
-		"@rollup/plugin-node-resolve": "16.0.0",
 		"@types/vscode": "1.80.0",
 		"@vscode/vsce": "3.2.1",
 		"lefthook": "1.10.8",
-		"ovsx": "0.10.1",
-		"rollup": "4.31.0",
-		"rollup-plugin-esbuild": "6.1.1",
-		"ts-node": "10.9.2",
-		"typescript": "5.7.3"
+		"rimraf": "^6.0.1"
 	},
 	"activationEvents": ["onStartupFinished"],
 	"bugs": {
@@ -202,12 +195,12 @@
 	"keywords": ["formatter", "linter"],
 	"license": "MIT OR Apache-2.0",
 	"scripts": {
-		"build": "rollup --config rollup.config.ts --configPlugin esbuild",
-		"dev": "rollup --watch --config rollup.config.ts --configPlugin esbuild",
-		"package": "pnpm run build && vsce package --out biome.vsix",
-		"typecheck": "tsc --noEmit",
-		"pretest": "pnpm run build",
-		"test": "vscode-test"
+		"build-base": "rimraf dist && bun build src/index.ts --format cjs --target node --outdir ./dist --external vscode",
+		"build": "bun run build-base --minify",
+		"dev": "bun run build-base --watch",
+		"package": "vsce package --out biome.vsix",
+		"lint": "biome check",
+		"format": "biome format --write"
 	},
 	"vsce": {
 		"dependencies": false,
@@ -215,10 +208,8 @@
 	},
 	"dependencies": {
 		"@biomejs/version-utils": "0.4.0",
-		"@vscode/test-electron": "2.4.1",
 		"ky": "1.7.4",
 		"vscode-languageclient": "8.1.0",
 		"vscode-uri": "3.0.8"
-	},
-	"packageManager": "pnpm@9.15.4"
+	}
 }
