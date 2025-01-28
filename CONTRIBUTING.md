@@ -17,19 +17,23 @@ feedback and ensures that your contribution is in line with the project's goals.
 ## Project setup
 
 1. **Fork the repository** and clone it to your local machine. For simplicity, you
-   can use the [GitHub CLI] to do this in one command.
+can use the [GitHub CLI] to do this in one command.
 
-    ```shell
-    gh repo fork @biomejs/biome-vscode --clone
-    ```
+   ```shell
+   gh repo fork @biomejs/biome-vscode --clone
+   ```
 
-2. **Install the dependencies**. We use [Bun] to manage the dependencies of the
-   project
+2. **Install the dependencies**. We use [PNPM] to manage the dependencies of the
+project. You should install it using corepack to ensure that you have the same
+version as the one used in the project.
 
-    ```shell
-    # Install dependencies
-    bun install
-    ```
+   ```shell
+   # Enable corepack
+   corepack enable
+
+   # Install dependencies
+   pnpm install
+   ```
 
 ## Testing
 
@@ -58,9 +62,9 @@ pull request against the `main` branch.
 
 - Create a new branch from the `main` branch.
 
-    ```shell
-    git checkout -b <branch-name>
-    ```
+  ```shell
+  git checkout -b <branch-name>
+  ```
 
 - Make your changes in the new branch.
 - Create a pull request against the `main` branch.
@@ -93,7 +97,7 @@ This workflow:
 - Publishes the extension to the Visual Studio Marketplace and Open VSX Registry.
 
 [GitHub CLI]: https://cli.github.com/
-[Bun]: https://bun.sh/
+[PNPM]: https://pnpm.io/
 
 ### 🚀 Releasing a stable version
 

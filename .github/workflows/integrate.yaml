@@ -25,8 +25,8 @@ jobs:
       - name: 🏃 Run Biome checks
         run: biome ci --reporter=github
 
-  package:
-    name: Package
+  build:
+    name: Build
 
     runs-on: ubuntu-latest
 
@@ -37,16 +37,10 @@ jobs:
           # Disable credentials
           persist-credentials: false
 
-      - name: 🔧 Setup Bun
-        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2
+      - name: 🛠️ Setup PNPM
+        uses: pnpm/action-setup@v4
         with:
-          bun-version-file: ".bun-version"
-
-      - name: 📦 Install dependencies
-        run: bun install --frozen-lockfile
+          run_install: true
 
       - name: 🛠️ Build extension
-        run: bun run build
-
-      - name: 📦 Package VSIX
-        run: bunx @vscode/vsce package -o biome.vsix
+        run: pnpm run build
