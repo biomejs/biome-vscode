@@ -22,6 +22,7 @@
 		"@vscode/vsce": "3.2.1",
 		"lefthook": "1.10.8",
 		"rollup": "4.31.0",
+		"rollup-plugin-delete": "^2.1.0",
 		"rollup-plugin-esbuild": "6.1.1",
 		"ts-node": "10.9.2",
 		"typescript": "5.7.3"
@@ -204,7 +205,7 @@
 	"scripts": {
 		"build-base": "rollup --config rollup.config.ts --configPlugin esbuild",
 		"build": "pnpm run build-base",
-		"dev": "pnpm run build-base --watch",
+		"dev": "NODE_ENV=development pnpm run build-base --watch",
 		"package": "vsce package --out biome.vsix",
 		"typecheck": "tsc --noEmit",
 		"pretest": "pnpm run build",
