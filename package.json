@@ -21,7 +21,6 @@
 		"@vscode/test-electron": "^2.4.1",
 		"@vscode/vsce": "3.2.1",
 		"lefthook": "1.10.8",
-		"rimraf": "^6.0.1",
 		"rollup": "4.31.0",
 		"rollup-plugin-esbuild": "6.1.1",
 		"ts-node": "10.9.2",
@@ -204,8 +203,8 @@
 	"license": "MIT OR Apache-2.0",
 	"scripts": {
 		"build-base": "rollup --config rollup.config.ts --configPlugin esbuild",
-		"build": "rimraf out && pnpm run build-base",
-		"dev": "rimraf out && pnpm run build-base --watch",
+		"build": "pnpm run build-base",
+		"dev": "pnpm run build-base --watch",
 		"package": "vsce package --out biome.vsix",
 		"typecheck": "tsc --noEmit",
 		"pretest": "pnpm run build",
