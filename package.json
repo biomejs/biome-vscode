@@ -118,9 +118,9 @@
 	"scripts": {
 		"compile": "esbuild src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node --target=node14",
 		"watch": "pnpm run compile --sourcemap --watch",
-		"package": "vsce package --skip-license -o biome_lsp.vsix",
+		"package": "vsce package --skip-license -o biome.vsix",
 		"build": "pnpm run compile --minify && pnpm run package",
-		"install-extension": "code --install-extension biome_lsp.vsix --force",
+		"install-extension": "code --install-extension biome.vsix --force",
 		"format": "biome format . --write",
 		"check": "biome check",
 		"check:apply": "biome check --write --unsafe",
