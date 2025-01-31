@@ -24,7 +24,7 @@ jobs:
         id: version
         run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
       - name: Publish extension to Open VSX Registry
-        run: bun ovsx publish --packagePath biome.vsix
+        run: pnpm ovsx publish --packagePath biome.vsix
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
       - name: Publish extension to GitHub Releases
