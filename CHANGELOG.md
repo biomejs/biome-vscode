@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.3.1 - 2025-01-31
+
+### <!-- 1 -->:bug: Bug fixes
+
+- Release missing `graphql` language support
+
 ## 2.3.0 - 2024-06-04
 
 ### <!-- 0 -->:rocket: New features

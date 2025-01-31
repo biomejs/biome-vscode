@@ -31,6 +31,6 @@ jobs:
         uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2
         with:
           name: "${{ format('v{0}', steps.version.outputs.version) }}"
-          body_path: RELEASE_NOTES.md
+          body: ""
           files: biome.vsix
           tag_name: ${{ format('v{0}', steps.version.outputs.version) }}
