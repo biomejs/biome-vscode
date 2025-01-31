@@ -2,18 +2,33 @@ name: Integrate
 
 on:
   push:
-    branches: ["main"]
+    branches: ["2.x"]
   pull_request:
+    branches: ["2.x"]
   workflow_dispatch:
 
 jobs:
   quality:
-    name: Quality
-    uses: ./.github/workflows/_quality.yaml
+    name: Quality checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+      - name: Run Biome
+        run: biome ci --reporter=github
   build:
-    name: Build
-    uses: ./.github/workflows/_build.yaml
-  package:
-    name: Package
-    needs: [build]
-    uses: ./.github/workflows/_package.yaml
+    name: Build and package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: true
+      - name: Build the extension
+        run: pnpm build
+      - name: Package the extension
+        run: pnpm exec vsce package -o biome.vsix

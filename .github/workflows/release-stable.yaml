@@ -1,0 +1,36 @@
+name: Release stable (2.x)
+
+on:
+  workflow_dispatch:
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: true
+      - name: Build the extension
+        run: pnpm build
+      - name: Package the extension
+        run: pnpm exec vsce package -o biome.vsix
+      - name: Publish to Visual Studio Marketplace
+        run: pnpm exec vsce publish --packagePath biome.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      - name: Read version from package.json
+        id: version
+        run: echo "version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
+      - name: Publish extension to Open VSX Registry
+        run: bun ovsx publish --packagePath biome.vsix
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+      - name: Publish extension to GitHub Releases
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2
+        with:
+          name: "${{ format('v{0}', steps.version.outputs.version) }}"
+          body_path: RELEASE_NOTES.md
+          files: biome.vsix
+          tag_name: ${{ format('v{0}', steps.version.outputs.version) }}
