@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.3.2 - 2025-02-06
+### <!-- 1 -->:bug: Bug fixes
+- Do not use `musl` flavor on WSL
+
 ## 2.3.1 - 2025-01-31
 
 ### <!-- 1 -->:bug: Bug fixes
