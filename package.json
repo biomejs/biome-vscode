@@ -216,6 +216,7 @@
 	"dependencies": {
 		"@biomejs/version-utils": "0.4.0",
 		"@vscode/test-electron": "2.4.1",
+		"is-wsl": "^3.1.0",
 		"ky": "1.7.4",
 		"vscode-languageclient": "8.1.0",
 		"vscode-uri": "3.0.8"
