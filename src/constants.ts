@@ -1,3 +1,4 @@
+import isWSL from "is-wsl";
 import { workspace } from "vscode";
 
 /**
@@ -5,16 +6,21 @@ import { workspace } from "vscode";
  *
  * This constant contains the identifier of the current platform.
  *
+ * @example "linux-x64"
  * @example "linux-x64-musl"
  * @example "darwin-arm64"
  * @example "win32-x64"
  */
 export const platformIdentifier = (() => {
+	let flavor = "";
+
 	// On Linux, we always use the `musl` flavor because it has the advantage of
 	// having been built statically. This is meant to improve the compatibility
 	// with various systems such as NixOS, which handle dynamically linked
 	// binaries differently.
-	const flavor = process.platform === "linux" ? "-musl" : "";
+	if (process.platform === "linux" && !isWSL) {
+		flavor = "-musl";
+	}
 
 	return `${process.platform}-${process.arch}${flavor}`;
 })();
