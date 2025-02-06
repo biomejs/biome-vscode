@@ -1,4 +1,5 @@
 import { chmodSync } from "node:fs";
+import isWsl from "is-wsl";
 import { fetch } from "undici";
 import {
 	type ExtensionContext,
@@ -90,7 +91,7 @@ const download = async (version: string, context: ExtensionContext) => {
 	};
 
 	const assetName = `biome-${process.platform}-${process.arch}${
-		process.platform === "linux" ? "-musl" : ""
+		process.platform === "linux" && !isWsl ? "-musl" : ""
 	}${process.platform === "win32" ? ".exe" : ""}`;
 
 	// Find the asset for the current platform

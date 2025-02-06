@@ -142,6 +142,7 @@
 		"typescript": "5.5.4"
 	},
 	"dependencies": {
+		"is-wsl": "^3.1.0",
 		"resolve": "1.22.8",
 		"semver": "7.6.3",
 		"undici": "6.19.7",
