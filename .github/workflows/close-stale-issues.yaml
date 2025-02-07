@@ -19,7 +19,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           labels: "Needs reproduction"
           inactive-day: 3
-          body: "This issue has been automatically closed because it has been inactive for 3 days and it does not have a minimal reproduction."
+          body: "This issue has been automatically closed because it has been inactive for more than 3 days and it does not have a minimal reproduction."
       - name: Close issues waiting for a response for more than 14 days
         uses: actions-cool/issues-helper@v3
         with:
