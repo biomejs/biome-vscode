@@ -78,8 +78,6 @@ body:
 
         Please use the `npm create @biomejs/biome-reproduction` command whenever you can to bootstrap a reproduction
         repository.
-    validations:
-      required: true
   - type: textarea
     attributes:
       label: "Logs"
