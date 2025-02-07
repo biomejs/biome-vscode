@@ -1,6 +1,6 @@
 name: 🐛 Bug report
 description: Report an issue with the Biome VS Code extension
-title: ""
+title: "🐛 "
 labels: ["Triage"]
 body:
   - type: input
