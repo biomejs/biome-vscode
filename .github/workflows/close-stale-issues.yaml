@@ -1,0 +1,38 @@
+name: Close stale issues
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  close-stale-issues:
+    name: Close stale issues
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Close issues without a minimal reproduction
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: "close-issues"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "Needs reproduction"
+          inactive-day: 3
+          body: "This issue has been automatically closed because it has been inactive for 3 days and it does not have a minimal reproduction."
+      - name: Close issues waiting for a response for more than 14 days
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: "close-issues"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "Waiting for response"
+          inactive-day: 14
+          body: "This issue has been automatically closed because it has been waiting for a response for more than 14 days."
+      - name: Close issues waiting for more details for more than 14 days
+        uses: actions-cool/issues-helper@v3
+        with:
+          actions: "close-issues"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          labels: "Needs more details"
+          inactive-day: 14
+          body: "This issue has been automatically closed because it has been waiting for more details for more than 14 days."
