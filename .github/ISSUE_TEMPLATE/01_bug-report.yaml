@@ -1,7 +1,8 @@
 name: 🐛 Bug report
 description: Report an issue with the Biome VS Code extension
-title: "🐛 "
+title: ""
 labels: ["Triage"]
+type: Bug
 body:
   - type: input
     attributes:
@@ -77,6 +78,8 @@ body:
 
         Please use the `npm create @biomejs/biome-reproduction` command whenever you can to bootstrap a reproduction
         repository.
+    validations:
+      required: true
   - type: textarea
     attributes:
       label: "Logs"
