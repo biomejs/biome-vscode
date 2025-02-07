@@ -362,7 +362,7 @@ const createDocumentSelector = (project?: Project): DocumentFilter[] => {
 		return supportedLanguageIdentifiers.map((language) => ({
 			language,
 			scheme: "file",
-			pattern: Uri.joinPath(project.path, "**", "*").fsPath.replace(
+			pattern: Uri.joinPath(project.path, "**", "*").fsPath.replaceAll(
 				"\\",
 				"/",
 			),
