@@ -176,7 +176,8 @@ const nodeModulesStrategy: LocatorStrategy = {
 			}
 
 			return binPath;
-		} catch {
+		} catch (error) {
+			debug("Failed to find Biome binary in Node Modules", error);
 			return undefined;
 		}
 	},
