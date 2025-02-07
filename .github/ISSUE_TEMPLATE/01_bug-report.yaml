@@ -2,7 +2,6 @@ name: 🐛 Bug report
 description: Report an issue with the Biome VS Code extension
 title: ""
 labels: ["Triage"]
-type: Bug
 body:
   - type: input
     attributes:
