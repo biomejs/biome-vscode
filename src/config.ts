@@ -46,10 +46,10 @@ export const isEnabled = (folder?: WorkspaceFolder) => {
  * configuration at the global/user level.
  */
 export const isEnabledGlobally = (): boolean => {
-	return (
-		workspace.getConfiguration("biome").inspect<boolean>("enabled")
-			.globalValue === true
-	);
+	const inspect = workspace
+		.getConfiguration("biome")
+		.inspect<boolean>("enabled");
+	return (inspect.globalValue ?? inspect.defaultValue) === true;
 };
 
 /**
