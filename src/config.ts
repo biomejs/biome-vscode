@@ -53,22 +53,9 @@ export const isEnabledGlobally = (): boolean => {
 };
 
 /**
- * Determines whether a Biome configuration file is required in the given
- * workspace folder for the extension to start.
- */
-export const workspaceFolderRequiresConfigFile = (
-	folder: WorkspaceFolder,
-): boolean => {
-	return (
-		config("requireConfigFile", { default: false, scope: folder.uri }) ===
-		true
-	);
-};
-
-/**
  * Retrieves the project definitions for the given workspace folder.
  */
-export const getProjectDefinitions = (
+export const getWorkspaceFolderProjectDefinitions = (
 	folder: WorkspaceFolder,
 	defaultValue: ProjectDefinition[] = [],
 ) => {
