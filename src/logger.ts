@@ -31,7 +31,7 @@ export const log = (
 ) => {
 	if (args) {
 		message = `${message}\n\t${Object.entries(args)
-			.map(([key, value]) => `${key}=${value}`)
+			.map(([key, value]) => `${key}=${JSON.stringify(value)}`)
 			.join("\n\t")}`.trim();
 	}
 
