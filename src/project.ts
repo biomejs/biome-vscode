@@ -85,15 +85,8 @@ const getProjectDefinitions = (): ProjectDefinition[] => {
 	debug("Retrieving project definitions");
 
 	if (runningInSingleFileMode()) {
-		debug(
-			"Running in single file mode, returning project definition for single file",
-		);
 		return [getProjectDefinitionForSingleFile()];
 	}
-
-	debug(
-		"Running in workspace mode, returning project definitions for workspace",
-	);
 
 	return getProjectDefinitionsForWorkspace();
 };
@@ -102,13 +95,15 @@ const getProjectDefinitions = (): ProjectDefinition[] => {
  * Retrieves the project definition for a single file in single-file mode
  */
 const getProjectDefinitionForSingleFile = (): ProjectDefinition => {
+	debug("Looking for project definition for single file");
+
 	const singleFileURI = window.activeTextEditor?.document.uri;
 
 	// If the active text editor is not a file on disk, we abort.
 	// Untitled files are handled by the global session.
 	if (!singleFileURI || singleFileURI.scheme !== "file") {
 		debug("Could not create project definition for single file.", {
-			uri: singleFileURI,
+			uri: singleFileURI.fsPath,
 			scheme: singleFileURI?.scheme,
 		});
 		return;
@@ -119,8 +114,8 @@ const getProjectDefinitionForSingleFile = (): ProjectDefinition => {
 	);
 
 	debug("Created project definition for single file", {
-		uri: singleFileURI,
-		parentFolderURI,
+		uri: singleFileURI.fsPath,
+		parentFolderURI: parentFolderURI.fsPath,
 	});
 
 	return {
@@ -132,16 +127,25 @@ const getProjectDefinitionForSingleFile = (): ProjectDefinition => {
  * Retrieves the project definitions for the entire workspace
  */
 const getProjectDefinitionsForWorkspace = (): ProjectDefinition[] => {
+	debug("Retrieving project definitions for workspace");
+
 	const projectDefinitions: ProjectDefinition[] = [];
 
 	for (const folder of workspace.workspaceFolders ?? []) {
-		projectDefinitions.push(
-			...getProjectDefinitionsForWorkspaceFolder(folder),
-		);
+		const definitions = getProjectDefinitionsForWorkspaceFolder(folder);
+
+		debug("Retrieved all project definitions for workspace folder", {
+			workspaceFolder: folder.name,
+			count: definitions.length,
+		});
+
+		projectDefinitions.push(...definitions);
 	}
 
-	debug("Found all project definitions for workspace", {
-		projectDefinitions,
+	debug("Retrieved all project definitions for workspace", {
+		projectPaths: projectDefinitions.map(
+			(definition) => definition.path.fsPath,
+		),
 		count: projectDefinitions.length,
 	});
 
@@ -156,6 +160,10 @@ const getProjectDefinitionsForWorkspace = (): ProjectDefinition[] => {
 const getProjectDefinitionsForWorkspaceFolder = (
 	folder: WorkspaceFolder,
 ): ProjectDefinition[] => {
+	debug("Retrieving project definitions for workspace folder", {
+		workspaceFolder: folder.name,
+	});
+
 	type RawProjectDefinition = {
 		path?: string;
 		folder?: string;
@@ -173,7 +181,7 @@ const getProjectDefinitionsForWorkspaceFolder = (
 
 	if (rawProjectDefinitions.length === 0) {
 		debug(
-			"No project definitions found for workspace folder in configuration.",
+			"Did not find any user-defined project definitions for workspace folder",
 			{
 				workspaceFolder: folder.name,
 			},
@@ -195,19 +203,7 @@ const getProjectDefinitionsForWorkspaceFolder = (
 			return true;
 		}
 
-		debug(
-			"Filtering out project definition that does not belong to the workspace folder.",
-			{
-				workspaceFolder: folder.name,
-				projectDefinition: project,
-			},
-		);
 		return false;
-	});
-
-	debug("Filtered project definitions for workspace folder", {
-		workspaceFolder: folder.name,
-		rawProjectDefinitions,
 	});
 
 	// If we're left with no project definitions, we'll create a default project
@@ -217,19 +213,14 @@ const getProjectDefinitionsForWorkspaceFolder = (
 			path: "/",
 			folder: folder.name,
 		});
+
 		debug(
 			"Created default project definition for root of workspace folder",
 			{
 				workspaceFolder: folder.name,
-				path: "/",
 			},
 		);
 	}
-
-	debug("Found all relevant raw project definitions for workspace folder", {
-		workspaceFolder: folder.name,
-		rawProjectDefinitions: rawProjectDefinitions,
-	});
 
 	// Now that we have the raw project definitions that are relevant to the workspace
 	// folder, we can create the project definitions that we'll use to create the
@@ -259,6 +250,11 @@ const getProjectDefinitionsForWorkspaceFolder = (
 const configFileExistsIfRequired = async (
 	definition: ProjectDefinition,
 ): Promise<boolean> => {
+	debug("Checking if project requires configuration file", {
+		workspaceFolder: definition.folder?.name,
+		projectPath: definition.path.fsPath,
+	});
+
 	const required = workspace
 		.getConfiguration("biome", definition.path)
 		.get<boolean>("requireConfigFile");
@@ -266,14 +262,17 @@ const configFileExistsIfRequired = async (
 	// The workspace folder does not require a configuration file for projects, so
 	// we can return early.
 	if (!required) {
-		debug(
-			"Workspace folder does not require a configuration file for project definition",
-			{
-				definition,
-			},
-		);
+		debug("Project does not require configuration file, skipping check", {
+			workspaceFolder: definition.folder?.name,
+			projectPath: definition.path.fsPath,
+		});
 		return true;
 	}
+
+	debug("Project requires configuration file, checking if it exists", {
+		workspaceFolder: definition.folder?.name,
+		projectPath: definition.path.fsPath,
+	});
 
 	// The workspace folder requires a configuration file for projects, so we need to
 	// check if any of the accepted configuration files exist on disk under the project
@@ -284,24 +283,24 @@ const configFileExistsIfRequired = async (
 		Uri.joinPath(definition.path, "biome.jsonc"),
 	];
 
-	debug("Checking if configuration file exists for project definition", {
-		definition,
-		candidates,
+	debug("Ensuring any of the candidate configuration files exist", {
+		candidates: candidates.map((candidate) => candidate?.fsPath).join(", "),
 	});
 
 	// Filter out candidates that do not exist on disk
 	const existing = await asyncFilter(candidates, fileExists);
 
+	debug("Filtered out non-existing configuration files", {
+		existing: existing.map((file) => file.fsPath).join(", "),
+	});
+
 	// If at least one configuration file exists, we're good to go.
 	if (existing.length > 0) {
-		debug("Found at least one configuration file for project definition", {
-			definition,
-			existing,
-		});
+		debug("Found at least one configuration file for project. Continuing.");
 		return true;
 	}
 
-	debug("No configuration file found for project definition", { definition });
+	debug("No configuration file found for project", { definition });
 
 	return false;
 };
