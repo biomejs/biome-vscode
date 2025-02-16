@@ -9,7 +9,7 @@ import {
 import { Utils } from "vscode-uri";
 import { operatingMode } from "./constants";
 import { debug } from "./logger";
-import type { Project } from "./project";
+import type { Project, ProjectDefinition } from "./project";
 import { state } from "./state";
 
 /**
@@ -113,7 +113,7 @@ export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
  * @example "/hello-world" (in single-root mode)
  * @example "workspace-folder-1::/hello-world" (in multi-root mode)
  */
-export const shortURI = (project: Project) => {
+export const shortURI = (project: Project | ProjectDefinition) => {
 	const prefix =
 		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
 	return `${prefix}${subtractURI(project.path, project.folder.uri).fsPath}`;

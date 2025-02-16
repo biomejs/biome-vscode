@@ -16,6 +16,7 @@ import {
 	getPathRelativeToWorkspaceFolder,
 	getWorkspaceFolderByName,
 	runningInSingleFileMode,
+	shortURI,
 } from "./utils";
 
 export type Project = {
@@ -134,20 +135,16 @@ const getProjectDefinitionsForWorkspace = (): ProjectDefinition[] => {
 	for (const folder of workspace.workspaceFolders ?? []) {
 		const definitions = getProjectDefinitionsForWorkspaceFolder(folder);
 
-		debug("Retrieved all project definitions for workspace folder", {
-			workspaceFolder: folder.name,
-			count: definitions.length,
-		});
+		debug(
+			`Retrieved ${definitions.length} project definitions for workspace folder: "${folder.name}"`,
+		);
 
 		projectDefinitions.push(...definitions);
 	}
 
-	debug("Retrieved all project definitions for workspace", {
-		projectPaths: projectDefinitions.map(
-			(definition) => definition.path.fsPath,
-		),
-		count: projectDefinitions.length,
-	});
+	debug(
+		`Retrieved ${projectDefinitions.length} project definitions for workspace`,
+	);
 
 	return projectDefinitions;
 };
@@ -160,9 +157,9 @@ const getProjectDefinitionsForWorkspace = (): ProjectDefinition[] => {
 const getProjectDefinitionsForWorkspaceFolder = (
 	folder: WorkspaceFolder,
 ): ProjectDefinition[] => {
-	debug("Retrieving project definitions for workspace folder", {
-		workspaceFolder: folder.name,
-	});
+	debug(
+		`Retrieving project definitions for workspace folder: "${folder.name}"`,
+	);
 
 	type RawProjectDefinition = {
 		path?: string;
@@ -181,10 +178,7 @@ const getProjectDefinitionsForWorkspaceFolder = (
 
 	if (rawProjectDefinitions.length === 0) {
 		debug(
-			"Did not find any user-defined project definitions for workspace folder",
-			{
-				workspaceFolder: folder.name,
-			},
+			`Did not find any user-defined project definitions for workspace folder: "${folder.name}"`,
 		);
 	}
 
@@ -215,10 +209,7 @@ const getProjectDefinitionsForWorkspaceFolder = (
 		});
 
 		debug(
-			"Created default project definition for root of workspace folder",
-			{
-				workspaceFolder: folder.name,
-			},
+			`Created a default project definition for root of workspace folder: "${folder.name}"`,
 		);
 	}
 
@@ -251,8 +242,7 @@ const configFileExistsIfRequired = async (
 	definition: ProjectDefinition,
 ): Promise<boolean> => {
 	debug("Checking if project requires configuration file", {
-		workspaceFolder: definition.folder?.name,
-		projectPath: definition.path.fsPath,
+		projectPath: shortURI(definition),
 	});
 
 	const required = workspace
@@ -263,15 +253,13 @@ const configFileExistsIfRequired = async (
 	// we can return early.
 	if (!required) {
 		debug("Project does not require configuration file, skipping check", {
-			workspaceFolder: definition.folder?.name,
-			projectPath: definition.path.fsPath,
+			projectPath: shortURI(definition),
 		});
 		return true;
 	}
 
 	debug("Project requires configuration file, checking if it exists", {
-		workspaceFolder: definition.folder?.name,
-		projectPath: definition.path.fsPath,
+		projectPath: shortURI(definition),
 	});
 
 	// The workspace folder requires a configuration file for projects, so we need to
@@ -300,7 +288,9 @@ const configFileExistsIfRequired = async (
 		return true;
 	}
 
-	debug("No configuration file found for project", { definition });
+	debug("No configuration file found for project", {
+		projectPath: shortURI(definition),
+	});
 
 	return false;
 };
