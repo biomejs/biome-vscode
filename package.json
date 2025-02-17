@@ -18,7 +18,7 @@
 		"@rollup/plugin-json": "6.1.0",
 		"@rollup/plugin-node-resolve": "16.0.0",
 		"@types/vscode": "1.80.0",
-		"@vscode/vsce": "3.2.1",
+		"@vscode/vsce": "3.2.2",
 		"lefthook": "1.10.8",
 		"ovsx": "0.10.1",
 		"rollup": "4.31.0",
