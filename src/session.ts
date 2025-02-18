@@ -219,10 +219,7 @@ export const createProjectSessions = async () => {
  * Creates a new Biome LSP client
  */
 const createLanguageClient = (bin: Uri, project?: Project) => {
-	let args = ["lsp-proxy"];
-	if (project?.configFile) {
-		args = [...args, "--config-path", project.configFile.fsPath];
-	}
+	const args = ["lsp-proxy"];
 
 	const serverOptions: ServerOptions = {
 		command: bin.fsPath,
