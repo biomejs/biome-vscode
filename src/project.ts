@@ -19,13 +19,11 @@ import { directoryExists, fileExists } from "./utils";
 export type Project = {
 	folder?: WorkspaceFolder;
 	path: Uri;
-	configFile?: Uri;
 };
 
 export type ProjectDefinition = {
 	folder?: string;
 	path?: string;
-	configFile?: string;
 };
 
 export const createProjects = async () => {
@@ -45,21 +43,17 @@ export const createProjects = async () => {
  *
  * @param folder The parent workspace folder of the project
  * @param path The URI of the project directory, relative to the workspace folder
- * @param configFile The URI of the project's Biome configuration file
  */
 const createProject = async ({
 	folder,
 	path,
-	configFile,
 }: {
 	folder?: WorkspaceFolder;
 	path: Uri;
-	configFile?: Uri;
 }): Promise<Project | undefined> => {
 	return {
 		folder: folder,
 		path: path,
-		configFile: configFile,
 	};
 };
 
@@ -82,7 +76,6 @@ const createSingleFileProject = async (): Promise<Project> => {
 	return await createProject({
 		path: parentFolderURI,
 		folder: undefined,
-		configFile: undefined,
 	});
 };
 
@@ -107,9 +100,6 @@ const configFileExistsIfRequired = async (
 	}
 
 	const acceptedConfigFiles = [
-		...(project.configFile
-			? [Uri.joinPath(folder.uri, project.path, project.configFile)]
-			: []),
 		Uri.joinPath(folder.uri, project.path, "biome.json"),
 		Uri.joinPath(folder.uri, project.path, "biome.jsonc"),
 	];
@@ -219,15 +209,10 @@ const createWorkspaceFolderProjects = async (folder: WorkspaceFolder) => {
 	for (const projectDefinition of projectDefinitions) {
 		const fullPath = Uri.joinPath(folder.uri, projectDefinition.path);
 
-		const configFileURI = projectDefinition.configFile
-			? Uri.joinPath(folder.uri, projectDefinition.configFile)
-			: undefined;
-
 		projects.push(
 			await createProject({
 				folder: folder,
 				path: fullPath,
-				configFile: configFileURI,
 			}),
 		);
 	}

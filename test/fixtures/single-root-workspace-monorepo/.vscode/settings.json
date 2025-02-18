@@ -2,7 +2,6 @@
 	"biome.projects": [
 		{
 			"path": "packages/backend",
-			"config": "biome.custom.json"
 		},
 		{
 			"path": "packages/frontend"

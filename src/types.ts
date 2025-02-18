@@ -12,11 +12,6 @@ export type SingleRootWorkspaceProjectDefinitionFromConfig = {
 	 * Path to the project, within the workspace folder
 	 */
 	path: string;
-
-	/**
-	 * Path to the project's configuration file, within the workspace folder
-	 */
-	configFile?: string;
 };
 
 export type MultiRootWorkspaceProjectDefinitionFromConfig = {
@@ -29,11 +24,6 @@ export type MultiRootWorkspaceProjectDefinitionFromConfig = {
 	 * Path to the project, within the workspace folder
 	 */
 	path?: string;
-
-	/**
-	 * Path to the project's configuration file, within the workspace folder
-	 */
-	configFile?: string;
 };
 
 /**
@@ -48,11 +38,6 @@ export type SingleRootWorkspaceProjectDefinition = {
 	 * Path to the project, within the workspace folder
 	 */
 	path: Uri;
-
-	/**
-	 * Path to the project's configuration file, within the workspace folder
-	 */
-	configFile?: Uri;
 };
 
 export type MultiRootWorkspaceProjectDefinition = {
@@ -65,9 +50,4 @@ export type MultiRootWorkspaceProjectDefinition = {
 	 * Path to the project, within the workspace folder
 	 */
 	path?: Uri;
-
-	/**
-	 * Path to the project's configuration file, within the workspace folder
-	 */
-	configFile?: Uri;
 };
