@@ -27,7 +27,6 @@ export type Project = {
 export type ProjectDefinition = {
 	folder?: WorkspaceFolder;
 	path?: Uri;
-	configFile?: Uri;
 };
 
 /**
@@ -74,7 +73,6 @@ export const createProjects = async (): Promise<Project[]> => {
 		return {
 			folder: definition.folder,
 			path: definition.path,
-			configFile: definition.configFile,
 		};
 	});
 };
@@ -164,7 +162,6 @@ const getProjectDefinitionsForWorkspaceFolder = (
 	type RawProjectDefinition = {
 		path?: string;
 		folder?: string;
-		configFile?: string;
 	};
 
 	// Project definitions can be specified at the workspace level or at the
@@ -227,9 +224,6 @@ const getProjectDefinitionsForWorkspaceFolder = (
 		return {
 			folder: folder,
 			path: projectPath,
-			configFile: project.configFile
-				? Utils.joinPath(projectPath, project.configFile)
-				: undefined,
 		};
 	});
 };
@@ -266,7 +260,6 @@ const configFileExistsIfRequired = async (
 	// check if any of the accepted configuration files exist on disk under the project
 	// directory.
 	const candidates = [
-		definition.configFile,
 		Uri.joinPath(definition.path, "biome.json"),
 		Uri.joinPath(definition.path, "biome.jsonc"),
 	];
