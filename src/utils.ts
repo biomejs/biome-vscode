@@ -1,8 +1,15 @@
 import { constants, accessSync } from "node:fs";
-import { FileType, RelativePattern, Uri, workspace } from "vscode";
+import {
+	FileType,
+	RelativePattern,
+	Uri,
+	type WorkspaceFolder,
+	workspace,
+} from "vscode";
+import { Utils } from "vscode-uri";
 import { operatingMode } from "./constants";
 import { debug } from "./logger";
-import type { Project } from "./project";
+import type { Project, ProjectDefinition } from "./project";
 import { state } from "./state";
 
 /**
@@ -106,7 +113,7 @@ export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
  * @example "/hello-world" (in single-root mode)
  * @example "workspace-folder-1::/hello-world" (in multi-root mode)
  */
-export const shortURI = (project: Project) => {
+export const shortURI = (project: Project | ProjectDefinition) => {
 	const prefix =
 		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
 	return `${prefix}${subtractURI(project.path, project.folder.uri).fsPath}`;
@@ -217,4 +224,32 @@ export const clearTemporaryBinaries = async () => {
 			path: binDirPath.fsPath,
 		});
 	}
+};
+
+export const getWorkspaceFolderByName = (
+	name: string,
+): WorkspaceFolder | undefined => {
+	return workspace.workspaceFolders?.find((folder) => folder.name === name);
+};
+
+export const getPathRelativeToWorkspaceFolder = (
+	folder: WorkspaceFolder,
+	path?: string,
+): Uri => {
+	return Uri.parse(Utils.joinPath(folder.uri, path ?? "").fsPath);
+};
+
+/**
+ * Determines if the extension is running in single-file mode
+ */
+export const runningInSingleFileMode = (): boolean => {
+	return workspace.workspaceFolders === undefined;
+};
+
+export const asyncFilter = async <T>(
+	items: T[],
+	predicate: (item: T) => Promise<boolean>,
+): Promise<T[]> => {
+	const results = await Promise.all(items.map(predicate));
+	return items.filter((_, index) => results[index]);
 };
