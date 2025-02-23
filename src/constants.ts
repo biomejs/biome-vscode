@@ -9,6 +9,8 @@ import { workspace } from "vscode";
  *
  * We use this constant to generate unique identifiers for output channels to
  * mitigate a bug in VS Code where the output channel is not cleared.
+ *
+ * @see https://github.com/microsoft/vscode/issues/204946
  */
 export const activationTimestamp = Date.now();
 
