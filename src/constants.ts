@@ -1,5 +1,23 @@
+import { spawnSync } from "node:child_process";
 import isWSL from "is-wsl";
 import { workspace } from "vscode";
+
+/**
+ * Whether the current platform uses musl
+ */
+export const isMusl = (() => {
+	// If not on Linux, or on WSL we can't be using musl
+	if (process.platform !== "linux" || isWSL) {
+		return false;
+	}
+
+	try {
+		const output = spawnSync("ldd", ["--version"], { encoding: "utf8" });
+		return output.stdout.includes("musl");
+	} catch {
+		return false;
+	}
+})();
 
 /**
  * Platform identifier
@@ -14,11 +32,7 @@ import { workspace } from "vscode";
 export const platformIdentifier = (() => {
 	let flavor = "";
 
-	// On Linux, we always use the `musl` flavor because it has the advantage of
-	// having been built statically. This is meant to improve the compatibility
-	// with various systems such as NixOS, which handle dynamically linked
-	// binaries differently.
-	if (process.platform === "linux" && !isWSL) {
+	if (isMusl) {
 		flavor = "-musl";
 	}
 
@@ -44,7 +58,10 @@ export const platformSpecificBinaryName = (() => {
  * This constant contains the name of Biome CLI GitHub release asset for the
  * current platform.
  *
- * @example "biome-linux-x64"
+ * On Linux, we always return the musl flavor, as it's the most compatible
+ * since its statically linked.
+ *
+ * @example "biome-linux-x64-musl"
  * @example "biome-darwin-x64"
  * @example "biome-win32-x64.exe"
  */
