@@ -16,7 +16,11 @@ import {
 import { displayName } from "../package.json";
 import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
 import { isEnabledGlobally } from "./config";
-import { operatingMode, supportedLanguageIdentifiers } from "./constants";
+import {
+	activationTimestamp,
+	operatingMode,
+	supportedLanguageIdentifiers,
+} from "./constants";
 import { debug, error, info, error as logError, warn } from "./logger";
 import { type Project, createProjects } from "./project";
 import { state } from "./state";
@@ -294,36 +298,7 @@ const createLspLogger = (project?: Project): LogOutputChannel => {
 	// logger name, so we just use the display name of the extension.
 	if (!project?.folder) {
 		return window.createOutputChannel(
-			`${displayName} LSP (global session)`,
-			{
-				log: true,
-			},
-		);
-	}
-
-	// If the project is present, we're creating a logger for a specific project.
-	// In this case, we display the name of the project and the relative path to
-	// the project root in the logger name. Additionally, when in a multi-root
-	// workspace, we prefix the path with the name of the workspace folder.
-	const prefix =
-		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
-	const path = subtractURI(project.path, project.folder.uri).fsPath;
-
-	return window.createOutputChannel(`${displayName} LSP (${prefix}${path})`, {
-		log: true,
-	});
-};
-
-/**
- * Creates a new Biome LSP logger
- */
-const createLspTraceLogger = (project?: Project): LogOutputChannel => {
-	// If the project is missing, we're creating a logger for the global LSP
-	// session. In this case, we don't have a workspace folder to display in the
-	// logger name, so we just use the display name of the extension.
-	if (!project?.folder) {
-		return window.createOutputChannel(
-			`${displayName} LSP trace (global session)`,
+			`${displayName} LSP (global session) (${activationTimestamp})`,
 			{
 				log: true,
 			},
@@ -339,7 +314,39 @@ const createLspTraceLogger = (project?: Project): LogOutputChannel => {
 	const path = subtractURI(project.path, project.folder.uri).fsPath;
 
 	return window.createOutputChannel(
-		`${displayName} LSP trace (${prefix}${path})`,
+		`${displayName} LSP (${prefix}${path}) (${activationTimestamp})`,
+		{
+			log: true,
+		},
+	);
+};
+
+/**
+ * Creates a new Biome LSP logger
+ */
+const createLspTraceLogger = (project?: Project): LogOutputChannel => {
+	// If the project is missing, we're creating a logger for the global LSP
+	// session. In this case, we don't have a workspace folder to display in the
+	// logger name, so we just use the display name of the extension.
+	if (!project?.folder) {
+		return window.createOutputChannel(
+			`${displayName} LSP trace (global session) (${activationTimestamp})`,
+			{
+				log: true,
+			},
+		);
+	}
+
+	// If the project is present, we're creating a logger for a specific project.
+	// In this case, we display the name of the project and the relative path to
+	// the project root in the logger name. Additionally, when in a multi-root
+	// workspace, we prefix the path with the name of the workspace folder.
+	const prefix =
+		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
+	const path = subtractURI(project.path, project.folder.uri).fsPath;
+
+	return window.createOutputChannel(
+		`${displayName} LSP trace (${prefix}${path}) (${activationTimestamp})`,
 		{
 			log: true,
 		},
