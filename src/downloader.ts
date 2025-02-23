@@ -9,6 +9,7 @@ import {
 	workspace,
 } from "vscode";
 import {
+	isMusl,
 	platformSpecificAssetName,
 	platformSpecificBinaryName,
 } from "./constants";
@@ -49,8 +50,16 @@ const downloadBiomeVersion = async (
 		)
 		.json();
 
+	let assetName = platformSpecificAssetName;
+
+	// On Linux, we always want to download the musl flavor, because it's the most
+	// compatible since it's statically linked.
+	if (process.platform === "linux" && !isMusl) {
+		assetName = `${assetName}-musl`;
+	}
+
 	const asset = releases.assets.find((asset) => {
-		return asset.name === platformSpecificAssetName;
+		return asset.name === assetName;
 	});
 
 	if (!asset) {
