@@ -3,6 +3,18 @@ import isWSL from "is-wsl";
 import { workspace } from "vscode";
 
 /**
+ * Activation timestamp
+ *
+ * This constant contains the timestamp at which the extension was activated.
+ *
+ * We use this constant to generate unique identifiers for output channels to
+ * mitigate a bug in VS Code where the output channel is not cleared.
+ *
+ * @see https://github.com/microsoft/vscode/issues/204946
+ */
+export const activationTimestamp = Date.now();
+
+/**
  * Whether the current platform uses musl
  */
 export const isMusl = (() => {

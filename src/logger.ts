@@ -1,5 +1,6 @@
 import { LogLevel, window } from "vscode";
 import { displayName } from "../package.json";
+import { activationTimestamp } from "./constants";
 
 /**
  * Logger
@@ -11,9 +12,13 @@ import { displayName } from "../package.json";
  * logging verbosity, so only messages with the appropriate log level will be
  * displayed.
  */
-export const logger = window.createOutputChannel(displayName, {
-	log: true,
-});
+
+export const logger = window.createOutputChannel(
+	`${displayName} (${activationTimestamp})`,
+	{
+		log: true,
+	},
+);
 
 type LogArguments = Record<string, unknown>;
 
