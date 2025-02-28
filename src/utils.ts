@@ -21,7 +21,7 @@ import { state } from "./state";
  * @param version The version of Biome
  *
  * @example "biome-1.0.0" (on Linux, macOS, and other Unix-like systems)
- * @example "biome.exe-1.0.0" (on Windows)
+ * @example "biome-1.0.0.exe" (on Windows)
  */
 export const generatePlatformSpecificVersionedBinaryName = (
 	version: string,
@@ -41,10 +41,7 @@ export const generatePlatformSpecificVersionedBinaryName = (
 export const fileExists = async (uri: Uri): Promise<boolean> => {
 	try {
 		const stat = await workspace.fs.stat(uri);
-		return (
-			stat.type === FileType.File ||
-			stat.type === (FileType.File | FileType.SymbolicLink)
-		);
+		return (stat.type & FileType.File) > 0;
 	} catch (err) {
 		return false;
 	}
@@ -62,7 +59,7 @@ export const fileExists = async (uri: Uri): Promise<boolean> => {
 export const directoryExists = async (uri: Uri): Promise<boolean> => {
 	try {
 		const stat = await workspace.fs.stat(uri);
-		return stat.type === FileType.Directory;
+		return (stat.type & FileType.Directory) > 0;
 	} catch (err) {
 		return false;
 	}
@@ -113,10 +110,19 @@ export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
  * @example "/hello-world" (in single-root mode)
  * @example "workspace-folder-1::/hello-world" (in multi-root mode)
  */
-export const shortURI = (project: Project | ProjectDefinition) => {
+export const shortURI = (project: Project | ProjectDefinition): string => {
+	if (!project.folder || !project.path) {
+		return "";
+	}
+
+	const uri = subtractURI(project.path, project.folder.uri);
+	if (!uri) {
+		return "";
+	}
+
 	const prefix =
 		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
-	return `${prefix}${subtractURI(project.path, project.folder.uri).fsPath}`;
+	return `${prefix}${uri.fsPath}`;
 };
 
 /**

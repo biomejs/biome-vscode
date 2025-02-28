@@ -13,11 +13,9 @@ export type State = {
 	 */
 	state:
 		| "initializing"
-		| "disabled"
 		| "starting"
 		| "restarting"
 		| "started"
-		| "running"
 		| "stopping"
 		| "stopped"
 		| "error";
@@ -43,7 +41,7 @@ export type State = {
 const _state: State = {
 	state: "initializing",
 	activeProject: undefined,
-	sessions: new Map<Project, Session>([]),
+	sessions: new Map<Project, Session>(),
 	globalSession: undefined,
 	hidden: false,
 } as State;

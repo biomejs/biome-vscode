@@ -21,11 +21,7 @@ export const updateStatusBar = () => {
 		return;
 	}
 
-	if (
-		!isEnabled(state.activeProject?.folder) ||
-		state.state === "disabled" ||
-		state.hidden
-	) {
+	if (!isEnabled(state.activeProject?.folder) || state.hidden) {
 		statusBar.item.hide();
 		return;
 	}
@@ -44,29 +40,14 @@ const getBiomeVersion = () => {
 	const session = state.activeProject
 		? state.sessions.get(state.activeProject)
 		: state.globalSession;
-	return session?.client.initializeResult?.serverInfo.version ?? "";
+	return session?.client.initializeResult?.serverInfo?.version ?? "";
 };
 
 const getStateText = (): string => {
-	switch (state.state) {
-		case "initializing":
-			return "Biome";
-		case "starting":
-			return "Biome";
-		case "restarting":
-			return "Biome";
-		case "started":
-			return "Biome";
-		case "stopping":
-			return "Biome";
-		case "stopped":
-			return "Biome";
-		default:
-			return "Biome";
-	}
+	return "Biome";
 };
 
-const getStateTooltip = () => {
+const getStateTooltip = (): string => {
 	switch (state.state) {
 		case "initializing":
 			return "Initializing";
@@ -82,8 +63,6 @@ const getStateTooltip = () => {
 			return "Stopped";
 		case "error":
 			return "Error";
-		default:
-			return "Biome";
 	}
 };
 

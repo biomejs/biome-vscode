@@ -1,6 +1,5 @@
 import { chmodSync } from "node:fs";
 import { getAllVersions } from "@biomejs/version-utils";
-import ky from "ky";
 import {
 	ProgressLocation,
 	type QuickPickItem,
@@ -31,7 +30,7 @@ export const downloadBiome = async (): Promise<Uri | undefined> => {
 			title: `Downloading Biome ${version.label}`,
 			location: ProgressLocation.Notification,
 		},
-		async () => await downloadBiomeVersion(version.label),
+		() => downloadBiomeVersion(version.label),
 	);
 
 	return (await getDownloadedVersion())?.binPath;
@@ -42,6 +41,7 @@ const downloadBiomeVersion = async (
 ): Promise<Uri | undefined> => {
 	debug("Downloading Biome version", { version });
 
+	const { default: ky } = await import("ky");
 	const releases: {
 		assets: { name: string; browser_download_url: string }[];
 	} = await ky
@@ -91,7 +91,7 @@ const downloadBiomeVersion = async (
 		state.context.globalState.update("downloadedVersion", version);
 	} catch (e) {
 		window.showErrorMessage(`Failed to save Biome ${version}.`);
-		error(e);
+		error("Download error", { error: e });
 		return;
 	}
 };
@@ -103,6 +103,9 @@ export const getDownloadedVersion = async (): Promise<
 
 	// Retrieve the downloaded version from the global state
 	const version = state.context.globalState.get<string>("downloadedVersion");
+	if (!version) {
+		return;
+	}
 
 	const binPath = Uri.joinPath(
 		state.context.globalStorageUri,
@@ -137,8 +140,8 @@ const promptVersionToDownload = async () => {
 		// Get the list of available versions
 		const availableVersions = await getAllVersions(false);
 
-		return availableVersions.map((version, index) => {
-			return {
+		return (
+			availableVersions?.map((version, index) => ({
 				label: version,
 				description: index === 0 ? "(latest)" : "",
 				detail:
@@ -146,8 +149,8 @@ const promptVersionToDownload = async () => {
 						? "(currently installed)"
 						: "",
 				alwaysShow: index < 3,
-			};
-		});
+			})) ?? []
+		);
 	};
 
 	return window.showQuickPick(compileItems(), {

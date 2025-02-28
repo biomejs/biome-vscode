@@ -13,28 +13,7 @@ import { downloadBiome, getDownloadedVersion } from "./downloader";
 import { debug, info } from "./logger";
 import { fileExists, hasNodeDependencies } from "./utils";
 
-export type LocatorStrategy = {
-	/**
-	 * Name of the strategy.
-	 */
-	name: string;
-
-	/**
-	 * Finds the `biome` binary using the locator's strategy.
-	 *
-	 * When passing a project, the locator should use the given path as the
-	 * context for finding the binary.
-	 */
-	find: (path?: Uri) => Uri | undefined | Promise<Uri | undefined>;
-};
-
-export type BinaryFinderResult = Promise<
-	| {
-			bin: Uri;
-			strategy: LocatorStrategy;
-	  }
-	| undefined
->;
+export type BinaryFinderResult = Promise<{ bin: Uri } | undefined>;
 
 /**
  * VSCode Settings Strategy
@@ -71,7 +50,7 @@ export type BinaryFinderResult = Promise<
  *
  * General VS Code settings overriding rules apply.
  */
-const vsCodeSettingsStrategy: LocatorStrategy = {
+const vsCodeSettingsStrategy = {
 	name: "VSCode Settings",
 	find: async (path?: Uri): Promise<Uri | undefined> => {
 		const bin = getLspBin(path);
@@ -85,18 +64,18 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 				debug(
 					"Biome binary path is empty in VS Code settings, skipping",
 				);
-				return undefined;
+				return;
 			}
 
-			const resolvedBinPath = Utils.resolvePath(path, bin).toString();
+			const resolvedBinPath = path
+				? Utils.resolvePath(path, bin).toString()
+				: bin;
 
 			const biome = Uri.parse(resolvedBinPath);
 
 			if (await fileExists(biome)) {
 				return biome;
 			}
-
-			return undefined;
 		};
 
 		const findPlatformSpecificBinary = async (
@@ -104,16 +83,12 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 		): Promise<Uri | undefined> => {
 			debug(
 				"Trying to find platform-specific Biome binary in VS Code settings",
-				{
-					bin,
-				},
+				{ bin },
 			);
 
 			if (platformIdentifier in bin) {
-				return findBinary(bin[platformIdentifier]);
+				return await findBinary(bin[platformIdentifier]);
 			}
-
-			return undefined;
 		};
 
 		if (typeof bin === "string") {
@@ -121,10 +96,10 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 		}
 
 		if (typeof bin === "object" && bin !== null) {
-			return findPlatformSpecificBinary(bin);
+			return await findPlatformSpecificBinary(bin);
 		}
 
-		return undefined;
+		debug("LSP bin not set VS Code settings", { bin });
 	},
 };
 
@@ -149,7 +124,7 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
  * compatibility with various systems such as NixOS, which handle dynamically
  * linked binaries differently.
  */
-const nodeModulesStrategy: LocatorStrategy = {
+const nodeModulesStrategy = {
 	name: "Node Modules",
 	find: async (path: Uri): Promise<Uri | undefined> => {
 		debug("Trying to find Biome binary in Node Modules", {
@@ -174,14 +149,11 @@ const nodeModulesStrategy: LocatorStrategy = {
 				join(binPackage, platformSpecificBinaryName),
 			);
 
-			if (!(await fileExists(binPath))) {
-				return undefined;
+			if (await fileExists(binPath)) {
+				return binPath;
 			}
-
-			return binPath;
 		} catch (error) {
-			debug("Failed to find Biome binary in Node Modules", error);
-			return undefined;
+			debug("Failed to find Biome binary in Node Modules", { error });
 		}
 	},
 };
@@ -193,7 +165,7 @@ const nodeModulesStrategy: LocatorStrategy = {
  * binary from a Yarn Plug'n'Play (PnP) installation by looking for the `biome`
  * binary in the Yarn PnP installation.
  */
-const yarnPnpStrategy: LocatorStrategy = {
+const yarnPnpStrategy = {
 	name: "Yarn Plug'n'Play",
 	find: async (path: Uri): Promise<Uri | undefined> => {
 		debug("Trying to find Biome binary in Yarn Plug'n'Play", {
@@ -242,7 +214,7 @@ const yarnPnpStrategy: LocatorStrategy = {
  * The PATH environment variable is scanned from left to right, and the first
  * `biome` executable found is returned, if any.
  */
-const pathEnvironmentVariableStrategy: LocatorStrategy = {
+const pathEnvironmentVariableStrategy = {
 	name: "Path Environment Variable",
 	find: async (): Promise<Uri | undefined> => {
 		const pathEnv = process.env.PATH;
@@ -270,7 +242,7 @@ const pathEnvironmentVariableStrategy: LocatorStrategy = {
 	},
 };
 
-const downloadBiomeStrategy: LocatorStrategy = {
+const downloadBiomeStrategy = {
 	name: "Download Biome",
 	find: async (): Promise<Uri | undefined> => {
 		debug("Trying to find downloaded Biome binary");
@@ -333,26 +305,20 @@ export const findBiomeLocally = async (
 ): Promise<BinaryFinderResult> => {
 	const binPathInSettings = await vsCodeSettingsStrategy.find(path);
 	if (binPathInSettings) {
-		debug("Found Biome binary in VS Code settings (biome.lsp.bin)", {
+		info("Found Biome binary in VS Code settings (biome.lsp.bin)", {
 			path: binPathInSettings.fsPath,
 		});
 
-		return {
-			bin: binPathInSettings,
-			strategy: vsCodeSettingsStrategy,
-		};
+		return { bin: binPathInSettings };
 	}
 
 	const binPathInNodeModules = await nodeModulesStrategy.find(path);
 	if (binPathInNodeModules) {
-		debug("Found Biome binary in Node Modules", {
+		info("Found Biome binary in Node Modules", {
 			path: binPathInNodeModules.fsPath,
 		});
 
-		return {
-			bin: binPathInNodeModules,
-			strategy: nodeModulesStrategy,
-		};
+		return { bin: binPathInNodeModules };
 	}
 
 	const binPathInYarnPnP = await yarnPnpStrategy.find(path);
@@ -361,10 +327,7 @@ export const findBiomeLocally = async (
 			path: binPathInYarnPnP.fsPath,
 		});
 
-		return {
-			bin: binPathInYarnPnP,
-			strategy: yarnPnpStrategy,
-		};
+		return { bin: binPathInYarnPnP };
 	}
 
 	// Todo: remove this conditional when we remove the deprecated `biome.searchInPath` setting
@@ -375,10 +338,7 @@ export const findBiomeLocally = async (
 			debug("Found Biome binary in PATH environment variable", {
 				path: binPathInPathEnvironmentVariable.fsPath,
 			});
-			return {
-				bin: binPathInPathEnvironmentVariable,
-				strategy: pathEnvironmentVariableStrategy,
-			};
+			return { bin: binPathInPathEnvironmentVariable };
 		}
 	}
 
@@ -392,10 +352,7 @@ export const findBiomeLocally = async (
 			debug("Found downloaded Biome binary", {
 				path: downloadedBinPath.fsPath,
 			});
-			return {
-				bin: downloadedBinPath,
-				strategy: downloadBiomeStrategy,
-			};
+			return { bin: downloadedBinPath };
 		}
 	}
 
@@ -433,10 +390,7 @@ export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 			path: binPathInSettings.fsPath,
 		});
 
-		return {
-			bin: binPathInSettings,
-			strategy: vsCodeSettingsStrategy,
-		};
+		return { bin: binPathInSettings };
 	}
 
 	// Todo: remove this conditional when we remove the deprecated `biome.searchInPath` setting
@@ -448,10 +402,7 @@ export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 				path: binPathInPathEnvironmentVariable.fsPath,
 			});
 
-			return {
-				bin: binPathInPathEnvironmentVariable,
-				strategy: pathEnvironmentVariableStrategy,
-			};
+			return { bin: binPathInPathEnvironmentVariable };
 		}
 	}
 
@@ -461,10 +412,7 @@ export const findBiomeGlobally = async (): Promise<BinaryFinderResult> => {
 			path: downloadedBinPath.fsPath,
 		});
 
-		return {
-			bin: downloadedBinPath,
-			strategy: downloadBiomeStrategy,
-		};
+		return { bin: downloadedBinPath };
 	}
 
 	debug("Could not find Biome globally using any of the strategies");
