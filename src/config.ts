@@ -49,7 +49,9 @@ export const isEnabledGlobally = (): boolean => {
 	const inspect = workspace
 		.getConfiguration("biome")
 		.inspect<boolean>("enabled");
-	return (inspect.globalValue ?? inspect.defaultValue) === true;
+	return inspect
+		? (inspect.globalValue ?? inspect.defaultValue) === true
+		: false;
 };
 
 /**
@@ -73,26 +75,10 @@ export const getWorkspaceFolderProjectDefinitions = (
  * transparently for users that have not yet migrated to the new setting.
  */
 export const getLspBin = (
-	scope: ConfigurationScope,
+	scope?: ConfigurationScope,
 ): LspBinSetting | undefined => {
-	const lspBin = config<LspBinSetting>("lsp.bin", {
-		default: undefined,
-		scope: scope,
-	});
-
-	const deprecatedLspBin = config<string>("lspBin", {
-		default: undefined,
-		scope: scope,
-	});
-
-	switch (lspBin) {
-		case undefined:
-			return deprecatedLspBin;
-		case null:
-			return deprecatedLspBin;
-		case "":
-			return deprecatedLspBin;
-		default:
-			return lspBin;
-	}
+	return (
+		config<LspBinSetting>("lsp.bin", { scope }) ||
+		config<string>("lspBin", { scope }) // deprecated setting for fallback.
+	);
 };

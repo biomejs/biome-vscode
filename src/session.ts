@@ -35,7 +35,7 @@ import {
 export type Session = {
 	bin: Uri;
 	tempBin?: Uri;
-	project: Project;
+	project?: Project;
 	client: LanguageClient;
 };
 
@@ -67,7 +67,7 @@ export const createSession = async (
 	return {
 		bin: findResult.bin,
 		tempBin: tempBin,
-		project: project,
+		project,
 		client: createLanguageClient(tempBin ?? findResult.bin, project),
 	};
 };
@@ -95,7 +95,7 @@ export const destroySession = async (session: Session) => {
 const copyBinaryToTemporaryLocation = async (
 	bin: Uri,
 ): Promise<Uri | undefined> => {
-	// Retrieve the the version of the binary
+	// Retrieve the version of the binary
 	// We call biome with --version which outputs the version in the format
 	// of "Version: 1.0.0"
 	const version = spawnSync(bin.fsPath, ["--version"])
@@ -146,7 +146,7 @@ const copyBinaryToTemporaryLocation = async (
 
 		return location;
 	} catch (error) {
-		return undefined;
+		warn(`Error copying binary: ${error}`);
 	}
 };
 
@@ -164,7 +164,7 @@ export const createGlobalSessionWhenNecessary = async () => {
 			info("Created a global LSP session");
 		} catch (e) {
 			error("Failed to create global LSP session", {
-				error: e.toString(),
+				error: `${e}`,
 			});
 			state.globalSession?.client.dispose();
 			state.globalSession = undefined;
@@ -311,7 +311,7 @@ const createLspLogger = (project?: Project): LogOutputChannel => {
 	// workspace, we prefix the path with the name of the workspace folder.
 	const prefix =
 		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
-	const path = subtractURI(project.path, project.folder.uri).fsPath;
+	const path = subtractURI(project.path, project.folder.uri)?.fsPath;
 
 	return window.createOutputChannel(
 		`${displayName} LSP (${prefix}${path}) (${activationTimestamp})`,
@@ -343,7 +343,7 @@ const createLspTraceLogger = (project?: Project): LogOutputChannel => {
 	// workspace, we prefix the path with the name of the workspace folder.
 	const prefix =
 		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
-	const path = subtractURI(project.path, project.folder.uri).fsPath;
+	const path = subtractURI(project.path, project.folder.uri)?.fsPath;
 
 	return window.createOutputChannel(
 		`${displayName} LSP trace (${prefix}${path}) (${activationTimestamp})`,

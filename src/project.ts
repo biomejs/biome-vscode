@@ -36,10 +36,12 @@ export type ProjectDefinition = {
  * editor by checking if the document in the active text editor is part of a
  * project. If it is, the active project is updated to reflect this change.
  */
-export const updateActiveProject = (editor: TextEditor) => {
-	const project = [...state.sessions.keys()].find((project) => {
-		return editor?.document?.uri.fsPath.startsWith(project.path.fsPath);
-	});
+export const updateActiveProject = (editor: TextEditor | undefined) => {
+	const project = editor
+		? [...state.sessions.keys()].find((project) =>
+				editor.document?.uri.fsPath.startsWith(project.path.fsPath),
+			)
+		: undefined;
 
 	state.hidden =
 		editor?.document === undefined ||
@@ -57,24 +59,16 @@ export const updateActiveProject = (editor: TextEditor) => {
  * that require a configuration file that does not exist.
  */
 export const createProjects = async (): Promise<Project[]> => {
-	let definitions = getProjectDefinitions();
+	const definitions = getProjectDefinitions();
 
 	// Filter out project definitions whose path does not exist on disk
-	definitions = await asyncFilter(definitions, (definition) =>
-		directoryExists(definition.path),
-	);
+	const projects = (await asyncFilter(definitions, async (definition) =>
+		definition.path ? await directoryExists(definition.path) : false,
+	)) as Project[];
 
 	// Filter out project definitions for which the configuration file does not
 	// exist if one is required.
-	definitions = await asyncFilter(definitions, configFileExistsIfRequired);
-
-	// Create projects for the remaining project definitions
-	return definitions.map((definition) => {
-		return {
-			folder: definition.folder,
-			path: definition.path,
-		};
-	});
+	return await asyncFilter(projects, configFileExistsIfRequired);
 };
 
 /**
@@ -84,7 +78,8 @@ const getProjectDefinitions = (): ProjectDefinition[] => {
 	debug("Retrieving project definitions");
 
 	if (runningInSingleFileMode()) {
-		return [getProjectDefinitionForSingleFile()];
+		const definition = getProjectDefinitionForSingleFile();
+		return definition ? [definition] : [];
 	}
 
 	return getProjectDefinitionsForWorkspace();
@@ -93,7 +88,7 @@ const getProjectDefinitions = (): ProjectDefinition[] => {
 /**
  * Retrieves the project definition for a single file in single-file mode
  */
-const getProjectDefinitionForSingleFile = (): ProjectDefinition => {
+const getProjectDefinitionForSingleFile = (): ProjectDefinition | undefined => {
 	debug("Looking for project definition for single file");
 
 	const singleFileURI = window.activeTextEditor?.document.uri;
@@ -102,7 +97,7 @@ const getProjectDefinitionForSingleFile = (): ProjectDefinition => {
 	// Untitled files are handled by the global session.
 	if (!singleFileURI || singleFileURI.scheme !== "file") {
 		debug("Could not create project definition for single file.", {
-			uri: singleFileURI.fsPath,
+			uri: singleFileURI?.fsPath,
 			scheme: singleFileURI?.scheme,
 		});
 		return;
@@ -259,10 +254,12 @@ const configFileExistsIfRequired = async (
 	// The workspace folder requires a configuration file for projects, so we need to
 	// check if any of the accepted configuration files exist on disk under the project
 	// directory.
-	const candidates = [
-		Uri.joinPath(definition.path, "biome.json"),
-		Uri.joinPath(definition.path, "biome.jsonc"),
-	];
+	const candidates = definition.path
+		? [
+				Uri.joinPath(definition.path, "biome.json"),
+				Uri.joinPath(definition.path, "biome.jsonc"),
+			]
+		: [];
 
 	debug("Ensuring any of the candidate configuration files exist", {
 		candidates: candidates.map((candidate) => candidate?.fsPath).join(", "),
