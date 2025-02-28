@@ -90,7 +90,7 @@ const vsCodeSettingsStrategy: LocatorStrategy = {
 
 			const resolvedBinPath = Utils.resolvePath(path, bin).toString();
 
-			const biome = Uri.file(resolvedBinPath);
+			const biome = Uri.parse(resolvedBinPath);
 
 			if (await fileExists(biome)) {
 				return biome;
