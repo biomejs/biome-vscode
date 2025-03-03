@@ -27,7 +27,7 @@ jobs:
       - name: Set up git-cliff
         uses: kenji-miyake/setup-git-cliff@2778609c643a39a2576c4bae2e493b855eb4aee8 # v2
       - name: Retrieve packaged VSIX
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4
         with:
           name: biome.vsix
       - name: Generate release notes
