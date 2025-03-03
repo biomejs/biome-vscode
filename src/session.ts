@@ -34,7 +34,6 @@ import {
 
 export type Session = {
 	bin: Uri;
-	tempBin?: Uri;
 	project?: Project;
 	client: LanguageClient;
 };
@@ -66,7 +65,6 @@ export const createSession = async (
 
 	return {
 		bin: findResult.bin,
-		tempBin: tempBin,
 		project,
 		client: createLanguageClient(tempBin ?? findResult.bin, project),
 	};
@@ -103,6 +101,12 @@ const copyBinaryToTemporaryLocation = async (
 		.split(":")[1]
 		.trim();
 
+	const isDevVersion = version === "0.0.0";
+	if (isDevVersion) {
+		info("Dev build detected, skipping copy");
+		return; // Don't copy the dev build; we always want to use the latest rebuild.
+	}
+
 	const location = Uri.joinPath(
 		state.context.globalStorageUri,
 		"tmp-bin",
@@ -120,7 +124,7 @@ const copyBinaryToTemporaryLocation = async (
 				destination: location.fsPath,
 			});
 			copyFileSync(bin.fsPath, location.fsPath);
-			debug("Copied Biome binary binary to temporary location.", {
+			debug("Copied Biome binary to temporary location.", {
 				original: bin.fsPath,
 				temporary: location.fsPath,
 			});
