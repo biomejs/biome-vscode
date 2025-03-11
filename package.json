@@ -211,7 +211,7 @@
 		"is-wsl": "3.1.0",
 		"ky": "1.7.5",
 		"vscode-languageclient": "8.1.0",
-		"vscode-uri": "3.0.8"
+		"vscode-uri": "3.1.0"
 	},
 	"packageManager": "pnpm@10.6.2"
 }
