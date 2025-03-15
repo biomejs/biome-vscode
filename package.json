@@ -3,7 +3,7 @@
 	"displayName": "Biome",
 	"publisher": "biomejs",
 	"description": "Toolchain of the web",
-	"version": "3.0.1",
+	"version": "3.0.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/biomejs/biome-vscode.git"
