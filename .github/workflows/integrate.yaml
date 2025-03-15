@@ -7,16 +7,35 @@ on:
     branches: [main]
 
 jobs:
+
   quality:
     name: Quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@v4
       - name: Setup Biome
-        uses: biomejs/setup-biome@c016c38f26f2c4a6eb3662679143614a254263fd # v2
+        uses: biomejs/setup-biome@v2
       - name: Run Biome checks
         run: biome ci --reporter=github
-  package:
-    name: Package
-    uses: ./.github/workflows/~package-stable.yaml
+  
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: true
+      - name: Build
+        run: pnpm run build
+      - name: Package
+        run: pnpm package

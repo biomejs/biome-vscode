@@ -1,29 +1,44 @@
-# This workflow is responsible for releasing a new prerelease version of the 
-# extension. It is meant to be triggered manually.
+name: 🌙 Release new pre-release version
 
-name: 🌙 Release new prerelease version
-
-on:
-  workflow_dispatch:
+on: [workflow_dispatch]
 
 jobs:
-  generate-prerelease-version:
-    name: Generate prerelease version
+
+  publish:
+    name: Publish
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.generate-prerelease-version.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - name: Generate prerelease version
-        id: generate-prerelease-version
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: true
+      - name: Generate pre-release version
+        id: generate-pre-release-version
         run: |
           version=$(date +"%Y.%-m.%-d%H%M")
           echo "version=$version" >> $GITHUB_OUTPUT
-  publish:
-    name: Release prerelease
-    needs: [generate-prerelease-version]
-    uses: ./.github/workflows/~publish-prerelease.yaml
-    secrets: inherit
-    with:
-      version: ${{ needs.generate-prerelease-version.outputs.version }}
+      - name: Patch package.json version with pre-release version
+        run: |
+          jq \
+            --arg version "${{ steps.generate-pre-release-version.outputs.version }}" \
+            --tab '.version = $version' \
+            package.json > package.json.tmp \
+            && mv package.json.tmp package.json
+      - name: Build extension
+        run: pnpm run build
+      - name: Package pre-release extension
+        run: pnpm vsce package --pre-release -o biome.vsix
+      - name: Publish to Visual Studio Marketplace
+        run: pnpm vsce publish --packagePath biome.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      - name: Publish to Open VSX Registry
+        run: pnpm exec ovsx publish --packagePath biome.vsix
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
