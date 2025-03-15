@@ -136,11 +136,6 @@
 					"description": "Tracing level of the communications between the extension and the Biome Language Server.",
 					"default": "off"
 				},
-				"biome.experimental.rename": {
-					"type": "boolean",
-					"default": false,
-					"markdownDescription": "Use Biome to handle symbols renames in the workspace. (Experimental)"
-				},
 				"biome.lspBin": {
 					"type": "string",
 					"default": "",
