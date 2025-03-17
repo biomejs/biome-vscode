@@ -18,7 +18,7 @@
 		"@changesets/cli": "2.28.1",
 		"@rollup/plugin-commonjs": "28.0.3",
 		"@rollup/plugin-json": "6.1.0",
-		"@rollup/plugin-node-resolve": "16.0.0",
+		"@rollup/plugin-node-resolve": "16.0.1",
 		"@types/vscode": "1.80.0",
 		"@vscode/vsce": "3.2.2",
 		"lefthook": "1.11.3",
