@@ -49,8 +49,8 @@ importers:
         specifier: 1.80.0
         version: 1.80.0
       '@vscode/vsce':
-        specifier: 3.2.2
-        version: 3.2.2
+        specifier: 3.3.0
+        version: 3.3.0
       lefthook:
         specifier: 1.11.3
         version: 1.11.3
@@ -627,8 +627,8 @@ packages:
   '@vscode/vsce-sign@2.0.5':
     resolution: {integrity: sha512-GfYWrsT/vypTMDMgWDm75iDmAOMe7F71sZECJ+Ws6/xyIfmB3ELVnVN+LwMFAvmXY+e6eWhR2EzNGF/zAhWY3Q==}
 
-  '@vscode/vsce@3.2.2':
-    resolution: {integrity: sha512-4TqdUq/yKlQTHcQMk/DamR632bq/+IJDomSbexOMee/UAYWqYm0XHWA6scGslsCpzY+sCWEhhl0nqdOB0XW1kw==}
+  '@vscode/vsce@3.3.0':
+    resolution: {integrity: sha512-HA/pUyvh/TQWkc4wG7AudPIWUvsR8i4jiWZZgM/a69ncPi9Nm5FDogf/wVEk4EWJs4/UdxU7J6X18dfAwfPbxA==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -2485,7 +2485,7 @@ snapshots:
       '@vscode/vsce-sign-win32-arm64': 2.0.2
       '@vscode/vsce-sign-win32-x64': 2.0.2
 
-  '@vscode/vsce@3.2.2':
+  '@vscode/vsce@3.3.0':
     dependencies:
       '@azure/identity': 4.5.0
       '@vscode/vsce-sign': 2.0.5
@@ -3341,7 +3341,7 @@ snapshots:
 
   ovsx@0.10.1:
     dependencies:
-      '@vscode/vsce': 3.2.2
+      '@vscode/vsce': 3.3.0
       commander: 6.2.1
       follow-redirects: 1.15.9
       is-ci: 2.0.0
