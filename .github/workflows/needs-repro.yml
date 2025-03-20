@@ -34,5 +34,5 @@ jobs:
             - Provide a link to [our playground](https://biomejs.dev/playground), if it's applicable.
             - Provide a link to a GitHub repository. To easily create a reproduction, you can use our interactive CLI via `npm create @biomejs/biome-reproduction`
 
-            Issues marked with `S-Needs repro` will be **closed** if they have **no activity within 3 days**.
+            Issues marked with `Needs reproduction` will be **closed** if they have **no activity within 3 days**.
           labels: "Triage"
