@@ -124,6 +124,7 @@ export const supportedLanguageIdentifiers: string[] = [
 	"javascriptreact",
 	"json",
 	"jsonc",
+	"snippets",
 	"svelte",
 	"tailwindcss",
 	"typescript",
