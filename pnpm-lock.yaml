@@ -18,8 +18,8 @@ importers:
         specifier: 3.1.0
         version: 3.1.0
       ky:
-        specifier: 1.7.5
-        version: 1.7.5
+        specifier: 1.8.0
+        version: 1.8.0
       vscode-languageclient:
         specifier: 8.1.0
         version: 8.1.0
@@ -1243,8 +1243,8 @@ packages:
   keytar@7.9.0:
     resolution: {integrity: sha512-VPD8mtVtm5JNtA2AErl6Chp06JBfy7diFQ7TQQhdpWOl6MrCRB+eRbvAZUsbGQS9kiMq0coJsy0W0vHpDCkWsQ==}
 
-  ky@1.7.5:
-    resolution: {integrity: sha512-HzhziW6sc5m0pwi5M196+7cEBtbt0lCYi67wNsiwMUmz833wloE0gbzJPWKs1gliFKQb34huItDQX97LyOdPdA==}
+  ky@1.8.0:
+    resolution: {integrity: sha512-DoKGmG27nT8t/1F9gV8vNzggJ3mLAyD49J8tTMWHeZvS8qLc7GlyTieicYtFzvDznMe/q2u38peOjkWc5/pjvw==}
     engines: {node: '>=18'}
 
   lefthook-darwin-arm64@1.11.6:
@@ -3151,7 +3151,7 @@ snapshots:
       prebuild-install: 7.1.2
     optional: true
 
-  ky@1.7.5: {}
+  ky@1.8.0: {}
 
   lefthook-darwin-arm64@1.11.6:
     optional: true
