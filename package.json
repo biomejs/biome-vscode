@@ -23,7 +23,7 @@
 		"@vscode/vsce": "3.3.2",
 		"lefthook": "1.11.9",
 		"ovsx": "0.10.1",
-		"rollup": "4.39.0",
+		"rollup": "4.40.0",
 		"rollup-plugin-esbuild": "6.2.1",
 		"ts-node": "10.9.2",
 		"typescript": "5.8.3"
