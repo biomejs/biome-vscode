@@ -94,7 +94,7 @@ export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
 
 	result = result === "" ? "/" : result;
 
-	return Uri.parse(result);
+	return Uri.file(result);
 };
 
 /**
@@ -242,7 +242,7 @@ export const getPathRelativeToWorkspaceFolder = (
 	folder: WorkspaceFolder,
 	path?: string,
 ): Uri => {
-	return Uri.parse(Utils.joinPath(folder.uri, path ?? "").fsPath);
+	return Uri.file(Utils.joinPath(folder.uri, path ?? "").fsPath);
 };
 
 /**

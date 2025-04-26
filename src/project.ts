@@ -103,7 +103,7 @@ const getProjectDefinitionForSingleFile = (): ProjectDefinition | undefined => {
 		return;
 	}
 
-	const parentFolderURI = Uri.parse(
+	const parentFolderURI = Uri.file(
 		Utils.resolvePath(singleFileURI, "..").fsPath,
 	);
 

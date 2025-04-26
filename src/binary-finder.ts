@@ -67,11 +67,7 @@ const vsCodeSettingsStrategy = {
 				return;
 			}
 
-			const resolvedBinPath = path
-				? Utils.resolvePath(path, bin).toString()
-				: bin;
-
-			const biome = Uri.parse(resolvedBinPath);
+			const biome = path ? Utils.resolvePath(path, bin) : Uri.file(bin);
 
 			if (await fileExists(biome)) {
 				return biome;
