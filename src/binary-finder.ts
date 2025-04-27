@@ -2,7 +2,6 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { delimiter } from "node:path";
 import { Uri, window } from "vscode";
-import { Utils } from "vscode-uri";
 import { config, getLspBin } from "./config";
 import {
 	platformIdentifier,
@@ -67,11 +66,7 @@ const vsCodeSettingsStrategy = {
 				return;
 			}
 
-			const resolvedBinPath = path
-				? Utils.resolvePath(path, bin).toString()
-				: bin;
-
-			const biome = Uri.parse(resolvedBinPath);
+			const biome = Uri.file(bin);
 
 			if (await fileExists(biome)) {
 				return biome;
