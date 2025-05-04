@@ -120,6 +120,7 @@ export const supportedLanguageIdentifiers: string[] = [
 	"astro",
 	"css",
 	"graphql",
+	"html",
 	"javascript",
 	"javascriptreact",
 	"json",
