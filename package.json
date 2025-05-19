@@ -71,6 +71,12 @@
 					"default": false,
 					"scope": "resource"
 				},
+				"biome.configurationPath": {
+					"type": "string",
+					"markdownDescription": "Path to the configuration file to prefer over the default `biome.json`.",
+					"examples": ["/path/to/biome.json"],
+					"scope": "resource"
+				},
 				"biome.projects": {
 					"anyOf": [
 						{
