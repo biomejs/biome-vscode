@@ -1,0 +1,5 @@
+{
+	"biome.enabled": true,
+	"biome.configurationPath": "biome.custom.json",
+	"biome.requireConfigFile": true
+}

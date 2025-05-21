@@ -1,53 +1,22 @@
-import type { Uri, WorkspaceFolder } from "vscode";
+/**
+ * Execution Mode
+ *
+ * This defines the execution modes of the extension.
+ *
+ * - `single-root`: VS Code is running with a single workspace folder.
+ * - `multi-root`: VS Code is running with multiple workspace folders.
+ * - `single-file`: VS Code is running in single-file mode, with no workspace folder.
+ */
+export type ExecutionMode = "single-root" | "multi-root" | "single-file";
 
 /**
- * Definition of a project in the configuration.
+ * State of a Biome instance
+ *
+ * This defines the states of a Biome instance.
+ *
+ * - `starting`: The Biome instance is starting.
+ * - `ready`: The Biome instance is ready.
+ * - `error`: The Biome instance has encountered an error.
+ * - `disabled`: The Biome instance is disabled.
  */
-export type ProjectDefinitionFromConfig =
-	| SingleRootWorkspaceProjectDefinitionFromConfig
-	| MultiRootWorkspaceProjectDefinitionFromConfig;
-
-export type SingleRootWorkspaceProjectDefinitionFromConfig = {
-	/**
-	 * Path to the project, within the workspace folder
-	 */
-	path: string;
-};
-
-export type MultiRootWorkspaceProjectDefinitionFromConfig = {
-	/**
-	 * Name of the workspace folder
-	 */
-	folder: string;
-
-	/**
-	 * Path to the project, within the workspace folder
-	 */
-	path?: string;
-};
-
-/**
- * Definition of a project in the configuration.
- */
-export type ProjectDefinition =
-	| SingleRootWorkspaceProjectDefinition
-	| MultiRootWorkspaceProjectDefinition;
-
-export type SingleRootWorkspaceProjectDefinition = {
-	/**
-	 * Path to the project, within the workspace folder
-	 */
-	path: Uri;
-};
-
-export type MultiRootWorkspaceProjectDefinition = {
-	/**
-	 * Name of the workspace folder
-	 */
-	folder: WorkspaceFolder;
-
-	/**
-	 * Path to the project, within the workspace folder
-	 */
-	path?: Uri;
-};
+export type State = "starting" | "ready" | "error" | "disabled";

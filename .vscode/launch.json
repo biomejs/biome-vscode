@@ -16,20 +16,6 @@
 			"sourceMapRenames": true
 		},
 		{
-			"name": "🧩 Debug Extension (multi-root workspace require config)",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--disable-extensions",
-				"--extensionDevelopmentKind=node",
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"${workspaceFolder}/test/fixtures/multi-root-workspace-requires-config/test.code-workspace"
-			],
-			"outFiles": ["${workspaceFolder}/out/**/*.js"],
-			"preLaunchTask": "npm: dev",
-			"sourceMapRenames": true
-		},
-		{
 			"name": "🧩 Debug Extension (single-file)",
 			"type": "extensionHost",
 			"request": "launch",
@@ -38,19 +24,6 @@
 				"--extensionDevelopmentKind=node",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"${workspaceFolder}/test/fixtures/single-file/index.js"
-			],
-			"outFiles": ["${workspaceFolder}/out/**/*.js"],
-			"preLaunchTask": "npm: dev",
-			"sourceMapRenames": true
-		},
-		{
-			"name": "🧩 Debug Extension (no files)",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--disable-extensions",
-				"--extensionDevelopmentKind=node",
-				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: dev",
@@ -71,28 +44,14 @@
 			"sourceMapRenames": true
 		},
 		{
-			"name": "🧩 Debug Extension (single-root workspace - monorepo)",
+			"name": "🧩 Debug Extension (requires config file but missing)",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
 				"--disable-extensions",
 				"--extensionDevelopmentKind=node",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"${workspaceFolder}/test/fixtures/single-root-workspace-monorepo"
-			],
-			"outFiles": ["${workspaceFolder}/out/**/*.js"],
-			"preLaunchTask": "npm: dev",
-			"sourceMapRenames": true
-		},
-		{
-			"name": "🧩 Debug Extension (yarn pnp)",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--disable-extensions",
-				"--extensionDevelopmentKind=node",
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"${workspaceFolder}/test/fixtures/yarn-pnp"
+				"${workspaceFolder}/test/fixtures/multi-root-workspace/requires-default-config-but-missing"
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "npm: dev",

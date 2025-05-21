@@ -1,400 +1,141 @@
-import { spawnSync } from "node:child_process";
-import { chmodSync, copyFileSync } from "node:fs";
-import { type LogOutputChannel, Uri, window, workspace } from "vscode";
+import { Uri, type WorkspaceFolder, window } from "vscode";
 import {
-	CloseAction,
-	type CloseHandlerResult,
 	type DocumentFilter,
-	ErrorAction,
-	type ErrorHandlerResult,
-	type InitializeParams,
 	LanguageClient,
 	type LanguageClientOptions,
 	type ServerOptions,
 	TransportKind,
 } from "vscode-languageclient/node";
 import { displayName } from "../package.json";
-import { findBiomeGlobally, findBiomeLocally } from "./binary-finder";
-import { isEnabledGlobally } from "./config";
-import {
-	activationTimestamp,
-	operatingMode,
-	supportedLanguageIdentifiers,
-} from "./constants";
-import { debug, error, info, error as logError, warn } from "./logger";
-import { type Project, createProjects } from "./project";
-import { state } from "./state";
-import {
-	fileExists,
-	fileIsExecutable,
-	generatePlatformSpecificVersionedBinaryName,
-	shortURI,
-	subtractURI,
-} from "./utils";
+import type Biome from "./biome";
+import { supportedLanguages } from "./constants";
 
-export type Session = {
-	bin: Uri;
-	project?: Project;
-	client: LanguageClient;
-};
+export default class Session {
+	/**
+	 * The language client for this session.
+	 */
+	private client: LanguageClient | undefined;
 
-/**
- * Creates a new Biome LSP session
- */
-export const createSession = async (
-	project?: Project,
-): Promise<Session | undefined> => {
-	const findResult = project
-		? await findBiomeLocally(project.path)
-		: await findBiomeGlobally();
-
-	if (!findResult) {
-		logError("Could not find the Biome binary");
-		return;
+	public get biomeVersion(): string | undefined {
+		return this.client?.initializeResult?.serverInfo?.version;
 	}
 
-	// Copy the binary to a temporary location, and run it from there
-	// so that the original binary can be updated without locking issues.
-	// We'll keep track of that temporary location in the session and
-	// delete it when the session is stopped.
-	const tempBin = await copyBinaryToTemporaryLocation(findResult.bin);
+	/**
+	 * Creates a new LSP session
+	 */
+	public constructor(
+		private readonly biome: Biome,
+		public readonly bin: Uri,
+		private readonly folder?: WorkspaceFolder,
+		private readonly singleFileFolder?: Uri,
+	) {}
 
-	if (!tempBin) {
-		warn("Failed to copy binary to temporary location. Using original.");
+	public static createForWorkspaceFolder(
+		biome: Biome,
+		bin: Uri,
+		workspaceFolder: WorkspaceFolder,
+	): Session {
+		return new Session(biome, bin, workspaceFolder);
 	}
 
-	return {
-		bin: findResult.bin,
-		project,
-		client: createLanguageClient(tempBin ?? findResult.bin, project),
-	};
-};
-
-export const destroySession = async (session: Session) => {
-	// Stop the LSP client if it is still running
-	if (session.client.needsStop()) {
-		await session.client.stop();
-	}
-};
-
-/**
- * Copies the binary to a temporary location if necessary
- *
- * This function will copy the binary to a temporary location if it is not already
- * present in the global storage directory. It will then return the location of
- * the copied binary.
- *
- * This approach allows the user to update the original binary that would otherwise
- * be locked if we ran the binary directly from the original location.
- *
- * Binaries copied in the temp location are uniquely identified by their name and version
- * identifier.
- */
-const copyBinaryToTemporaryLocation = async (
-	bin: Uri,
-): Promise<Uri | undefined> => {
-	// Retrieve the version of the binary
-	// We call biome with --version which outputs the version in the format
-	// of "Version: 1.0.0"
-	const version = spawnSync(bin.fsPath, ["--version"])
-		.stdout.toString()
-		.split(":")[1]
-		.trim();
-
-	const isDevVersion = version === "0.0.0";
-	if (isDevVersion) {
-		info("Dev build detected, skipping copy");
-		return; // Don't copy the dev build; we always want to use the latest rebuild.
+	public static createForSingleFile(
+		biome: Biome,
+		bin: Uri,
+		singleFileFolder: Uri,
+	): Session {
+		return new Session(biome, bin, undefined, singleFileFolder);
 	}
 
-	const location = Uri.joinPath(
-		state.context.globalStorageUri,
-		"tmp-bin",
-		generatePlatformSpecificVersionedBinaryName(version),
-	);
+	public static createForGlobalInstance(biome: Biome, bin: Uri): Session {
+		return new Session(biome, bin);
+	}
 
-	try {
-		await workspace.fs.createDirectory(
-			Uri.joinPath(state.context.globalStorageUri, "tmp-bin"),
+	/**
+	 * Starts the LSP session.
+	 */
+	public async start() {
+		this.client = this.createLanguageClient();
+		await this.client.start();
+		await this.client.sendRequest("biome/rage", {});
+	}
+
+	/**
+	 * Stops the LSP session.
+	 */
+	public async stop() {
+		this.biome.logger.debug("Stopping LSP session");
+
+		this.client?.stop();
+
+		this.biome.logger.debug("LSP session stopped");
+
+		this.client = undefined;
+	}
+
+	/**
+	 * Restarts the LSP session.
+	 */
+	public async restart() {
+		await this.stop();
+		await this.start();
+	}
+
+	/**
+	 * Creates a new language client for the session.
+	 */
+	private createLanguageClient(): LanguageClient {
+		const serverOptions: ServerOptions = {
+			command: this.bin.fsPath,
+			transport: TransportKind.stdio,
+			args: ["lsp-proxy"],
+		};
+
+		const outputChannel = window.createOutputChannel(
+			`${displayName} (${this.folder?.name ?? "global"}) - LSP`,
+			{ log: true },
 		);
 
-		if (!(await fileExists(location))) {
-			info("Copying binary to temporary location.", {
-				original: bin.fsPath,
-				destination: location.fsPath,
-			});
-			copyFileSync(bin.fsPath, location.fsPath);
-			debug("Copied Biome binary to temporary location.", {
-				original: bin.fsPath,
-				temporary: location.fsPath,
-			});
-		} else {
-			debug(
-				`A Biome binary for the same version ${version} already exists in the temporary location.`,
-				{
-					original: bin.fsPath,
-					temporary: location.fsPath,
-				},
-			);
+		const clientOptions: LanguageClientOptions = {
+			outputChannel: outputChannel,
+			traceOutputChannel: outputChannel,
+			documentSelector: this.createDocumentSelector(),
+			workspaceFolder: this.folder,
+		};
+
+		return new LanguageClient(
+			"biome.lsp",
+			"biome",
+			serverOptions,
+			clientOptions,
+		);
+	}
+
+	/**
+	 * Creates the document selector for the language client.
+	 */
+	private createDocumentSelector(): DocumentFilter[] {
+		const folder = this.folder;
+		const singleFileFolder = this.singleFileFolder;
+
+		if (folder !== undefined) {
+			return supportedLanguages.map((language) => ({
+				language,
+				scheme: "file",
+				pattern: Uri.joinPath(folder.uri, "**", "*").fsPath,
+			}));
+		} else if (singleFileFolder !== undefined) {
+			return supportedLanguages.map((language) => ({
+				language,
+				scheme: "file",
+				pattern: Uri.joinPath(singleFileFolder, "**", "*").fsPath,
+			}));
 		}
 
-		const isExecutableBefore = fileIsExecutable(bin);
-		chmodSync(location.fsPath, 0o755);
-		const isExecutableAfter = fileIsExecutable(bin);
-
-		debug("Ensure binary is executable", {
-			binary: bin.fsPath,
-			before: `is executable: ${isExecutableBefore}`,
-			after: `is executable: ${isExecutableAfter}`,
+		return supportedLanguages.flatMap((language) => {
+			return ["untitled", "vscode-userdata"].map((scheme) => ({
+				language,
+				scheme,
+			}));
 		});
-
-		return location;
-	} catch (error) {
-		warn(`Error copying binary: ${error}`);
-	}
-};
-
-/**
- * Creates a new global session
- */
-export const createGlobalSessionWhenNecessary = async () => {
-	const createGlobalSessionIfNotExists = async () => {
-		if (state.globalSession) {
-			return;
-		}
-		state.globalSession = await createSession();
-		try {
-			await state.globalSession?.client.start();
-			info("Created a global LSP session");
-		} catch (e) {
-			error("Failed to create global LSP session", {
-				error: `${e}`,
-			});
-			state.globalSession?.client.dispose();
-			state.globalSession = undefined;
-		}
-	};
-
-	// If the editor has open Untitled documents, or VS Code User Data documents,
-	// we create a global session immeditaley so that the user can work with them.
-	if (
-		(isEnabledGlobally() &&
-			window.activeTextEditor?.document.uri.scheme === "untitled") ||
-		window.activeTextEditor?.document.uri.scheme === "vscode-userdata"
-	) {
-		await createGlobalSessionIfNotExists();
-	}
-
-	window.onDidChangeActiveTextEditor(async (editor) => {
-		debug("Active text editor changed.", {
-			editor: editor?.document.uri.fsPath,
-		});
-		if (
-			(isEnabledGlobally() &&
-				editor?.document.uri.scheme === "untitled") ||
-			editor?.document.uri.scheme === "vscode-userdata"
-		) {
-			await createGlobalSessionIfNotExists();
-		}
-	});
-};
-
-/**
- * Creates sessions for all projects
- */
-export const createProjectSessions = async () => {
-	const projects = await createProjects();
-	const sessions = new Map<Project, Session>([]);
-	for (const project of projects) {
-		const session = await createSession(project);
-		if (session) {
-			sessions.set(project, session);
-			await session.client.start();
-			info("Created session for project.", {
-				project: shortURI(project),
-			});
-		} else {
-			logError("Failed to create session for project.", {
-				project: project.path.fsPath,
-			});
-		}
-	}
-
-	state.sessions = sessions;
-};
-
-/**
- * Creates a new Biome LSP client
- */
-const createLanguageClient = (bin: Uri, project?: Project) => {
-	const args = ["lsp-proxy"];
-
-	const serverOptions: ServerOptions = {
-		command: bin.fsPath,
-		transport: TransportKind.stdio,
-		options: {
-			...(project?.path && { cwd: project.path.fsPath }),
-		},
-		args,
-	};
-
-	const clientOptions: LanguageClientOptions = {
-		outputChannel: createLspLogger(project),
-		traceOutputChannel: createLspTraceLogger(project),
-		documentSelector: createDocumentSelector(project),
-		progressOnInitialization: true,
-
-		initializationFailedHandler: (e): boolean => {
-			logError("Failed to initialize the Biome language server", {
-				error: e.toString(),
-			});
-
-			return false;
-		},
-		errorHandler: {
-			error: (
-				error,
-				message,
-				count,
-			): ErrorHandlerResult | Promise<ErrorHandlerResult> => {
-				logError("Biome language server error", {
-					error: error.toString(),
-					stack: error.stack,
-					errorMessage: error.message,
-					message: message?.jsonrpc,
-					count: count,
-				});
-
-				return {
-					action: ErrorAction.Shutdown,
-					message: "Biome language server error",
-				};
-			},
-			closed: (): CloseHandlerResult | Promise<CloseHandlerResult> => {
-				debug("Biome language server closed");
-				return {
-					action: CloseAction.DoNotRestart,
-					message: "Biome language server closed",
-				};
-			},
-		},
-		initializationOptions: {
-			rootUri: project?.path,
-			rootPath: project?.path?.fsPath,
-		},
-		workspaceFolder: undefined,
-	};
-
-	return new BiomeLanguageClient(
-		"biome.lsp",
-		"biome",
-		serverOptions,
-		clientOptions,
-	);
-};
-
-/**
- * Creates a new Biome LSP logger
- */
-const createLspLogger = (project?: Project): LogOutputChannel => {
-	// If the project is missing, we're creating a logger for the global LSP
-	// session. In this case, we don't have a workspace folder to display in the
-	// logger name, so we just use the display name of the extension.
-	if (!project?.folder) {
-		return window.createOutputChannel(
-			`${displayName} LSP (global session) (${activationTimestamp})`,
-			{
-				log: true,
-			},
-		);
-	}
-
-	// If the project is present, we're creating a logger for a specific project.
-	// In this case, we display the name of the project and the relative path to
-	// the project root in the logger name. Additionally, when in a multi-root
-	// workspace, we prefix the path with the name of the workspace folder.
-	const prefix =
-		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
-	const path = subtractURI(project.path, project.folder.uri)?.fsPath;
-
-	return window.createOutputChannel(
-		`${displayName} LSP (${prefix}${path}) (${activationTimestamp})`,
-		{
-			log: true,
-		},
-	);
-};
-
-/**
- * Creates a new Biome LSP logger
- */
-const createLspTraceLogger = (project?: Project): LogOutputChannel => {
-	// If the project is missing, we're creating a logger for the global LSP
-	// session. In this case, we don't have a workspace folder to display in the
-	// logger name, so we just use the display name of the extension.
-	if (!project?.folder) {
-		return window.createOutputChannel(
-			`${displayName} LSP trace (global session) (${activationTimestamp})`,
-			{
-				log: true,
-			},
-		);
-	}
-
-	// If the project is present, we're creating a logger for a specific project.
-	// In this case, we display the name of the project and the relative path to
-	// the project root in the logger name. Additionally, when in a multi-root
-	// workspace, we prefix the path with the name of the workspace folder.
-	const prefix =
-		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
-	const path = subtractURI(project.path, project.folder.uri)?.fsPath;
-
-	return window.createOutputChannel(
-		`${displayName} LSP trace (${prefix}${path}) (${activationTimestamp})`,
-		{
-			log: true,
-		},
-	);
-};
-
-/**
- * Creates a new document selector
- *
- * This function will create a document selector scoped to the given project,
- * which will only match files within the project's root directory. If no
- * project is specified, the document selector will match files that have
- * not yet been saved to disk (untitled).
- */
-const createDocumentSelector = (project?: Project): DocumentFilter[] => {
-	if (project) {
-		return supportedLanguageIdentifiers.map((language) => ({
-			language,
-			scheme: "file",
-			pattern: Uri.joinPath(project.path, "**", "*").fsPath.replaceAll(
-				"\\",
-				"/",
-			),
-		}));
-	}
-
-	return supportedLanguageIdentifiers.flatMap((language) => {
-		return ["untitled", "vscode-userdata"].map((scheme) => ({
-			language,
-			scheme,
-		}));
-	});
-};
-
-class BiomeLanguageClient extends LanguageClient {
-	protected fillInitializeParams(params: InitializeParams): void {
-		super.fillInitializeParams(params);
-
-		if (params.initializationOptions?.rootUri) {
-			params.rootUri = params.initializationOptions?.rootUri.toString();
-		}
-
-		if (params.initializationOptions?.rootPath) {
-			params.rootPath = params.initializationOptions?.rootPath;
-		}
 	}
 }

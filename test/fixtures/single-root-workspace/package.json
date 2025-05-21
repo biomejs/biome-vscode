@@ -1,7 +1,7 @@
 {
-	"name": "foo",
-	"version": "0.0.0",
-	"devDependencies": {
-		"@biomejs/biome": "1.8.3"
-	}
+        "name": "foo",
+        "version": "0.0.0",
+        "devDependencies": {
+                "@biomejs/biome": "^2.0.0-beta.4"
+        }
 }

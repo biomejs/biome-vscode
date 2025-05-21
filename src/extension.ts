@@ -1,137 +1,342 @@
 import {
-	type ConfigurationChangeEvent,
 	commands,
+	type ExtensionContext,
+	type TextEditor,
+	Uri,
+	type WorkspaceFolder,
 	window,
 	workspace,
 } from "vscode";
-import {
-	downloadCommand,
-	resetCommand,
-	restartCommand,
-	startCommand,
-	stopCommand,
-} from "./commands";
-import { restart, start, stop } from "./lifecycle";
-import { info } from "./logger";
-import { updateActiveProject } from "./project";
-import { state } from "./state";
-import { debounce } from "./utils";
+import { Utils } from "vscode-uri";
+import { version } from "../package.json";
+import Biome from "./biome";
+import { supportedLanguages } from "./constants";
+import Logger from "./logger";
+import { StatusBar } from "./status-bar";
+import type { ExecutionMode } from "./types";
+import { config, debounce } from "./utils";
 
-/**
- * Creates a new Biome extension
- *
- * This function is responsible for booting the Biome extension. It is called
- * when the extension is activated.
- */
-export const createExtension = async () => {
-	await start();
-	registerUserFacingCommands();
-	listenForLockfilesChanges();
-	listenForConfigurationChanges();
-	listenForActiveTextEditorChange();
-};
+export default class Extension {
+	/**
+	 * The extension's instance
+	 *
+	 * This is a singleton instance of the extension. It is created when the
+	 * extension is activated and is used to manage the extension's lifecycle.
+	 */
+	private static instance: Extension;
 
-/**
- * Destroys the Biome extension
- *
- * This function is responsible for shutting down the Biome extension. It is
- * called when the extension is deactivated and will trigger a cleanup of the
- * extension's state and resources.
- */
-export const destroyExtension = async () => {
-	await stop();
-};
+	/**
+	 * The extension's main logger
+	 */
+	private logger: Logger;
 
-/**
- * Registers the extension's user-facing commands.
- */
-const registerUserFacingCommands = () => {
-	state.context.subscriptions.push(
-		commands.registerCommand("biome.start", startCommand),
-		commands.registerCommand("biome.stop", stopCommand),
-		commands.registerCommand("biome.restart", restartCommand),
-		commands.registerCommand("biome.download", downloadCommand),
-		commands.registerCommand("biome.reset", resetCommand),
-	);
+	/**
+	 * The extension's status bar
+	 */
+	private statusBar: StatusBar;
 
-	info("User-facing commands registered");
-};
+	/**
+	 * Workspace Biome instances
+	 *
+	 * The extension creates a dedicated Biome instance for every workspace folder
+	 * in the workspace. This allows the extension to provide Biome support for
+	 * each workspace folder independently.
+	 */
+	public biomes: Map<WorkspaceFolder | "global" | "single", Biome>;
 
-/**
- * Listens for configuration changes
- *
- * This function sets up a listener for configuration changes in the `biome`
- * namespace. When a configuration change is detected, the extension is
- * restarted to reflect the new configuration.
- */
-const listenForConfigurationChanges = () => {
-	const debouncedConfigurationChangeHandler = debounce(
-		(event: ConfigurationChangeEvent) => {
-			if (event.affectsConfiguration("biome")) {
-				info("Configuration change detected.");
-				if (!["restarting", "stopping"].includes(state.state)) {
-					restart();
+	/**
+	 * The extension's execution mode
+	 */
+	public get mode(): ExecutionMode {
+		if (workspace.workspaceFolders === undefined) {
+			return "single-file";
+		}
+
+		return workspace.workspaceFolders.length > 1 ? "multi-root" : "single-root";
+	}
+
+	/**
+	 * The currently focused Biome instance
+	 *
+	 * This property returns the Biome instance to which the file in the active
+	 * text editor belongs to.
+	 */
+	public get biome(): Biome | undefined {
+		const editor = window.activeTextEditor;
+
+		if (!editor) {
+			return undefined;
+		}
+
+		// Untitled documents are always handled by the global instance
+		if (editor.document.isUntitled) {
+			return this.biomes.get("global");
+		}
+
+		// VS Code settings files are also handled by the global instance
+		if (editor.document.uri.scheme === "vscode-userdata") {
+			return this.biomes.get("global");
+		}
+
+		// If running in single-file mode, we return the single file instance
+		if (this.mode === "single-file") {
+			return this.biomes.get("single");
+		}
+
+		// Otherwise, check to which workspace folder the document belongs to
+		// and return the corresponding Biome instance
+		const folder = workspace.getWorkspaceFolder(editor.document.uri);
+
+		if (folder) {
+			return this.biomes.get(folder);
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Creates a new instance of the extension.
+	 *
+	 * One should use the `createFromContext` method to create an instance of the
+	 * extension, as this method will ensure that the instance is a singleton.
+	 */
+	private constructor(public readonly context: ExtensionContext) {
+		this.logger = new Logger("Biome");
+		this.statusBar = new StatusBar(this);
+		this.biomes = new Map();
+	}
+
+	/**
+	 * Creates the extension from the context
+	 */
+	public static create(context: ExtensionContext): Extension {
+		return Extension.instance ?? new Extension(context);
+	}
+
+	/**
+	 * Initializes the extension
+	 *
+	 * This method will be called when the extension is activated. It will
+	 * register the commands and start the extension.
+	 */
+	public async init(): Promise<void> {
+		this.registerCommands();
+
+		await this.start();
+	}
+
+	/**
+	 * Starts the extension
+	 *
+	 * This method will start the extension, taking care of creating and
+	 * starting the Biome instances for all workspace folders, as well as
+	 * the global instance for files that do not belong to any workspace
+	 * folder.
+	 */
+	public async start() {
+		// Fancy-looking separator
+		this.logger.info(` ${"-".repeat(40)} `);
+
+		// Say hello
+		this.logger.info(`🚀 Biome extension ${version}.`);
+
+		this.logger.info(
+			{
+				"single-file": "✨ Running in single-file mode.",
+				"single-root": "✨ Running in single-root workspace mode.",
+				"multi-root": "✨ Running in multi-root workspace mode.",
+			}[this.mode],
+		);
+
+		// Create the Biome instance before the status bar so we can show their state
+		await this.createInstances();
+
+		// Render the status bar for the first time
+		this.statusBar.update();
+
+		// Register callbacks to refresh the status bar with the state of the
+		// active Biome instance
+		for (const [_folder, biome] of this.biomes) {
+			biome.onStateChange(() => {
+				if (biome === this.biome) {
+					this.statusBar.update();
 				}
+			});
+		}
+
+		// Register a callback to update the status bar when the active text editor changes
+		window.onDidChangeActiveTextEditor(() => {
+			console.log("here");
+			this.statusBar.update();
+		});
+
+		// Finally, start the instances
+		await this.startInstances();
+
+		this.logger.info(`✨ See the dedicated logging channels for more details.`);
+	}
+
+	/**
+	 * Stops the extension
+	 *
+	 * This method will stop the extension, while taking care of cleaning up
+	 * any resources that were created during the extension's lifecycle.
+	 */
+	public async stop(): Promise<void> {
+		this.logger.trace("⏹️ Stopping Biome extension...");
+
+		for (const [_folder, biome] of this.biomes) {
+			await biome.stop();
+		}
+
+		this.logger.info("⏹️ Biome extension stopped.");
+	}
+
+	/**
+	 * Registers the extension's commands
+	 */
+	private registerCommands(): void {
+		const showLogsCommand = commands.registerCommand("biome.showLogs", () =>
+			this.biome?.logger.show(true),
+		);
+
+		const restartCommand = commands.registerCommand(
+			"biome.restart",
+			async () => {
+				await this.stop();
+				await this.start();
+			},
+		);
+
+		this.context.subscriptions.push(...[showLogsCommand, restartCommand]);
+	}
+
+	private async createInstances(): Promise<void> {
+		if (this.mode === "single-file") {
+			await this.createSingleFileInstance();
+		} else if (this.mode === "single-root" || this.mode === "multi-root") {
+			await this.createWorkspaceInstances();
+		}
+
+		await this.createGlobalInstance();
+
+		this.logger.info(`🚀 Created ${this.biomes.size} Biome instance(s).`);
+	}
+
+	/**
+	 * Creates a Biome instance for a single file
+	 */
+	private async createSingleFileInstance(): Promise<void> {
+		// Retrieve the URI of the active editor
+		const singleFileURI = window.activeTextEditor?.document.uri;
+
+		if (!singleFileURI) {
+			this.logger.error(
+				"❌ Unable to start Biome for single file: no active editor.",
+			);
+			return;
+		}
+
+		// Retrieve the path to the parent folder of the single file
+		const parentFolderURI = Uri.file(
+			Utils.resolvePath(singleFileURI, "..").fsPath,
+		);
+
+		this.biomes.set("single", Biome.createForSingleFile(this, parentFolderURI));
+	}
+
+	/**
+	 * Starts Biome instances for all workspace folders
+	 */
+	private async createWorkspaceInstances(): Promise<void> {
+		const folders = workspace.workspaceFolders ?? [];
+
+		this.logger.info(`🔍 Found ${folders.length} workspace folder(s).`);
+
+		// Create the Biome instances for each workspace folder
+		for (const folder of folders) {
+			this.biomes.set(folder, Biome.createForWorkspaceFolder(this, folder));
+		}
+	}
+
+	/**
+	 * Registers a listener for the on-demand global instance
+	 *
+	 * This method registers a listener responsible for creating and starting a
+	 * global Biome instance when the user opens an a file that does not belong
+	 * to any workspace folder.
+	 *
+	 * This allows users to format Untitled files, or their VS Code settings
+	 * using Biome.
+	 *
+	 * Once the global instance is created, it will be kept alive until the
+	 * extension is stopped to avoid creating and destroying the global instance
+	 * every time the user opens/closes such a file.
+	 */
+	private async createGlobalInstance(): Promise<void> {
+		const createGlobalInstanceIfNotExists = async () => {
+			if (!this.biomes.get("global")) {
+				this.biomes.set("global", Biome.createGlobalInstance(this));
+				this.biomes.get("global")?.start();
 			}
-		},
-	);
+		};
 
-	state.context.subscriptions.push(
-		workspace.onDidChangeConfiguration(debouncedConfigurationChangeHandler),
-	);
+		const createGlobalInstanceIfNeeded = async (
+			editor: TextEditor | undefined,
+		) => {
+			this.logger.debug(editor?.document?.uri.toString());
 
-	info("Started listening for configuration changes");
-};
+			if (!editor || !config("enabled", { default: true })) {
+				return;
+			}
 
-/**
- * Listens for changes to the active text editor
- *
- * This function listens for changes to the active text editor and updates the
- * active project accordingly. This change is then reflected throughout the
- * extension automatically. Notably, this triggers the status bar to update
- * with the active project.
- */
-const listenForActiveTextEditorChange = () => {
-	state.context.subscriptions.push(
-		window.onDidChangeActiveTextEditor((editor) => {
-			updateActiveProject(editor);
-		}),
-	);
+			if (
+				["untitled", "vscode-userdata"].includes(editor?.document.uri.scheme)
+			) {
+				// If the language of the document is already known, we check if it's
+				// supported and create the global instance if it is. This is usually
+				// the case for settings files, which already exist on disk and have
+				// a languageId.
+				if (supportedLanguages.includes(editor?.document.languageId)) {
+					await createGlobalInstanceIfNotExists();
+					return;
+				}
 
-	info("Started listening for active text editor changes");
+				// Otherwise, we listen for changes to the document to check if the
+				// languageId changes to a supported one. This is usually the case for
+				// Untitled files, which don't have a languageId until the user
+				// sets on manually, or types enough characters for VS Code to guess it.
+				const listener = workspace.onDidChangeTextDocument(async (event) => {
+					if (supportedLanguages.includes(event.document.languageId)) {
+						await createGlobalInstanceIfNotExists();
 
-	updateActiveProject(window.activeTextEditor);
-};
+						// Dispose the listener because we wont't be coming back to
+						// this state again. The global session will be kept alive
+						// until the extension is stopped.
+						listener.dispose();
+						return;
+					}
+				});
+			}
+		};
 
-/**
- * Listens for changes to lockfiles in the workspace
- *
- * We use this watcher to detect changes to lockfiles and restart the extension
- * when they occur. We currently rely on this strategy to detect if Biome has been
- * installed or updated in the workspace until VS Code provides a better way to
- * detect this.
- */
-const listenForLockfilesChanges = () => {
-	const watcher = workspace.createFileSystemWatcher(
-		"**/{package-lock.json,yarn.lock,bun.lockb,bun.lock,pnpm-lock.yaml}",
-	);
+		// Create a global instance if needed
+		await createGlobalInstanceIfNeeded(window.activeTextEditor);
 
-	watcher.onDidChange((event) => {
-		info(`Lockfile ${event.fsPath} changed.`);
-		restart();
-	});
+		// Register the listener for when the active text editor changes
+		window.onDidChangeActiveTextEditor(
+			debounce(createGlobalInstanceIfNeeded, 0),
+		);
+	}
 
-	watcher.onDidCreate((event) => {
-		info(`Lockfile ${event.fsPath} created.`);
-		restart();
-	});
+	/**
+	 * Starts the Biome instances
+	 */
+	private async startInstances(): Promise<void> {
+		for (const [_folder, biome] of this.biomes) {
+			await biome.start();
+		}
 
-	watcher.onDidDelete((event) => {
-		info(`Lockfile ${event.fsPath} deleted.`);
-		restart();
-	});
-
-	info("Started listening for lockfile changes");
-
-	state.context.subscriptions.push(watcher);
-};
+		this.logger.info(`🚀 Started ${this.biomes.size} Biome instance(s).`);
+	}
+}

@@ -1,13 +1,20 @@
 {
-    "folders": [
-        {
-            "path": "workspace-folder-1",
-        },
-        {
-            "path": "workspace-folder-2"
-        }
-    ],
-    "settings": {
-        "biome.enabled": false
-    }
+	"folders": [
+		{
+			"name": "Biome disabled",
+			"path": "biome-disabled"
+		},
+		{
+			"name": "Custom config",
+			"path": "custom-config"
+		},
+		{
+			"name": "Requires custom config",
+			"path": "requires-custom-config"
+		},
+		{
+			"name": "Requires default config",
+			"path": "requires-default-config"
+		}
+	]
 }

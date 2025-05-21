@@ -1,122 +1,66 @@
-import { LogLevel, window } from "vscode";
-import { displayName } from "../package.json";
-import { activationTimestamp } from "./constants";
+import { type LogOutputChannel, window } from "vscode";
 
-/**
- * Logger
- *
- * A general-purpose logger instance that can be used throughout the extension.
- *
- * Messages logged to this logger will be displayed in the `Biome` output
- * channel in the Output panel. This logger respects the user's settings for
- * logging verbosity, so only messages with the appropriate log level will be
- * displayed.
- */
+export default class Logger {
+	/**
+	 * The output channel for logging messages.
+	 */
+	private outputChannel: LogOutputChannel;
 
-export const logger = window.createOutputChannel(
-	`${displayName} (${activationTimestamp})`,
-	{
-		log: true,
-	},
-);
-
-type LogArguments = Record<string, unknown>;
-
-/**
- * Logs a message
- *
- * This function logs a generic message to the extension's logger on the
- * `Biome` output channel. The message will only be logged if the extension's
- * logging level is set to level specified by the `level` parameter.
- */
-export const log = (
-	message: string,
-	level: LogLevel = LogLevel.Info,
-	args?: LogArguments,
-) => {
-	if (args) {
-		message = `${message}\n\t${Object.entries(args)
-			.map(([key, value]) => `${key}=${JSON.stringify(value)}`)
-			.join("\n\t")}`.trim();
+	/**
+	 * Creates a new logger for the given Biome instance
+	 */
+	constructor(private readonly name: string) {
+		this.outputChannel = window.createOutputChannel(name, {
+			log: true,
+		});
 	}
 
-	switch (level) {
-		case LogLevel.Error:
-			return logger.error(message);
-		case LogLevel.Warning:
-			return logger.warn(message);
-		case LogLevel.Info:
-			return logger.info(message);
-		case LogLevel.Debug:
-			return logger.debug(message);
-		default:
-			return logger.debug(message);
+	public show(preserveFocus: boolean = false): void {
+		this.outputChannel.show(preserveFocus);
 	}
-};
 
-/**
- * Clears the logger
- *
- * This function does not actually clear the logger, but rather appends a
- * few newlines to the logger to ensure that the logger so that logs from a
- * previous run are visually separated from the current run. We need to do
- * this because of a bug in VS Code where the output channel is not cleared
- * properly when calling `clear()` on it.
- *
- * @see https://github.com/microsoft/vscode/issues/224516
- */
-export const clear = () => {
-	logger.append("\n\n\n\n\n");
-};
+	/**
+	 * Logs a message to the output channel.
+	 *
+	 * @param message The message to log.
+	 */
+	public info(message: string): void {
+		this.outputChannel?.info(` ${message}`);
+	}
 
-/**
- * Log an informational message
- *
- * This function logs an informational message to the extension's logger
- * on the `Biome` output channel. The message will only be logged if the
- * extension's logging level is set to `Info` or higher.
- *
- * @param message The message to log
- * @param args Optional arguments to show alongside the message
- */
-export const info = (message: string, args?: LogArguments) =>
-	log(message, LogLevel.Info, args);
+	/**
+	 * Logs an error message to the output channel.
+	 *
+	 * @param message The error message to log.
+	 */
+	public error(message?: string): void {
+		this.outputChannel.error(message ?? "");
+	}
 
-/**
- * Log a warning message
- *
- * This function logs a warning message to the extension's logger on the
- * `Biome` output channel. The message will only be logged if the extension's
- * logging level is set to `Warning` or higher.
- *
- * @param message The message to log
- * @param args Optional arguments to show alongside the message
- */
-export const warn = (message: string, args?: LogArguments) =>
-	log(message, LogLevel.Warning, args);
+	/**
+	 * Logs a warning message to the output channel.
+	 *
+	 * @param message The warning message to log.
+	 */
+	public warn(message?: string): void {
+		this.outputChannel.warn(message ?? "");
+	}
 
-/**
- * Log an error message
- *
- * This function logs an error message to the extension's logger on the
- * `Biome` output channel. The message will only be logged if the extension's
- * logging level is set to `Error` or higher.
- *
- * @param message The message to log
- * @param args Optional arguments to show alongside the message
- */
-export const error = (message: string, args?: LogArguments) =>
-	log(message, LogLevel.Error, args);
+	/**
+	 * Logs a debug message to the output channel.
+	 *
+	 * @param message The debug message to log.
+	 */
+	public debug(message?: string): void {
+		this.outputChannel.debug(message ?? "");
+	}
 
-/**
- * Log a debug message
- *
- * This function logs a debug message to the extension's logger on the
- * `Biome` output channel. The message will only be logged if the extension's
- * logging level is set to `Debug` or higher.
- *
- * @param message The message to log
- * @param args Optional arguments to show alongside the message
- */
-export const debug = (message: string, args?: LogArguments) =>
-	log(message, LogLevel.Debug, args);
+	/**
+	 * Logs a verbose message to the output channel.
+	 *
+	 * @param message The verbose message to log.
+	 */
+	public trace(message?: string): void {
+		this.outputChannel.trace(message ?? "");
+	}
+}

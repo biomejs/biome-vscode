@@ -1,18 +1,29 @@
 import { spawnSync } from "node:child_process";
 import isWSL from "is-wsl";
-import { workspace } from "vscode";
 
 /**
- * Activation timestamp
+ * Identifiers of the languages supported by the extension
  *
- * This constant contains the timestamp at which the extension was activated.
- *
- * We use this constant to generate unique identifiers for output channels to
- * mitigate a bug in VS Code where the output channel is not cleared.
- *
- * @see https://github.com/microsoft/vscode/issues/204946
+ * This constant contains a list of identifiers of the languages supported by the
+ * extension. These identifiers are used determine whether LSP sessions should be
+ * taking a given file into account or not.
  */
-export const activationTimestamp = Date.now();
+export const supportedLanguages: string[] = [
+	"astro",
+	"css",
+	"graphql",
+	"html",
+	"javascript",
+	"javascriptreact",
+	"json",
+	"jsonc",
+	"snippets",
+	"svelte",
+	"tailwindcss",
+	"typescript",
+	"typescriptreact",
+	"vue",
+];
 
 /**
  * Whether the current platform uses musl
@@ -54,7 +65,7 @@ export const platformIdentifier = (() => {
 /**
  * Platform-specific binary name
  *
- * This constant contains the name of the Biome CLI binary for the current
+ * This constant contains the name of the Biome binary for the current
  * platform.
  *
  * @example "biome" (on Linux, macOS, and other Unix-like systems)
@@ -62,23 +73,6 @@ export const platformIdentifier = (() => {
  */
 export const platformSpecificBinaryName = (() => {
 	return `biome${process.platform === "win32" ? ".exe" : ""}`;
-})();
-
-/**
- * Platform-specific asset name
- *
- * This constant contains the name of Biome CLI GitHub release asset for the
- * current platform.
- *
- * On Linux, we always return the musl flavor, as it's the most compatible
- * since its statically linked.
- *
- * @example "biome-linux-x64-musl"
- * @example "biome-darwin-x64"
- * @example "biome-win32-x64.exe"
- */
-export const platformSpecificAssetName = (() => {
-	return `biome-${platformIdentifier}${process.platform === "win32" ? ".exe" : ""}`;
 })();
 
 /**
@@ -107,59 +101,4 @@ export const platformSpecificPackageName = (() => {
  */
 export const platformSpecificNodePackageName = (() => {
 	return `@biomejs/${platformSpecificPackageName}`;
-})();
-
-/**
- * Identifiers of the languages supported by the extension
- *
- * This constant contains a list of identifiers of the languages supported by the
- * extension. These identifiers are used determine whether LSP sessions should be
- * taking a given file into account or not.
- */
-export const supportedLanguageIdentifiers: string[] = [
-	"astro",
-	"css",
-	"graphql",
-	"html",
-	"javascript",
-	"javascriptreact",
-	"json",
-	"jsonc",
-	"snippets",
-	"svelte",
-	"tailwindcss",
-	"typescript",
-	"typescriptreact",
-	"vue",
-];
-
-export type OperatingMode = "single-file" | "single-root" | "multi-root";
-
-/**
- * Operating mode of the extension
- *
- * This constant contains the operating mode of the extension. The operating
- * mode determines whether the extension is operating in single-file,
- * single-root, or multi-root mode, which impacts how the extension behaves and
- * how LSP sessions are created.
- *
- * This can be a constant because whenever the operating mode changes, VS Code
- * reloads the window, which causes the extension to be destroyed and
- * recreated.
- */
-export const operatingMode: OperatingMode = (() => {
-	// If there aren't any workspace folders, we assume to be operating in
-	// single-file mode.
-	if (workspace.workspaceFolders === undefined) {
-		return "single-file";
-	}
-
-	// If more than one workspace folder is present, we assume to be operating
-	// in multi-root mode.
-	if (workspace.workspaceFolders.length > 1) {
-		return "multi-root";
-	}
-
-	// Otherwise, we assume to be operating in single-root mode.
-	return "single-root";
 })();

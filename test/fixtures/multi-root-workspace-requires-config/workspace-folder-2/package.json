@@ -1,7 +1,0 @@
-{
-	"name": "bar",
-	"version": "0.0.0",
-	"devDependencies": {
-		"@biomejs/biome": "1.8.2"
-	}
-}

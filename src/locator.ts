@@ -1,0 +1,320 @@
+import { createRequire } from "node:module";
+import { delimiter, dirname } from "node:path";
+import { env } from "node:process";
+import {
+	ConfigurationTarget,
+	Uri,
+	env as vscodeEnv,
+	window,
+	workspace,
+} from "vscode";
+import type Biome from "./biome";
+import {
+	platformIdentifier,
+	platformSpecificBinaryName,
+	platformSpecificNodePackageName,
+} from "./constants";
+import { config, fileExists, getLspBin } from "./utils";
+
+export default class Locator {
+	/**
+	 * Creates a new Locator
+	 */
+	constructor(private readonly biome: Biome) {}
+
+	/**
+	 * Attempts to locate the Biome binary in the context of a workspace folder.
+	 *
+	 * This method will try to find the Biome binary using the following strategies:
+	 *
+	 * 1. Check the user's settings for a custom Biome binary path.
+	 * 2. Check the project's `node_modules` directory for a Biome binary.
+	 * 3. Check the project's `yarn` PnP configuration for a Biome binary.
+	 * 4. Check the system's PATH environment variable for a Biome binary.
+	 */
+	public async findBiomeForWorkspaceFolder(): Promise<Uri | undefined> {
+		return (
+			(await this.findBiomeInSettings()) ??
+			(await this.findBiomeInNodeModules()) ??
+			(await this.findBiomeInYarnPnp()) ??
+			(await this.findBiomeInPath())
+		);
+	}
+
+	/**
+	 * Attempts to locate the Biome binary in the context of a global instance.
+	 *
+	 * This method will try to find the Biome binary using the following strategies:
+	 *
+	 * 1. Check the user's settings for a custom Biome binary path.
+	 * 2. Check the system's PATH environment variable for a Biome binary.
+	 */
+	public async findBiomeForGlobalInstance(): Promise<Uri | undefined> {
+		return (
+			(await this.findBiomeInSettings()) ??
+			(await this.findBiomeInPath()) ??
+			(await this.suggestInstallingBiomeGlobally())
+		);
+	}
+
+	/**
+	 * Finds the Biome binary in the user's settings.
+	 *
+	 * This strategy is responsible for finding the Biome binary as specified
+	 * in the user's settings in the `biome.lsp.bin` configuration option.
+	 * 
+	 * This strategy supports platform-specific settings, meaning that the user can
+	 * specify different binaries for different combos of OS, architecture and libc.
+	 * 
+	 * If the `biome.lsp.bin` setting is specified as a string, the strategy will
+	 * attempt to locate the binary at the specified path. If the binary is not found
+	 * at the specified path, the strategy will return `undefined`.
+	 * 
+	 * If the `biome.lsp.bin` setting is specified as an object, the strategy will
+ 	 * attempt to locate the binary at the specified path for the current platform
+     * (OS, architecture and libc). If the binary is not found at the specified path,
+     * the strategy will return `undefined`. The keys of the object are the OS, architecture
+     * and libc combos, concatenated with a dash (`-`), and the values are the paths to
+     * the binaries.
+	 * 
+	 * Example:
+	 *
+	 * ```json
+	 * {
+	 *   "biome.lsp.bin": {
+	 *   	"linux-x64": "/path/to/biome",
+	 *      "linux-arm64-musl": "/path/to/biome",
+	 *      "darwin-arm64": "/path/to/biome",
+	 *      "win32-x64": "/path/to/biome.exe"
+	 *   }
+	 * }
+	 * ```
+	 *
+	 + General VS Code settings overriding rules apply.
+	 */
+	public async findBiomeInSettings(): Promise<Uri | undefined> {
+		this.biome.logger.debug(`🔍 Looking for a Biome binary in "biome.lsp.bin"`);
+
+		const biomeLspBin = getLspBin(this.biome.workspaceFolder);
+
+		if (!biomeLspBin) {
+			this.biome.logger.debug(
+				`🔍 Biome binary could not be found in "biome.lsp.bin"`,
+			);
+			return;
+		}
+
+		this.biome.logger.debug(
+			`Setting "biome.lsp.bin" is set to: ${JSON.stringify(biomeLspBin)}`,
+		);
+
+		const findBinary = async (biomeLspBin: Uri): Promise<Uri | undefined> => {
+			if (!biomeLspBin) {
+				this.biome.logger.debug(
+					`🔍 Biome binary could not be found in "biome.lsp.bin"`,
+				);
+				return;
+			}
+
+			this.biome.logger.debug(
+				`🔍 Checking if Biome binary exists at "${biomeLspBin.fsPath}"`,
+			);
+
+			if (await fileExists(biomeLspBin)) {
+				this.biome.logger.debug(
+					`🔍 Found existing Biome binary at "${biomeLspBin.fsPath}"`,
+				);
+				return biomeLspBin;
+			}
+
+			this.biome.logger.debug(
+				`🔍 Biome binary could not be found in "biome.lsp.bin"`,
+			);
+		};
+
+		const findPlatformSpecificBinary = async (
+			biomeLspBin: Record<string, Uri>,
+		): Promise<Uri | undefined> => {
+			if (platformIdentifier in biomeLspBin) {
+				this.biome.logger.debug(
+					`🔍 Found platform-specific "biome.lsp.bin" setting for "${platformIdentifier}".`,
+				);
+				return await findBinary(biomeLspBin[platformIdentifier]);
+			}
+		};
+
+		return biomeLspBin instanceof Uri
+			? await findBinary(biomeLspBin)
+			: await findPlatformSpecificBinary(biomeLspBin);
+	}
+
+	/**
+	 * Finds the Biome binary in the project's dependencies
+	 *
+	 * The Node Modules Locator Strategy is responsible for finding a suitable
+	 * Biome binary from the project's dependencies in the `node_modules` directory
+	 * by looking for a `@biomejs/cli-{platform}-{arch}{libc}` package, which would
+	 * usually have been installed as a transitive dependency by the user's package
+	 * manager.
+	 *
+	 * The locator is implemented in such a way that it should work with most if
+	 * not all packages managers, including npm, pnpm, yarn and bun. Using node's
+	 *  built-in `createRequire`, we create a require function that is scoped to the
+	 * root `@biomejs/biome` package, which allows us to resolve the platform-specific
+	 * `@biomejs/cli-{platform}-{arch}{libc}` package. We then resolve the path to the
+	 * `biome` binary by looking for the `biome` executable in the root of the package.
+	 *
+	 * On Linux, we always use the `musl` variant of the binary because it has the
+	 * advantage of having been built statically. This is meant to improve the
+	 * compatibility with various systems such as NixOS, which handle dynamically
+	 * linked binaries differently.
+	 */
+	private async findBiomeInNodeModules(): Promise<Uri | undefined> {
+		const folder = this.biome.workspaceFolder;
+
+		if (!folder) {
+			return;
+		}
+
+		this.biome.logger.debug(`🔍 Looking for a Biome binary in Node Modules`);
+
+		try {
+			// Resolve the path to the root @biomejs/biome package starting
+			// from the root of the workspace folder.
+			const pathToRootBiomePackage = require.resolve(
+				"@biomejs/biome/package.json",
+				{
+					paths: [folder.uri.fsPath],
+				},
+			);
+
+			// Create a require function scoped to @biomejs/biome package.
+			const rootBiomePackage = createRequire(pathToRootBiomePackage);
+
+			// Resolve the path to the platform-specific @biomejs/cli-* package.
+			const pathToBiomeCliPackage = Uri.file(
+				dirname(
+					rootBiomePackage.resolve(
+						`${platformSpecificNodePackageName}/package.json`,
+					),
+				),
+			);
+
+			// Resolve the path to the biome binary.
+			const biome = Uri.joinPath(
+				pathToBiomeCliPackage,
+				platformSpecificBinaryName,
+			);
+
+			if (await fileExists(biome)) {
+				this.biome.logger.debug(`🔍 Found Biome binary at "${biome.fsPath}"`);
+				return biome;
+			}
+		} catch (error) {
+			this.biome.logger.debug(
+				`🔍 Error while looking for Biome binary in node modules: ${error}`,
+			);
+		}
+	}
+
+	private async findBiomeInYarnPnp(): Promise<Uri | undefined> {
+		const folder = this.biome.workspaceFolder;
+		if (!folder) {
+			return;
+		}
+
+		this.biome.logger.debug(`🔍 Looking for a Biome binary in Yarn PnP`);
+
+		for (const extension of ["cjs", "js"]) {
+			const yarnPnpFile = Uri.joinPath(folder.uri, `.pnp.${extension}`);
+
+			if (!(await fileExists(yarnPnpFile))) {
+				continue;
+			}
+
+			try {
+				const yarnPnpApi = require(yarnPnpFile.fsPath);
+
+				const rootBiomePackage = yarnPnpApi.resolveRequest(
+					"@biomejs/biome/package.json",
+					folder.uri.fsPath,
+				);
+
+				if (!rootBiomePackage) {
+					continue;
+				}
+
+				const biome = Uri.file(
+					yarnPnpApi.resolveRequest(
+						`${platformSpecificNodePackageName}/${platformSpecificBinaryName}`,
+						rootBiomePackage,
+					) as string,
+				);
+
+				if (await fileExists(biome)) {
+					this.biome.logger.debug(`🔍 Found Biome binary at "${biome.fsPath}"`);
+					return biome;
+				}
+			} catch {
+				return undefined;
+			}
+		}
+	}
+
+	/**
+	 * Finds the Biome binary in the PATH.
+	 *
+	 * This method will attempt to find the Biome binary in the directories
+	 * listed in the PATH environment variable. The PATH environment variable
+	 * is scanned from left to right, and the first Biome binary that is found
+	 * will be returned.
+	 */
+	private async findBiomeInPath(): Promise<Uri | undefined> {
+		this.biome.logger.debug(`🔍 Looking for a Biome binary in PATH`);
+
+		const path = env.PATH;
+
+		if (!path) {
+			this.biome.logger.warn("The PATH environment variable is not set.");
+			return;
+		}
+
+		for (const dir of path.split(delimiter)) {
+			const biome = Uri.joinPath(Uri.file(dir), platformSpecificBinaryName);
+			if (await fileExists(biome)) {
+				this.biome.logger.debug(
+					`🔍 Found Biome binary at "${biome.fsPath}" in PATH`,
+				);
+				return biome;
+			}
+		}
+
+		return undefined;
+	}
+
+	private async suggestInstallingBiomeGlobally(): Promise<undefined> {
+		if (config("suggestInstallingGlobally") === false) {
+			return;
+		}
+
+		const result = await window.showWarningMessage(
+			`Please install Biome globally on your system so the extension can start a global LSP session for files that are not part of any workspace.`,
+			"See instructions",
+			"Do not show again",
+		);
+
+		if (result === "See instructions") {
+			vscodeEnv.openExternal(
+				Uri.parse("https://biomejs.dev/guides/manual-installation/"),
+			);
+		}
+
+		if (result === "Do not show again") {
+			await workspace
+				.getConfiguration("biome")
+				.update("suggestInstallingGlobally", false, ConfigurationTarget.Global);
+		}
+
+		return undefined;
+	}
+}

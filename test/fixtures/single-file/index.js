@@ -1,3 +1,3 @@
-if (true) {
-	const a = 1;
+while (true) {
+	    console.log("ok");
 }

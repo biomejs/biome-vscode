@@ -1,33 +1,4 @@
-import { constants, accessSync } from "node:fs";
-import {
-	FileType,
-	RelativePattern,
-	Uri,
-	type WorkspaceFolder,
-	workspace,
-} from "vscode";
-import { Utils } from "vscode-uri";
-import { operatingMode } from "./constants";
-import { debug } from "./logger";
-import type { Project, ProjectDefinition } from "./project";
-import { state } from "./state";
-
-/**
- * Generates a platform-specific versioned binary name
- *
- * This function generates a platform-specific versioned binary name for the
- * current platform and given version of Biome.
- *
- * @param version The version of Biome
- *
- * @example "biome-1.0.0" (on Linux, macOS, and other Unix-like systems)
- * @example "biome-1.0.0.exe" (on Windows)
- */
-export const generatePlatformSpecificVersionedBinaryName = (
-	version: string,
-) => {
-	return `biome-${version}${process.platform === "win32" ? ".exe" : ""}`;
-};
+import { type ConfigurationScope, FileType, Uri, workspace } from "vscode";
 
 /**
  * Checks whether a file exists
@@ -48,117 +19,65 @@ export const fileExists = async (uri: Uri): Promise<boolean> => {
 };
 
 /**
- * Checks whether a directory exists
+ * Retrieves a setting
  *
- * This function checks whether a directory exists at the given URI using VS Code's
- * FileSystem API.
+ * This function retrieves a setting from the workspace configuration. By
+ * default, settings are looked up under the "biome" prefix.
  *
- * @param uri URI of the directory to check
- * @returns Whether the directory exists
+ * @param key The key of the setting to retrieve
  */
-export const directoryExists = async (uri: Uri): Promise<boolean> => {
-	try {
-		const stat = await workspace.fs.stat(uri);
-		return (stat.type & FileType.Directory) > 0;
-	} catch (err) {
-		return false;
-	}
+export const config: {
+	<T>(
+		key: string,
+		options: Partial<{ scope: ConfigurationScope }> & { default: T },
+	): T;
+	<T>(
+		key: string,
+		options?: Partial<{ scope: ConfigurationScope; default?: T }>,
+	): T | undefined;
+} = <T>(
+	key: string,
+	options?: Partial<{
+		scope: ConfigurationScope;
+		default: T;
+	}>,
+): T | undefined => {
+	if (options?.default !== undefined)
+		return (
+			workspace.getConfiguration("biome", options?.scope).get<T>(key) ??
+			options.default
+		);
+
+	return workspace.getConfiguration("biome", options?.scope).get<T>(key);
 };
 
 /**
- * Checks whether any of the given files exist
+ * Retrieves the `biome.lsp.bin` setting
  *
- * This function checks whether any of the given files exist using the
- * `fileExists` function.
- *
- * @param uris URIs of the files to check
- * @returns Whether any of the files exist
+ * This function retrieves the `biome.lsp.bin` setting from the given scope. It
+ * also handles retrieving the setting from the deprecated `biome.lspBin` setting
+ * transparently for users that have not yet migrated to the new setting.
  */
-export const anyFileExists = async (uris: Uri[]): Promise<boolean> => {
-	for (const uri of uris) {
-		if (await fileExists(uri)) {
-			return true;
+export const getLspBin = (
+	scope?: ConfigurationScope,
+): Uri | Record<string, Uri> | undefined => {
+	const lspBin =
+		config<string | Record<string, string>>("lsp.bin", { scope }) ||
+		config<string>("lspBin", { scope }); // deprecated setting for fallback.
+
+	if (typeof lspBin === "string") {
+		if (!lspBin) return;
+
+		return Uri.file(lspBin);
+	}
+
+	if (typeof lspBin === "object") {
+		const result: Record<string, Uri> = {};
+		for (const key in lspBin) {
+			result[key] = Uri.file(lspBin[key]);
 		}
+		return result;
 	}
-	return false;
-};
-
-/**
- * Substracts the second string from the first string
- */
-export const subtractURI = (original: Uri, subtract: Uri): Uri | undefined => {
-	const _original = original.fsPath;
-	const _subtract = subtract.fsPath;
-
-	let result = _original.replace(_subtract, "");
-
-	result = result === "" ? "/" : result;
-
-	return Uri.file(result);
-};
-
-/**
- * Generates a short URI for display purposes
- *
- * This function generates a short URI for display purposes. It takes into
- * account the operating mode of the extension and the project folder name.
- *
- * This is primarily used for naming logging channels.
- *
- * @param project The project for which the short URI is generated
- *
- * @example "/hello-world" (in single-root mode)
- * @example "workspace-folder-1::/hello-world" (in multi-root mode)
- */
-export const shortURI = (project: Project | ProjectDefinition): string => {
-	if (!project.folder || !project.path) {
-		return "";
-	}
-
-	const uri = subtractURI(project.path, project.folder.uri);
-	if (!uri) {
-		return "";
-	}
-
-	const prefix =
-		operatingMode === "multi-root" ? `${project.folder.name}::` : "";
-	return `${prefix}${uri.fsPath}`;
-};
-
-/**
- * Checks if there are any open untitled documents in the workspace
- *
- * This function verifies the presence of open documents within the workspace
- * that have not yet been saved to disk. It will return true if any such
- * documents are identified, otherwise, it returns false if none are found.
- *
- * This is typically used to determine if the user is working with an untitled
- * document in the workspace.
- */
-export const hasUntitledDocuments = (): boolean => {
-	return (
-		workspace.textDocuments.find(
-			(document) => document.isUntitled === true,
-		) !== undefined
-	);
-};
-
-/**
- * Checks if there are any open VS Code User Data documents in the workspace
- *
- * This function verifies the presence of open documents within the workspace
- * that utilize the vscode-userdata scheme. It will return true if any such
- * documents are identified, otherwise, it returns false if none are found.
- *
- * This is typically used to determine if the user's settings.json file is open
- * in the workspace.
- */
-export const hasVSCodeUserDataDocuments = (): boolean => {
-	return (
-		workspace.textDocuments.find(
-			({ uri }) => uri.scheme === "vscode-userdata",
-		) !== undefined
-	);
 };
 
 /**
@@ -177,85 +96,4 @@ export const debounce = <TArgs extends unknown[]>(
 		clearTimeout(timeout);
 		timeout = setTimeout(() => fn(...args), delay);
 	};
-};
-
-/**
- * Checks if a file is executable
- *
- * This function checks if a file is executable using Node's `accessSync` function.
- * It returns true if the file is executable, otherwise it returns false.
- *
- * This is used to ensure that downloaded Biome binaries are executable.
- */
-export const fileIsExecutable = (uri: Uri): boolean => {
-	try {
-		accessSync(uri.fsPath, constants.X_OK);
-		return true;
-	} catch {
-		return false;
-	}
-};
-
-/**
- * Checks if a directory contains any node dependencies
- *
- * This function checks if a directory contains any node dependencies by
- * searching for any `package.json` files within the directory. It returns true
- * if any `package.json` files are found, otherwise it returns false.
- */
-export const hasNodeDependencies = async (path: Uri) => {
-	const results = await workspace.findFiles(
-		new RelativePattern(path, "**/package.json"),
-	);
-
-	return results.length > 0;
-};
-
-/**
- * Clears temporary binaries
- *
- * This function clears any temporary binaries that may have been created by
- * the extension. It deletes the `tmp-bin` directory within the global storage
- * directory.
- */
-export const clearTemporaryBinaries = async () => {
-	debug("Clearing temporary binaries");
-
-	const binDirPath = Uri.joinPath(state.context.globalStorageUri, "tmp-bin");
-	if (await directoryExists(binDirPath)) {
-		workspace.fs.delete(binDirPath, {
-			recursive: true,
-		});
-		debug("Cleared temporary binaries.", {
-			path: binDirPath.fsPath,
-		});
-	}
-};
-
-export const getWorkspaceFolderByName = (
-	name: string,
-): WorkspaceFolder | undefined => {
-	return workspace.workspaceFolders?.find((folder) => folder.name === name);
-};
-
-export const getPathRelativeToWorkspaceFolder = (
-	folder: WorkspaceFolder,
-	path?: string,
-): Uri => {
-	return Uri.file(Utils.joinPath(folder.uri, path ?? "").fsPath);
-};
-
-/**
- * Determines if the extension is running in single-file mode
- */
-export const runningInSingleFileMode = (): boolean => {
-	return workspace.workspaceFolders === undefined;
-};
-
-export const asyncFilter = async <T>(
-	items: T[],
-	predicate: (item: T) => Promise<boolean>,
-): Promise<T[]> => {
-	const results = await Promise.all(items.map(predicate));
-	return items.filter((_, index) => results[index]);
 };
