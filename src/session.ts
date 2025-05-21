@@ -84,6 +84,11 @@ export default class Session {
 	 * Creates a new language client for the session.
 	 */
 	private createLanguageClient(): LanguageClient {
+
+		this.biome.logger.debug(
+			`Creating LSP session for ${this.folder?.name ?? "global"} with ${this.bin.fsPath}`,
+		);
+
 		const serverOptions: ServerOptions = {
 			command: this.bin.fsPath,
 			transport: TransportKind.stdio,

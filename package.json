@@ -64,7 +64,8 @@
 					"scope": "resource"
 				},
 				"biome.runFromTemporaryLocation": {
-					"type": "boolean",
+					"type": ["boolean", "null"],
+					"default": null,
 					"description": "Whether to copy the biome binary to run it from a temporary location. Defaults to true on Windows and false on other platforms.",
 					"scope": "resource"
 				},

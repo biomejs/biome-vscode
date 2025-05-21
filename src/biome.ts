@@ -294,7 +294,7 @@ export default class Biome {
 			default: process.platform === "win32",
 		});
 
-		this.logger.debug(`The binary should be copied to a temporary location.`);
+		this.logger.debug(`The binary should be copied to a temporary location: ${workspace.getConfiguration("biome", this.workspaceFolder).get('runFromTemporaryLocation')}`);
 
 		return Boolean(runFromTemporaryLocation);
 	}
@@ -324,6 +324,10 @@ export default class Biome {
 			);
 
 			copyFileSync(originalBinary.fsPath, destination.fsPath);
+
+			this.logger.debug(
+				`Copied the original binary to a temporary location: ${destination.fsPath}`,
+			);
 
 			chmodSync(destination.fsPath, 0o755);
 
