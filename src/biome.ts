@@ -294,8 +294,6 @@ export default class Biome {
 			default: process.platform === "win32",
 		});
 
-		this.logger.debug(`The binary should be copied to a temporary location: ${workspace.getConfiguration("biome", this.workspaceFolder).get('runFromTemporaryLocation')}`);
-
 		return Boolean(runFromTemporaryLocation);
 	}
 
