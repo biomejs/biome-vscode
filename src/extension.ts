@@ -123,6 +123,12 @@ export default class Extension {
 		this.registerCommands();
 
 		await this.start();
+
+		// When workspace folders change, restart everything
+		workspace.onDidChangeWorkspaceFolders(async () => {
+			this.logger.info("🔍 Workspace folders changed.");
+			await this.restart();
+		});
 	}
 
 	/**
@@ -190,6 +196,17 @@ export default class Extension {
 		}
 
 		this.logger.info("⏹️ Biome extension stopped.");
+	}
+
+	/**
+	 * Restarts the extension
+	 *
+	 * This method will stop the extension and then start it again.
+	 */
+	public async restart(): Promise<void> {
+		await this.stop();
+		this.logger.info("🔄 Restarting Biome extension...");
+		await this.start();
 	}
 
 	/**

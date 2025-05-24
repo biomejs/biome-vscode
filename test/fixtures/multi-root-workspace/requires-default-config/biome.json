@@ -1,13 +1,8 @@
 {
-	"$schema": "https://next.biomejs.dev/schemas/2.0.0-beta.3/schema.json",
-    "vcs": {
-        "enabled": true,
-        "useIgnoreFile": true,
-        "clientKind": "git"
-    },
-	"formatter": {
+	"$schema": "https://next.biomejs.dev/schemas/2.0.0-beta.5/schema.json",
+	"vcs": {
 		"enabled": true,
-		"indentStyle": "space",
-		"indentWidth": 8
+		"useIgnoreFile": true,
+		"clientKind": "git"
 	}
 }

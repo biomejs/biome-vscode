@@ -1,6 +1,7 @@
 import { Uri, type WorkspaceFolder, window } from "vscode";
 import {
 	type DocumentFilter,
+	type InitializeParams,
 	LanguageClient,
 	type LanguageClientOptions,
 	type ServerOptions,
@@ -84,7 +85,6 @@ export default class Session {
 	 * Creates a new language client for the session.
 	 */
 	private createLanguageClient(): LanguageClient {
-
 		this.biome.logger.debug(
 			`Creating LSP session for ${this.folder?.name ?? "global"} with ${this.bin.fsPath}`,
 		);
@@ -105,9 +105,14 @@ export default class Session {
 			traceOutputChannel: outputChannel,
 			documentSelector: this.createDocumentSelector(),
 			workspaceFolder: this.folder,
+			initializationOptions: {
+				...(this.singleFileFolder && {
+					rootUri: this.singleFileFolder,
+				}),
+			},
 		};
 
-		return new LanguageClient(
+		return new BiomeLanguageClient(
 			"biome.lsp",
 			"biome",
 			serverOptions,
@@ -142,5 +147,19 @@ export default class Session {
 				scheme,
 			}));
 		});
+	}
+}
+
+class BiomeLanguageClient extends LanguageClient {
+	protected fillInitializeParams(params: InitializeParams): void {
+		super.fillInitializeParams(params);
+
+		if (params.initializationOptions?.rootUri) {
+			params.rootUri = params.initializationOptions?.rootUri.toString();
+		}
+
+		if (params.initializationOptions?.rootPath) {
+			params.rootPath = params.initializationOptions?.rootPath;
+		}
 	}
 }

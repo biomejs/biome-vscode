@@ -39,7 +39,7 @@
 				"biome.enabled": {
 					"type": "boolean",
 					"default": true,
-					"description": "Whether Biome is enabled",
+					"markdownDescription": "Controls whether the Biome extension is active and provides its features in the context to which this setting applies.",
 					"scope": "resource"
 				},
 				"biome.configurationPath": {
@@ -48,32 +48,40 @@
 						"null"
 					],
 					"default": null,
-					"description": "Path to a custom Biome configuration file.",
-					"scope": "resource"
+					"markdownDescription": "Specifies the path to a custom Biome configuration file within the workspace folder.\n\nIf set to `null`, the extension will fall back to the default Biome configuration files.",
+					"scope": "resource",
+					"examples": [
+						".config/biome.json"
+					],
+					"ignoreSync": true
 				},
 				"biome.suggestInstallingGlobally": {
 					"type": "boolean",
 					"default": true,
-					"description": "Whether to suggest installing Biome globally when opening files that do not belong to a project.",
+					"markdownDescription": "When a global installation of Biome is required but not found in the `PATH`, the extension will suggest installing it.\n\nThis setting controls whether that suggestion popup is shown.",
 					"scope": "resource"
 				},
 				"biome.requireConfiguration": {
 					"type": "boolean",
 					"default": false,
-					"description": "Whether Biome requires a config file to start",
+					"description": "Require a Biome configuration file to enable Biome features in the context to which this setting applies.\n\nIf set to `true`, the extension will not provide Biome features unless a configuration file is present in the workspace folder.",
 					"scope": "resource"
 				},
 				"biome.runFromTemporaryLocation": {
-					"type": ["boolean", "null"],
+					"type": [
+						"boolean",
+						"null"
+					],
 					"default": null,
-					"description": "Whether to copy the biome binary to run it from a temporary location. Defaults to true on Windows and false on other platforms.",
-					"scope": "resource"
+					"description": "Whether to copy the Biome binary and run it from a temporary location.\n\nDefaults to `true` on Windows and `false` on other platforms.",
+					"scope": "resource",
+					"ignoreSync": true
 				},
 				"biome.lsp.bin": {
 					"oneOf": [
 						{
 							"type": "string",
-							"description": "Path to a custom Biome binary. When this is set, the extension won't attempt to locate Biome automatically.",
+							"description": "Path to a custom Biome binary.\n\nWhen set, the extension will use this path and will not attempt to locate Biome automatically.",
 							"default": "",
 							"examples": [
 								"/path/to/biome"
@@ -82,18 +90,17 @@
 						{
 							"type": "object",
 							"uniqueItems": true,
-							"description": "Platform-specific paths to a custom Biome binary. When this is set, the extension won't attempt to locate Biome automatically.",
+							"description": "Platform-specific paths to a custom Biome binary.\n\nWhen set, the extension will use the specified path for each matching platform and will not attempt to locate Biome automatically.",
 							"examples": [
 								{
 									"linux-x64": "/path/to/biome",
 									"linux-arm64-musl": "/path/to/biome",
 									"darwin-arm64": "/path/to/biome",
-									"win32-x64": "/path/to/biome.exe"
+									"win32-x64": "C:\\path\\to\\biome.exe"
 								}
 							]
 						}
 					],
-					"ignoreSync": true,
 					"scope": "resource"
 				},
 				"biome.lsp.trace.server": {
@@ -104,21 +111,22 @@
 						"compact",
 						"verbose"
 					],
-					"description": "Tracing level of the communications between the extension and the Biome Language Server.",
-					"default": "off"
+					"description": "Sets the tracing level for communication between the extension and the Biome Language Server.",
+					"default": "off",
+					"ignoreSync": true
 				},
 				"biome.lspBin": {
 					"type": "string",
 					"default": "",
 					"ignoreSync": true,
-					"description": "(Deprecated) Path to a custom Biome binary. When this is set, the extension won't attempt to locate Biome automatically.",
-					"deprecationMessage": "This setting has been deprecated and will be removed in a future version of the extension. Please use the `biome.lsp.bin` setting instead."
+					"description": "(Deprecated) Path to a custom Biome binary.\n\nWhen set, the extension will use this path and will not attempt to locate Biome automatically.",
+					"deprecationMessage": "This setting is deprecated and will be removed in a future version. Please use `biome.lsp.bin` instead."
 				}
 			}
 		},
 		"icons": {
 			"biome-logo": {
-				"description": "Biome icon for light themes",
+				"description": "Biome logo",
 				"default": {
 					"fontPath": "resources/icons/biome.woff",
 					"fontCharacter": "\\E900"

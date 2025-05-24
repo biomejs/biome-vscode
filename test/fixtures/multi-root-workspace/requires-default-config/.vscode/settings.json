@@ -1,4 +1,4 @@
 {
-    "biome.enabled": true,
-    "biome.requireConfigFile": true
+	"biome.enabled": true,
+	"biome.requireConfiguration": true
 }
