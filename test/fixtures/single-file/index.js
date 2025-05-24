@@ -1,3 +1,3 @@
 while (true) {
-	    console.log("ok");
+	console.log("ok");
 }

@@ -1,3 +1,3 @@
-if (true) {
-    console.log("ok");
+while (true) {
+	console.log("ok");
 }
