@@ -57,7 +57,6 @@ export default class Session {
 	public async start() {
 		this.client = this.createLanguageClient();
 		await this.client.start();
-		await this.client.sendRequest("biome/rage", {});
 	}
 
 	/**
