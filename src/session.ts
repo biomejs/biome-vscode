@@ -65,7 +65,7 @@ export default class Session {
 	public async stop() {
 		this.biome.logger.debug("Stopping LSP session");
 
-		this.client?.stop();
+		await this.client?.stop();
 
 		this.biome.logger.debug("LSP session stopped");
 
