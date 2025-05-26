@@ -37,8 +37,8 @@ importers:
         specifier: 16.0.1
         version: 16.0.1(rollup@4.40.1)
       '@types/node':
-        specifier: 22.15.3
-        version: 22.15.3
+        specifier: 22.15.21
+        version: 22.15.21
       '@types/vscode':
         specifier: ^1.80.0
         version: 1.99.1
@@ -623,8 +623,8 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@22.15.3':
-    resolution: {integrity: sha512-lX7HFZeHf4QG/J7tBZqrCAXwz9J5RD56Y6MpP0eJkka8p+K0RY/yBTW7CYFJ4VGCclxqOLKmiGP5juQc6MKgcw==}
+  '@types/node@22.15.21':
+    resolution: {integrity: sha512-EV/37Td6c+MgKAbkcLG6vqZ2zEYHD7bvSrzqqs2RIhbA6w3x+Dqz8MZM3sP6kGTeLrdoOgKZe+Xja7tUB2DNkQ==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -2686,7 +2686,7 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
-  '@types/node@22.15.3':
+  '@types/node@22.15.21':
     dependencies:
       undici-types: 6.21.0
 
