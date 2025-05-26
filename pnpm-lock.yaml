@@ -9,59 +9,59 @@ importers:
   .:
     dependencies:
       is-wsl:
-        specifier: ^3.1.0
+        specifier: 3.1.0
         version: 3.1.0
       vscode-languageclient:
-        specifier: ^9.0.1
+        specifier: 9.0.1
         version: 9.0.1
       vscode-uri:
-        specifier: ^3.1.0
+        specifier: 3.1.0
         version: 3.1.0
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.0-beta.5
         version: 2.0.0-beta.5
       '@changesets/changelog-github':
-        specifier: ^0.5.1
+        specifier: 0.5.1
         version: 0.5.1
       '@changesets/cli':
-        specifier: ^2.29.4
+        specifier: 2.29.4
         version: 2.29.4
       '@rollup/plugin-commonjs':
-        specifier: ^28.0.3
+        specifier: 28.0.3
         version: 28.0.3(rollup@4.40.1)
       '@rollup/plugin-json':
-        specifier: ^6.1.0
+        specifier: 6.1.0
         version: 6.1.0(rollup@4.40.1)
       '@rollup/plugin-node-resolve':
-        specifier: ^16.0.1
+        specifier: 16.0.1
         version: 16.0.1(rollup@4.40.1)
       '@types/node':
-        specifier: ^22.15.3
+        specifier: 22.15.3
         version: 22.15.3
       '@types/vscode':
         specifier: ^1.80.0
         version: 1.99.1
       '@vscode/vsce':
-        specifier: ^3.3.2
+        specifier: 3.3.2
         version: 3.3.2
       esbuild:
-        specifier: ^0.25.3
+        specifier: 0.25.3
         version: 0.25.3
       lefthook:
-        specifier: ^1.11.12
+        specifier: 1.11.12
         version: 1.11.12
       ovsx:
-        specifier: ^0.10.2
+        specifier: 0.10.2
         version: 0.10.2
       rollup:
-        specifier: ^4.40.1
+        specifier: 4.40.1
         version: 4.40.1
       rollup-plugin-esbuild:
-        specifier: ^6.2.1
+        specifier: 6.2.1
         version: 6.2.1(esbuild@0.25.3)(rollup@4.40.1)
       typescript:
-        specifier: ^5.8.3
+        specifier: 5.8.3
         version: 5.8.3
 
 packages:
