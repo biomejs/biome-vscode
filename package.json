@@ -157,26 +157,26 @@
 		"skipLicense": true
 	},
 	"dependencies": {
-		"is-wsl": "^3.1.0",
-		"vscode-languageclient": "^9.0.1",
-		"vscode-uri": "^3.1.0"
+		"is-wsl": "3.1.0",
+		"vscode-languageclient": "9.0.1",
+		"vscode-uri": "3.1.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.0.0-beta.5",
-		"@changesets/changelog-github": "^0.5.1",
-		"@changesets/cli": "^2.29.4",
-		"@rollup/plugin-commonjs": "^28.0.3",
-		"@rollup/plugin-json": "^6.1.0",
-		"@rollup/plugin-node-resolve": "^16.0.1",
-		"@types/node": "^22.15.3",
+		"@changesets/changelog-github": "0.5.1",
+		"@changesets/cli": "2.29.4",
+		"@rollup/plugin-commonjs": "28.0.3",
+		"@rollup/plugin-json": "6.1.0",
+		"@rollup/plugin-node-resolve": "16.0.1",
+		"@types/node": "22.15.3",
 		"@types/vscode": "^1.80.0",
-		"@vscode/vsce": "^3.3.2",
-		"esbuild": "^0.25.3",
-		"lefthook": "^1.11.12",
-		"ovsx": "^0.10.2",
-		"rollup": "^4.40.1",
-		"rollup-plugin-esbuild": "^6.2.1",
-		"typescript": "^5.8.3"
+		"@vscode/vsce": "3.3.2",
+		"esbuild": "0.25.3",
+		"lefthook": "1.11.12",
+		"ovsx": "0.10.2",
+		"rollup": "4.40.1",
+		"rollup-plugin-esbuild": "6.2.1",
+		"typescript": "5.8.3"
 	},
 	"packageManager": "pnpm@10.10.0"
 }
