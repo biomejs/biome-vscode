@@ -18,19 +18,19 @@ jobs:
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
         with:
           run_install: true
-      # - name: Consume changesets
-      #   run: pnpm changeset version
-      # - name: Retrieve updated version
-      #   id: version
-      #   run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
-      # - name: Commit, tag, and push
-      #   run: |
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "github-actions[bot]@users.noreply.github.com"
-      #     git add package.json CHANGELOG.md
-      #     git commit -m "chore(release): v${{ steps.version.outputs.version }}"
-      #     git tag -a v${{ steps.version.outputs.version }} -m "v${{ steps.version.outputs.version }}"
-      #     git push --follow-tags
+      - name: Consume changesets
+        run: pnpm changeset version
+      - name: Retrieve updated version
+        id: version
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+      - name: Commit, tag, and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json CHANGELOG.md
+          git commit -m "chore(release): v${{ steps.version.outputs.version }}"
+          git tag -a v${{ steps.version.outputs.version }} -m "v${{ steps.version.outputs.version }}"
+          git push --follow-tags
       - name: Build extension
         run: pnpm run build
       - name: Package stable extension
