@@ -24,6 +24,8 @@ jobs:
           run_install: true
       - name: Consume changesets
         run: pnpm changeset version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Retrieve updated version
         id: version
         run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
