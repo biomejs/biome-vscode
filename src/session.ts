@@ -130,13 +130,19 @@ export default class Session {
 			return supportedLanguages.map((language) => ({
 				language,
 				scheme: "file",
-				pattern: Uri.joinPath(folder.uri, "**", "*").fsPath,
+				pattern: Uri.joinPath(folder.uri, "**", "*").fsPath.replaceAll(
+					"\\",
+					"/",
+				),
 			}));
 		} else if (singleFileFolder !== undefined) {
 			return supportedLanguages.map((language) => ({
 				language,
 				scheme: "file",
-				pattern: Uri.joinPath(singleFileFolder, "**", "*").fsPath,
+				pattern: Uri.joinPath(singleFileFolder, "**", "*").fsPath.replaceAll(
+					"\\",
+					"/",
+				),
 			}));
 		}
 
