@@ -1,4 +1,11 @@
-import { type ConfigurationScope, FileType, Uri, workspace } from "vscode";
+import {
+	type ConfigurationScope,
+	FileType,
+	Uri,
+	type WorkspaceFolder,
+	workspace,
+} from "vscode";
+import { Utils } from "vscode-uri";
 
 /**
  * Checks whether a file exists
@@ -59,22 +66,28 @@ export const config: {
  * transparently for users that have not yet migrated to the new setting.
  */
 export const getLspBin = (
-	scope?: ConfigurationScope,
+	workspaceFolder?: WorkspaceFolder,
 ): Uri | Record<string, Uri> | undefined => {
 	const lspBin =
-		config<string | Record<string, string>>("lsp.bin", { scope }) ||
-		config<string>("lspBin", { scope }); // deprecated setting for fallback.
+		config<string | Record<string, string>>("lsp.bin", {
+			scope: workspaceFolder,
+		}) || config<string>("lspBin", { scope: workspaceFolder }); // deprecated setting for fallback.
+
+	const resolvePath = (lspBin: string, workspaceFolder?: WorkspaceFolder) => {
+		return workspaceFolder
+			? Uri.file(Utils.resolvePath(workspaceFolder.uri, lspBin).fsPath)
+			: Uri.file(lspBin);
+	};
 
 	if (typeof lspBin === "string") {
 		if (!lspBin) return;
-
-		return Uri.file(lspBin);
+		return resolvePath(lspBin, workspaceFolder);
 	}
 
 	if (typeof lspBin === "object") {
 		const result: Record<string, Uri> = {};
 		for (const key in lspBin) {
-			result[key] = Uri.file(lspBin[key]);
+			result[key] = resolvePath(lspBin[key], workspaceFolder);
 		}
 		return result;
 	}
