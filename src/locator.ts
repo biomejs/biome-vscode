@@ -176,11 +176,14 @@ export default class Locator {
 			return;
 		}
 
-		this.biome.logger.debug(`🔍 Looking for a Biome binary in Node Modules`);
+		this.biome.logger.debug(
+			`🔍 Looking for a Biome binary in Node Modules ${folder.uri.fsPath}`,
+		);
 
 		try {
 			// Resolve the path to the root @biomejs/biome package starting
 			// from the root of the workspace folder.
+
 			const pathToRootBiomePackage = require.resolve(
 				"@biomejs/biome/package.json",
 				{
