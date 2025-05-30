@@ -124,26 +124,14 @@ export default class Session {
 			},
 			middleware: {
 				handleDiagnostics: (uri, diagnostics, next) => {
-					this.biome.logger.debug(
-						`Received ${diagnostics.length} diagnostics for ${uri.toString()}: ${JSON.stringify(diagnostics)}`,
-					);
-
 					const customizations = config<RuleCustomization[]>("customizations", {
 						default: [],
 						scope: this.folder,
 					});
 
-					this.biome.logger.debug(
-						`loaded ${customizations.length} customizations for diagnostics: ${JSON.stringify(customizations)}`,
-					);
-
 					const modifiedDiagnostics = this.applyRuleCustomizations(
 						diagnostics,
 						customizations,
-					);
-
-					this.biome.logger.debug(
-						`Modified diagnostics: ${JSON.stringify(modifiedDiagnostics)}`,
 					);
 
 					next(uri, modifiedDiagnostics);
