@@ -36,6 +36,34 @@
 		],
 		"configuration": {
 			"properties": {
+				"biome.customizations": {
+					"type": "array",
+					"default": [],
+					"description": "Customize rule severity levels",
+					"items": {
+						"type": "object",
+						"properties": {
+							"rule": {
+								"type": "string",
+								"description": "Rule name or pattern (* for all rules)"
+							},
+							"severity": {
+								"type": "string",
+								"enum": [
+									"off",
+									"warn",
+									"error"
+								],
+								"description": "Severity level for the rule"
+							}
+						},
+						"required": [
+							"rule",
+							"severity"
+						],
+						"additionalProperties": false
+					}
+				},
 				"biome.enabled": {
 					"type": "boolean",
 					"default": true,
@@ -158,6 +186,7 @@
 	},
 	"dependencies": {
 		"is-wsl": "3.1.0",
+		"picomatch": "^4.0.2",
 		"vscode-languageclient": "9.0.1",
 		"vscode-uri": "3.1.0"
 	},
@@ -169,6 +198,7 @@
 		"@rollup/plugin-json": "6.1.0",
 		"@rollup/plugin-node-resolve": "16.0.1",
 		"@types/node": "22.15.21",
+		"@types/picomatch": "^4.0.0",
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "3.4.2",
 		"esbuild": "0.25.4",
