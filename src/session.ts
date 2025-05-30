@@ -1,4 +1,11 @@
-import { Uri, type WorkspaceFolder, window } from "vscode";
+import picomatch from "picomatch";
+import {
+	type Diagnostic,
+	DiagnosticSeverity,
+	Uri,
+	type WorkspaceFolder,
+	window,
+} from "vscode";
 import {
 	type DocumentFilter,
 	type InitializeParams,
@@ -10,6 +17,12 @@ import {
 import { displayName } from "../package.json";
 import type Biome from "./biome";
 import { supportedLanguages } from "./constants";
+import { config } from "./utils";
+
+interface RuleCustomization {
+	rule: string;
+	severity: "off" | "warn" | "error";
+}
 
 export default class Session {
 	/**
@@ -109,6 +122,33 @@ export default class Session {
 					rootUri: this.singleFileFolder,
 				}),
 			},
+			middleware: {
+				handleDiagnostics: (uri, diagnostics, next) => {
+					this.biome.logger.debug(
+						`Received ${diagnostics.length} diagnostics for ${uri.toString()}: ${JSON.stringify(diagnostics)}`,
+					);
+
+					const customizations = config<RuleCustomization[]>("customizations", {
+						default: [],
+						scope: this.folder,
+					});
+
+					this.biome.logger.debug(
+						`loaded ${customizations.length} customizations for diagnostics: ${JSON.stringify(customizations)}`,
+					);
+
+					const modifiedDiagnostics = this.applyRuleCustomizations(
+						diagnostics,
+						customizations,
+					);
+
+					this.biome.logger.debug(
+						`Modified diagnostics: ${JSON.stringify(modifiedDiagnostics)}`,
+					);
+
+					next(uri, modifiedDiagnostics);
+				},
+			},
 		};
 
 		return new BiomeLanguageClient(
@@ -152,6 +192,60 @@ export default class Session {
 				scheme,
 			}));
 		});
+	}
+
+	private applyRuleCustomizations(
+		diagnostics: Diagnostic[],
+		customizations: RuleCustomization[],
+	): Diagnostic[] {
+		if (customizations.length === 0) {
+			return diagnostics;
+		}
+
+		return diagnostics
+			.map((diagnostic): Diagnostic | null => {
+				for (const customization of customizations) {
+					if (this.matchesRule(diagnostic, customization.rule)) {
+						switch (customization.severity) {
+							case "off":
+								return null;
+							case "warn":
+								diagnostic.severity = DiagnosticSeverity.Warning;
+								break;
+							case "error":
+								diagnostic.severity = DiagnosticSeverity.Error;
+								break;
+						}
+						break;
+					}
+				}
+
+				return diagnostic;
+			})
+			.filter((diagnostic): diagnostic is Diagnostic => diagnostic !== null);
+	}
+
+	private matchesRule(diagnostic: Diagnostic, rulePattern: string): boolean {
+		const isMatch = picomatch(rulePattern);
+		const ruleCode = diagnostic.code;
+
+		if (typeof ruleCode === "string" || typeof ruleCode === "number") {
+			const result = isMatch(ruleCode.toString(), true);
+
+			if (result.match) {
+				return true;
+			}
+		}
+
+		if (typeof ruleCode === "object") {
+			const result = isMatch(ruleCode.value.toString(), true);
+
+			if (result.match) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
 
