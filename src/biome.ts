@@ -310,15 +310,27 @@ export default class Biome {
 		try {
 			const tempDirectory = this.tempDirectory;
 
+			this.logger.debug(
+				`Temporary directory for Biome: ${tempDirectory?.fsPath}`,
+			);
+
 			if (!tempDirectory) {
 				return;
 			}
 
 			await workspace.fs.createDirectory(tempDirectory);
 
+			this.logger.debug(
+				`Ensured temporary directory exists: ${tempDirectory.fsPath}`,
+			);
+
 			const destination = Uri.joinPath(
 				tempDirectory,
 				platformSpecificBinaryName,
+			);
+
+			this.logger.debug(
+				`Will copy the original binary at ${originalBinary.fsPath} to ${destination.fsPath}`,
 			);
 
 			copyFileSync(originalBinary.fsPath, destination.fsPath);
