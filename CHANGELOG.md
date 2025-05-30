@@ -1,5 +1,14 @@
 # biome
 
+## 3.0.2
+
+### Patch Changes
+
+- [#619](https://github.com/biomejs/biome-vscode/pull/619) [`f7abb6c`](https://github.com/biomejs/biome-vscode/commit/f7abb6c33f593a90e1eed7591aab070cbcf68044) Thanks [@nhedger](https://github.com/nhedger)! - Allow using relative paths in biome.lsp.bin
+
+  This fixes a regression introduced in v3 where relative paths could no longer be
+  used inside of the biome.lsp.bin setting.
+
 ## 3.0.1
 
 ### Patch Changes
