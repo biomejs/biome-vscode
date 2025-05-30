@@ -1,5 +1,13 @@
 # biome
 
+## 3.0.3
+
+### Patch Changes
+
+- [`aec4308`](https://github.com/biomejs/biome-vscode/commit/aec430803b4187a946c6edfcc1efe711f999847d) Thanks [@nhedger](https://github.com/nhedger)! - Improve debug logging
+
+- [`86a5666`](https://github.com/biomejs/biome-vscode/commit/86a5666f6406ad9025c4991d80bc6793438c5b4a) Thanks [@nhedger](https://github.com/nhedger)! - Add more debug logging
+
 ## 3.0.2
 
 ### Patch Changes
