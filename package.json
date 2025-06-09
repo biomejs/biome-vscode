@@ -170,7 +170,7 @@
 		"@rollup/plugin-node-resolve": "16.0.1",
 		"@types/node": "22.15.30",
 		"@types/vscode": "^1.80.0",
-		"@vscode/vsce": "3.4.2",
+		"@vscode/vsce": "3.5.0",
 		"esbuild": "0.25.5",
 		"lefthook": "1.11.13",
 		"ovsx": "0.10.3",
