@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import { homedir } from "node:os";
 import { delimiter, dirname } from "node:path";
 import { env } from "node:process";
 import {
@@ -22,7 +23,7 @@ export default class Locator {
 		const npmGlobalNodeModulesPath = safeSpawnSync("npm", ["root", "-g"]);
 		const pnpmGlobalNodeModulesPath = safeSpawnSync("pnpm", ["root", "-g"]);
 		const bunGlobalNodeModulesPath = Utils.resolvePath(
-			Uri.file(process.env.HOME ?? "/"),
+			Uri.file(homedir()),
 			".bun/install/global/node_modules",
 		);
 
