@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import { homedir } from "node:os";
 import { delimiter, dirname } from "node:path";
 import { env } from "node:process";
 import {
@@ -8,15 +9,35 @@ import {
 	window,
 	workspace,
 } from "vscode";
+import { Utils } from "vscode-uri";
 import type Biome from "./biome";
 import {
 	platformIdentifier,
 	platformSpecificBinaryName,
 	platformSpecificNodePackageName,
 } from "./constants";
-import { config, fileExists, getLspBin } from "./utils";
+import { config, fileExists, getLspBin, safeSpawnSync } from "./utils";
 
 export default class Locator {
+	private get globalNodeModulesPaths(): Record<string, Uri | undefined> {
+		const npmGlobalNodeModulesPath = safeSpawnSync("npm", ["root", "-g"]);
+		const pnpmGlobalNodeModulesPath = safeSpawnSync("pnpm", ["root", "-g"]);
+		const bunGlobalNodeModulesPath = Utils.resolvePath(
+			Uri.file(homedir()),
+			".bun/install/global/node_modules",
+		);
+
+		return {
+			npm: npmGlobalNodeModulesPath
+				? Uri.file(npmGlobalNodeModulesPath)
+				: undefined,
+			pnpm: pnpmGlobalNodeModulesPath
+				? Uri.file(pnpmGlobalNodeModulesPath)
+				: undefined,
+			bun: bunGlobalNodeModulesPath,
+		};
+	}
+
 	/**
 	 * Creates a new Locator
 	 */
@@ -36,6 +57,7 @@ export default class Locator {
 		return (
 			(await this.findBiomeInSettings()) ??
 			(await this.findBiomeInNodeModules()) ??
+			(await this.findBiomeInGlobalNodeModules()) ??
 			(await this.findBiomeInYarnPnp()) ??
 			(await this.findBiomeInPath())
 		);
@@ -52,6 +74,7 @@ export default class Locator {
 	public async findBiomeForGlobalInstance(): Promise<Uri | undefined> {
 		return (
 			(await this.findBiomeInSettings()) ??
+			(await this.findBiomeInGlobalNodeModules()) ??
 			(await this.findBiomeInPath()) ??
 			(await this.suggestInstallingBiomeGlobally())
 		);
@@ -169,15 +192,17 @@ export default class Locator {
 	 * compatibility with various systems such as NixOS, which handle dynamically
 	 * linked binaries differently.
 	 */
-	private async findBiomeInNodeModules(): Promise<Uri | undefined> {
-		const folder = this.biome.workspaceFolder;
+	private async findBiomeInNodeModules(
+		rootPath?: Uri,
+	): Promise<Uri | undefined> {
+		const searchRoot = rootPath ?? this.biome.workspaceFolder?.uri;
 
-		if (!folder) {
+		if (!searchRoot) {
 			return;
 		}
 
 		this.biome.logger.debug(
-			`🔍 Looking for a Biome binary in Node Modules ${folder.uri.fsPath}`,
+			`🔍 Looking for a Biome binary in Node Modules ${searchRoot.fsPath}`,
 		);
 
 		try {
@@ -187,7 +212,7 @@ export default class Locator {
 			const pathToRootBiomePackage = require.resolve(
 				"@biomejs/biome/package.json",
 				{
-					paths: [folder.uri.fsPath],
+					paths: [searchRoot.fsPath],
 				},
 			);
 
@@ -220,13 +245,42 @@ export default class Locator {
 		}
 	}
 
+	private async findBiomeInGlobalNodeModules(): Promise<Uri | undefined> {
+		this.biome.logger.debug(
+			"🔍 Looking for a Biome binary in global Node Modules",
+		);
+
+		const globalNodeModulesPaths = this.globalNodeModulesPaths;
+
+		for (const [key, path] of Object.entries(globalNodeModulesPaths)) {
+			this.biome.logger.debug(
+				`🔍 Found global Node Modules path for ${key}: ${path}`,
+			);
+
+			if (!path) {
+				this.biome.logger.warn(
+					`🔍 Could not find global Node Modules path for ${key}`,
+				);
+				return;
+			}
+
+			const biome = await this.findBiomeInNodeModules(path);
+
+			if (biome) {
+				return biome;
+			}
+		}
+
+		return undefined;
+	}
+
 	private async findBiomeInYarnPnp(): Promise<Uri | undefined> {
 		const folder = this.biome.workspaceFolder;
 		if (!folder) {
 			return;
 		}
 
-		this.biome.logger.debug(`🔍 Looking for a Biome binary in Yarn PnP`);
+		this.biome.logger.debug("🔍 Looking for a Biome binary in Yarn PnP");
 
 		for (const extension of ["cjs", "js"]) {
 			const yarnPnpFile = Uri.joinPath(folder.uri, `.pnp.${extension}`);
@@ -273,7 +327,7 @@ export default class Locator {
 	 * will be returned.
 	 */
 	private async findBiomeInPath(): Promise<Uri | undefined> {
-		this.biome.logger.debug(`🔍 Looking for a Biome binary in PATH`);
+		this.biome.logger.debug("🔍 Looking for a Biome binary in PATH");
 
 		const path = env.PATH;
 
@@ -301,7 +355,7 @@ export default class Locator {
 		}
 
 		const result = await window.showWarningMessage(
-			`Please install Biome globally on your system so the extension can start a global LSP session for files that are not part of any workspace.`,
+			"Please install Biome globally on your system so the extension can start a global LSP session for files that are not part of any workspace.",
 			"See instructions",
 			"Do not show again",
 		);

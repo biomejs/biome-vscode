@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import {
 	type ConfigurationScope,
 	FileType,
@@ -109,4 +110,26 @@ export const debounce = <TArgs extends unknown[]>(
 		clearTimeout(timeout);
 		timeout = setTimeout(() => fn(...args), delay);
 	};
+};
+
+export const safeSpawnSync = (
+	command: string,
+	args?: readonly string[],
+): string | undefined => {
+	let output: string | undefined;
+
+	try {
+		const result = spawnSync(command, args ?? [], { encoding: "utf8" });
+
+		if (result.error || result.status !== 0) {
+			output = undefined;
+		} else {
+			const trimmed = result.stdout.trim();
+			output = trimmed ? trimmed : undefined;
+		}
+	} catch {
+		output = undefined;
+	}
+
+	return output;
 };
