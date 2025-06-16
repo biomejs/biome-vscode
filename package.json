@@ -168,7 +168,7 @@
 		"@rollup/plugin-commonjs": "28.0.3",
 		"@rollup/plugin-json": "6.1.0",
 		"@rollup/plugin-node-resolve": "16.0.1",
-		"@types/node": "22.15.30",
+		"@types/node": "22.15.31",
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "3.5.0",
 		"esbuild": "0.25.5",
