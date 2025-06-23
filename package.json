@@ -165,7 +165,7 @@
 		"@biomejs/biome": "2.0.0-beta.5",
 		"@changesets/changelog-github": "0.5.1",
 		"@changesets/cli": "2.29.4",
-		"@rollup/plugin-commonjs": "28.0.5",
+		"@rollup/plugin-commonjs": "28.0.6",
 		"@rollup/plugin-json": "6.1.0",
 		"@rollup/plugin-node-resolve": "16.0.1",
 		"@types/node": "22.15.31",
