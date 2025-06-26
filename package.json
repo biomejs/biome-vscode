@@ -108,7 +108,6 @@
 					"enum": [
 						"off",
 						"messages",
-						"compact",
 						"verbose"
 					],
 					"description": "Sets the tracing level for communication between the extension and the Biome Language Server.",
