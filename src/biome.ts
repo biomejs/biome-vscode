@@ -411,7 +411,7 @@ export default class Biome {
 			}, 1000),
 		);
 
-		this.logger.info("⚙️ Started listening for configuration changes.");
+		this.logger.info("⚙️ Started listening for extension settings changes.");
 
 		this.extension.context.subscriptions.push(configWatcher);
 	}
