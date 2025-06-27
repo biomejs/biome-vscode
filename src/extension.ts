@@ -172,7 +172,6 @@ export default class Extension {
 
 		// Register a callback to update the status bar when the active text editor changes
 		window.onDidChangeActiveTextEditor(() => {
-			console.log("here");
 			this.statusBar.update();
 		});
 
