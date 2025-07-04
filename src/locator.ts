@@ -124,7 +124,7 @@ export default class Locator {
 			(await this.findBiomeInYarnPnp()) ??
 			(await this.findBiomeInPath());
 
-		return this.unshim(biome);
+		return await this.unshim(biome);
 	}
 
 	/**
