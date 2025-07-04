@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { extname, isAbsolute } from "node:path";
 import {
 	type ConfigurationScope,
 	FileType,
@@ -75,9 +76,13 @@ export const getLspBin = (
 		}) || config<string>("lspBin", { scope: workspaceFolder }); // deprecated setting for fallback.
 
 	const resolvePath = (lspBin: string, workspaceFolder?: WorkspaceFolder) => {
-		return workspaceFolder
-			? Uri.file(Utils.resolvePath(workspaceFolder.uri, lspBin).fsPath)
-			: Uri.file(lspBin);
+		// If the specified path is relative, resolve it against the root of
+		// the workspace folder (if any).
+		if (workspaceFolder && !isAbsolute(lspBin)) {
+			return Uri.file(Utils.resolvePath(workspaceFolder.uri, lspBin).fsPath);
+		}
+
+		return Uri.file(lspBin);
 	};
 
 	if (typeof lspBin === "string") {
@@ -114,12 +119,18 @@ export const debounce = <TArgs extends unknown[]>(
 
 export const safeSpawnSync = (
 	command: string,
-	args?: readonly string[],
+	args: readonly string[] = [],
 ): string | undefined => {
 	let output: string | undefined;
 
+	// If the command is a powershell script, run it through powershell
+	if (extname(command) === ".ps1") {
+		args = [command, ...args];
+		command = "powershell.exe";
+	}
+
 	try {
-		const result = spawnSync(command, args ?? [], { encoding: "utf8" });
+		const result = spawnSync(command, args, { encoding: "utf8" });
 
 		if (result.error || result.status !== 0) {
 			output = undefined;
