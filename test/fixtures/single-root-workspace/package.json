@@ -2,6 +2,6 @@
 	"name": "foo",
 	"version": "0.0.0",
 	"devDependencies": {
-		"@biomejs/biome": "^2.0.0-beta.4"
+		"@biomejs/biome": "^2.0.6"
 	}
 }
