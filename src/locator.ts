@@ -54,7 +54,7 @@ export default class Locator {
 	 * In these cases, we need to attempt to resolve the real Biome binary
 	 * by executing the shim with the `__where_am_i` command. This only works
 	 * from Biome v2 onwards, so if the shim is from an earlier version,
-	 * we will return the original shim path.
+	 * we will return the original path.
 	 */
 	private async unshim(biome: Uri | undefined): Promise<Uri | undefined> {
 		if (!biome) {
@@ -87,7 +87,7 @@ export default class Locator {
 				);
 			}
 
-			return biome;
+			return Uri.file(realPath);
 		} catch {
 			return biome;
 		}
