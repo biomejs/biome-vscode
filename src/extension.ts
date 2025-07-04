@@ -192,6 +192,7 @@ export default class Extension {
 
 		for (const [_folder, biome] of this.biomes) {
 			await biome.stop();
+			this.biomes.delete(_folder);
 		}
 
 		this.logger.info("⏹️ Biome extension stopped.");
@@ -293,12 +294,11 @@ export default class Extension {
 		const createGlobalInstanceIfNotExists = async () => {
 			if (!this.biomes.get("global")) {
 				this.biomes.set("global", Biome.createGlobalInstance(this));
-				this.biomes.get("global")?.start();
 			}
 		};
 
 		const createGlobalInstanceIfNeeded = async (
-			editor: TextEditor | undefined,
+			editor?: TextEditor | undefined,
 		) => {
 			this.logger.debug(editor?.document?.uri.toString());
 
@@ -341,7 +341,10 @@ export default class Extension {
 
 		// Register the listener for when the active text editor changes
 		window.onDidChangeActiveTextEditor(
-			debounce(createGlobalInstanceIfNeeded, 0),
+			debounce(async () => {
+				await createGlobalInstanceIfNeeded();
+				await this.biomes.get("global")?.start();
+			}, 0),
 		);
 	}
 
