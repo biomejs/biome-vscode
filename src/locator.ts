@@ -44,6 +44,69 @@ export default class Locator {
 	constructor(private readonly biome: Biome) {}
 
 	/**
+	 * Unshims the Biome binary if it is a shim.
+	 *
+	 * Sometimes, users specify the path to what they think is the Biome binary,
+	 * but it is actually a shim to the real binary. This can also happen when
+	 * package managers create shims that they place in the PATH.
+	 *
+	 * In these cases, we need to attempt to resolve the real Biome binary
+	 * by executing the shim with the `__where_am_i` command. This only works
+	 * from Biome v2 onwards, so if the shim is from an earlier version,
+	 * we will return the original path.
+	 */
+	private async unshim(biome: Uri | undefined): Promise<Uri | undefined> {
+		if (!biome) {
+			return biome;
+		}
+
+		this.biome.logger.debug(`🔍 Unshimming Biome binary at "${biome.fsPath}"`);
+
+		try {
+			// Check the version of Biome
+			const version = safeSpawnSync(biome.fsPath, ["--version"])
+				?.split("Version: ")[1]
+				?.trim();
+
+			if (!version) {
+				this.biome.logger.warn(
+					`🔍 Could not determine the version of Biome binary at "${biome.fsPath}"`,
+				);
+				return biome;
+			}
+
+			if (version.startsWith("1")) {
+				this.biome.logger.warn(
+					`🔍 Cannot unshim Biome binary at "${biome.fsPath}" because it is version 1.x.x. Please update to version 2 or higher.`,
+				);
+				return biome;
+			}
+
+			// If the version is 2 or higher, we can safely unshim
+			const realPath = safeSpawnSync(biome.fsPath, ["__where_am_i"]);
+
+			if (!realPath) {
+				this.biome.logger.warn(
+					`🔍 Could not resolve the real path for Biome binary at "${biome.fsPath}"`,
+				);
+				return biome;
+			}
+
+			// If the paths differ, we have successfully unshimmed the binary
+			// and we'll log a warning to that effect.
+			if (realPath !== biome.fsPath) {
+				this.biome.logger.warn(
+					`🔍 Unshimmed Biome binary from "${biome.fsPath}" to "${realPath}"`,
+				);
+
+				return Uri.file(realPath);
+			}
+		} catch {
+			return biome;
+		}
+	}
+
+	/**
 	 * Attempts to locate the Biome binary in the context of a workspace folder.
 	 *
 	 * This method will try to find the Biome binary using the following strategies:
@@ -54,13 +117,14 @@ export default class Locator {
 	 * 4. Check the system's PATH environment variable for a Biome binary.
 	 */
 	public async findBiomeForWorkspaceFolder(): Promise<Uri | undefined> {
-		return (
+		const biome =
 			(await this.findBiomeInSettings()) ??
 			(await this.findBiomeInNodeModules()) ??
 			(await this.findBiomeInGlobalNodeModules()) ??
 			(await this.findBiomeInYarnPnp()) ??
-			(await this.findBiomeInPath())
-		);
+			(await this.findBiomeInPath());
+
+		return await this.unshim(biome);
 	}
 
 	/**
