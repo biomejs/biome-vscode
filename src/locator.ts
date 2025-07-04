@@ -77,7 +77,7 @@ export default class Locator {
 
 			if (version.startsWith("1")) {
 				this.biome.logger.warn(
-					`Cannot unshim Biome binary at "${biome.fsPath}" because it is version 1.x.x. Please update to version 2 or higher.`,
+					`🔍 Cannot unshim Biome binary at "${biome.fsPath}" because it is version 1.x.x. Please update to version 2 or higher.`,
 				);
 				return biome;
 			}
