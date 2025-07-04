@@ -44,11 +44,6 @@ export default class Locator {
 	 */
 	constructor(private readonly biome: Biome) {}
 
-	// Sometimes, either will specify the path to what they think is the biome binary
-	// but is actually a shim to the real binary. This can also happend when package
-	// managers create shims that they place in the PATH. If these cases, we need to
-	// attempt
-
 	/**
 	 * Unshims the Biome binary if it is a shim.
 	 *
