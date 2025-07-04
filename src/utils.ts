@@ -76,7 +76,7 @@ export const getLspBin = (
 		}) || config<string>("lspBin", { scope: workspaceFolder }); // deprecated setting for fallback.
 
 	const resolvePath = (lspBin: string, workspaceFolder?: WorkspaceFolder) => {
-		// If the specified path is relative, resolve it againt the root of
+		// If the specified path is relative, resolve it against the root of
 		// the workspace folder (if any).
 		if (workspaceFolder && !isAbsolute(lspBin)) {
 			return Uri.file(Utils.resolvePath(workspaceFolder.uri, lspBin).fsPath);
