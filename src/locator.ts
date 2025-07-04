@@ -101,9 +101,13 @@ export default class Locator {
 
 				return Uri.file(realPath);
 			}
-		} catch {
-			return biome;
+		} catch (error) {
+			this.biome.logger.warn(
+				`🔍 Error while unshimming Biome binary at "${biome.fsPath}": ${error}`,
+			);
 		}
+
+		return biome;
 	}
 
 	/**
