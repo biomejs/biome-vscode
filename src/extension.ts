@@ -341,8 +341,8 @@ export default class Extension {
 
 		// Register the listener for when the active text editor changes
 		window.onDidChangeActiveTextEditor(
-			debounce(async () => {
-				await createGlobalInstanceIfNeeded();
+			debounce(async (editor?: TextEditor) => {
+				await createGlobalInstanceIfNeeded(editor);
 				await this.biomes.get("global")?.start();
 			}, 0),
 		);
