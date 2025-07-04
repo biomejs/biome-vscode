@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { delimiter, dirname } from "node:path";
@@ -65,19 +64,33 @@ export default class Locator {
 
 		try {
 			// Check the version of Biome
-			const version = spawnSync(biome.fsPath, ["--version"])
-				.stdout.toString()
-				.split("Version: ")[1]
+			const version = safeSpawnSync(biome.fsPath, ["--version"])
+				?.split("Version: ")[1]
 				?.trim();
 
+			if (!version) {
+				this.biome.logger.warn(
+					`🔍 Could not determine the version of Biome binary at "${biome.fsPath}"`,
+				);
+				return biome;
+			}
+
 			if (version.startsWith("1")) {
+				this.biome.logger.warn(
+					`Cannot unshim Biome binary at "${biome.fsPath}" because it is version 1.x.x. Please update to version 2 or higher.`,
+				);
 				return biome;
 			}
 
 			// If the version is 2 or higher, we can safely unshim
-			const realPath = spawnSync(biome.fsPath, ["__where_am_i"])
-				.stdout.toString()
-				.trim();
+			const realPath = safeSpawnSync(biome.fsPath, ["__where_am_i"]);
+
+			if (!realPath) {
+				this.biome.logger.warn(
+					`🔍 Could not resolve the real path for Biome binary at "${biome.fsPath}"`,
+				);
+				return biome;
+			}
 
 			// If the paths differ, we have successfully unshimmed the binary
 			// and we'll log a warning to that effect.
@@ -85,9 +98,9 @@ export default class Locator {
 				this.biome.logger.warn(
 					`🔍 Unshimmed Biome binary from "${biome.fsPath}" to "${realPath}"`,
 				);
-			}
 
-			return Uri.file(realPath);
+				return Uri.file(realPath);
+			}
 		} catch {
 			return biome;
 		}
