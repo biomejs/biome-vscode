@@ -1,5 +1,21 @@
 # biome
 
+## 3.1.0
+
+### Minor Changes
+
+- [#644](https://github.com/biomejs/biome-vscode/pull/644) [`9b90787`](https://github.com/biomejs/biome-vscode/commit/9b90787accb1fa45113ab0f67b4e559098bd461a) Thanks [@nhedger](https://github.com/nhedger)! - Add support for locating Biome in global node_modules
+
+- [#670](https://github.com/biomejs/biome-vscode/pull/670) [`e4d6bd0`](https://github.com/biomejs/biome-vscode/commit/e4d6bd0aaeaf2cb03245f117f11b4a939d698759) Thanks [@nhedger](https://github.com/nhedger)! - Resolve biome binary shims to real binary
+
+### Patch Changes
+
+- [#683](https://github.com/biomejs/biome-vscode/pull/683) [`f63695c`](https://github.com/biomejs/biome-vscode/commit/f63695c2d9e87d7a17561a912cdc6f2a77728e12) Thanks [@nhedger](https://github.com/nhedger)! - Correctly dispose of watchers to prevent duplicate sessions
+
+- [`73c05eb`](https://github.com/biomejs/biome-vscode/commit/73c05eb3e112468a31577ffd73d5d7c7350f45a1) Thanks [@nhedger](https://github.com/nhedger)! - Fix absolute path handling in biome.lsp.bin
+
+- [#682](https://github.com/biomejs/biome-vscode/pull/682) [`8c694ee`](https://github.com/biomejs/biome-vscode/commit/8c694eec3265b716e16b14d17c3868e57e8f02eb) Thanks [@nhedger](https://github.com/nhedger)! - Ensure only one global LSP session is created
+
 ## 3.0.3
 
 ### Patch Changes
