@@ -117,13 +117,14 @@ export default class Locator {
 	 * 4. Check the system's PATH environment variable for a Biome binary.
 	 */
 	public async findBiomeForWorkspaceFolder(): Promise<Uri | undefined> {
-		return this.unshim(
+		const biome =
 			(await this.findBiomeInSettings()) ??
-				(await this.findBiomeInNodeModules()) ??
-				(await this.findBiomeInGlobalNodeModules()) ??
-				(await this.findBiomeInYarnPnp()) ??
-				(await this.findBiomeInPath()),
-		);
+			(await this.findBiomeInNodeModules()) ??
+			(await this.findBiomeInGlobalNodeModules()) ??
+			(await this.findBiomeInYarnPnp()) ??
+			(await this.findBiomeInPath());
+
+		return this.unshim(biome);
 	}
 
 	/**
