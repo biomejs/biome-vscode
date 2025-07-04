@@ -1,5 +1,12 @@
 import { chmodSync, copyFileSync } from "node:fs";
-import { RelativePattern, Uri, type WorkspaceFolder, workspace } from "vscode";
+import {
+	type Disposable,
+	type FileSystemWatcher,
+	RelativePattern,
+	Uri,
+	type WorkspaceFolder,
+	workspace,
+} from "vscode";
 import { platformSpecificBinaryName } from "./constants";
 import type Extension from "./extension";
 import Locator from "./locator";
@@ -23,6 +30,16 @@ export default class Biome {
 	 * LSP session for this Biome instance.
 	 */
 	private _session: Session | undefined;
+
+	/**
+	 * The lockfile watcher for this Biome instance.
+	 */
+	private _lockfileWatcher: FileSystemWatcher | undefined;
+
+	/**
+	 * The configuration watcher for this Biome instance.
+	 */
+	private _configWatcher: Disposable | undefined;
 
 	/**
 	 * The locator responsible for finding the Biome binary to use.
@@ -362,34 +379,35 @@ export default class Biome {
 			return;
 		}
 
-		const watcher = workspace.createFileSystemWatcher(
+		if (this._lockfileWatcher) {
+			return;
+		}
+
+		this._lockfileWatcher = workspace.createFileSystemWatcher(
 			new RelativePattern(
 				this.workspaceFolder,
 				"{package-lock.json,yarn.lock,bun.lockb,bun.lock,pnpm-lock.yaml}",
 			),
 		);
 
-		watcher.onDidChange(
+		this._lockfileWatcher.onDidChange(
 			debounce((event) => {
 				this.logger.info(`🔒 Lockfile "${event.fsPath}" changed.`);
 				this.restart();
-				watcher.dispose();
 			}),
 		);
 
-		watcher.onDidCreate(
+		this._lockfileWatcher.onDidCreate(
 			debounce((event) => {
 				this.logger.info(`🔒 Lockfile "${event.fsPath}" created.`);
 				this.restart();
-				watcher.dispose();
 			}),
 		);
 
-		watcher.onDidDelete(
+		this._lockfileWatcher.onDidDelete(
 			debounce((event) => {
 				this.logger.info(`🔒 Lockfile "${event.fsPath}" deleted.`);
 				this.restart();
-				watcher.dispose();
 			}),
 		);
 
@@ -397,29 +415,36 @@ export default class Biome {
 
 		// Register the watcher in the extension context's subscriptions
 		// to ensure it is disposed of when the extension is deactivated.
-		this.extension.context.subscriptions.push(watcher);
+		this.extension.context.subscriptions.push(this._lockfileWatcher);
 	}
 
 	protected listenForConfigChanges() {
-		const configWatcher = workspace.onDidChangeConfiguration(
-			debounce(async (event) => {
-				if (event.affectsConfiguration("biome", this.workspaceFolder)) {
-					this.logger.info("⚙️ Configuration changed.");
-					configWatcher.dispose();
-					await this.restart();
-				}
-			}, 1000),
-		);
-
+		if (!this._configWatcher) {
+			this._configWatcher = workspace.onDidChangeConfiguration(
+				debounce(async (event) => {
+					if (event.affectsConfiguration("biome", this.workspaceFolder)) {
+						this.logger.info("⚙️ Configuration changed.");
+						await this.restart();
+					}
+				}, 1000),
+			);
+		}
 		this.logger.info("⚙️ Started listening for extension settings changes.");
-
-		this.extension.context.subscriptions.push(configWatcher);
+		this.extension.context.subscriptions.push(this._configWatcher);
 	}
 
 	/**
 	 * Cleans up the temporary directory.
 	 */
 	protected async cleanup(): Promise<void> {
+		// Dispose of the config watcher
+		this._configWatcher?.dispose();
+		this._configWatcher = undefined;
+
+		// Dispose of the lockfile watcher
+		this._lockfileWatcher?.dispose();
+		this._lockfileWatcher = undefined;
+
 		// Nothing to cleanup if we're a global instance
 		if (this.isGlobal) {
 			return;
