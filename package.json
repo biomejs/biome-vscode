@@ -137,6 +137,13 @@
 				"id": "biome_syntax_tree",
 				"extensions": [
 					".rast"
+				],
+				"configuration": "./resources/languages/gritql.jsonc"
+			},
+			{
+				"id": "gritql",
+				"extensions": [
+					".grit"
 				]
 			}
 		],
@@ -145,6 +152,21 @@
 				"language": "biome_syntax_tree",
 				"scopeName": "source.biome_syntax_tree",
 				"path": "./resources/grammars/biome-syntax-tree.tmGrammar.json"
+			},
+			{
+				"language": "gritql",
+				"scopeName": "source.grit",
+				"path": "./resources/grammars/gritql.tmGrammar.json"
+			},
+			{
+				"scopeName": "markdown.grit.codeblock",
+				"path": "./resources/grammars/gritql.markdown.tmGrammar.json",
+				"injectTo": [
+					"text.html.markdown"
+				],
+				"embeddedLanguages": {
+					"meta.embedded.block.grit": "grit"
+				}
 			}
 		]
 	},

@@ -1,0 +1,401 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "grit",
+	"patterns": [
+		{
+			"include": "#info"
+		},
+		{
+			"include": "#entity.definition"
+		},
+		{
+			"include": "#entity.foreign"
+		},
+		{
+			"include": "#expression"
+		}
+	],
+	"repository": {
+		"comment-single-line": {
+			"patterns": [
+				{
+					"name": "comment.grit",
+					"match": "//.+$"
+				}
+			]
+		},
+		"comment-expression": {
+			"begin": "\\/\\*",
+			"end": "\\*\\/",
+			"name": "comment.grit"
+		},
+		"paren-expression": {
+			"begin": "\\(",
+			"end": "\\)",
+			"beginCaptures": {
+				"0": { "name": "punctuation.paren.open.grit" }
+			},
+			"endCaptures": {
+				"0": { "name": "punctuation.paren.close.grit" }
+			},
+			"name": "expression.group.grit",
+			"patterns": [{ "include": "#expression" }]
+		},
+		"curlybrace-expression": {
+			"begin": "{",
+			"end": "}",
+			"beginCaptures": {
+				"0": { "name": "punctuation.curlybrace.open.grit" }
+			},
+			"endCaptures": {
+				"0": { "name": "punctuation.curlybrace.close.grit" }
+			},
+			"name": "expression.group.grit",
+			"patterns": [{ "include": "#expression" }]
+		},
+		"squarebracket-expression": {
+			"begin": "\\[",
+			"end": "\\]",
+			"beginCaptures": {
+				"0": { "name": "punctuation.squarebracket.open.grit" }
+			},
+			"endCaptures": {
+				"0": { "name": "punctuation.squarebracket.close.grit" }
+			},
+			"name": "expression.group.grit",
+			"patterns": [{ "include": "#expression" }]
+		},
+		"info": {
+			"patterns": [
+				{
+					"include": "#meta.engine"
+				},
+				{
+					"include": "#meta.language"
+				}
+			]
+		},
+		"meta.engine": {
+			"name": "meta.engine.grit",
+			"begin": "(engine) (marzano)\\(([\\d.]+)\\)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.grit"
+				},
+				"2": {
+					"name": "constant.language.grit"
+				},
+				"3": {
+					"name": "constant.numeric.grit"
+				}
+			},
+			"end": "(\\n)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.terminator.grit"
+				}
+			}
+		},
+		"meta.language": {
+			"name": "meta.language.grit",
+			"begin": "(language) (\\w+)(?:\\(([\\w]+)\\))?",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.grit"
+				},
+				"2": {
+					"name": "constant.language.grit"
+				},
+				"3": {
+					"name": "constant.language.grit"
+				}
+			},
+			"end": "(\\n)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.terminator.grit"
+				}
+			}
+		},
+		"entity.definition": {
+			"name": "meta.definition.grit",
+			"begin": "(private )?(pattern|function|predicate) (\\w+)\\((.*)\\) \\{",
+			"beginCaptures": {
+				"1": {
+					"name": "constant.language.grit"
+				},
+				"2": {
+					"name": "keyword.control.grit"
+				},
+				"3": {
+					"name": "entity.name.function.grit"
+				},
+				"4": {
+					"name": "variable.parameter.function.grit"
+				}
+			},
+			"patterns": [{ "include": "#expression" }],
+			"end": "\\}(\\n)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.terminator.grit"
+				}
+			}
+		},
+		"entity.foreign": {
+			"name": "meta.foreign.grit",
+			"begin": "(private )?(function) (\\w+)\\((.*)\\)(?: (js|html|css|json|java|csharp|markdown|python|go|rust|ruby|sol|solidity|hcl|yaml)) \\{",
+			"beginCaptures": {
+				"1": {
+					"name": "constant.language.grit"
+				},
+				"2": {
+					"name": "keyword.control.grit"
+				},
+				"3": {
+					"name": "entity.name.function.grit"
+				},
+				"4": {
+					"name": "variable.parameter.function.grit"
+				},
+				"5": {
+					"name": "meta.language.grit"
+				}
+			},
+			"patterns": [
+				{
+					"name": "nested.curly.grit",
+					"begin": "\\{",
+					"end": "\\}",
+					"applyEndPatternLast": 1,
+					"patterns": [
+						{
+							"include": "#variables"
+						},
+						{
+							"match": "(?:[^{}])*"
+						},
+						{
+							"include": "#nested.curly.grit"
+						}
+					]
+				},
+				{
+					"include": "#variables"
+				}
+			],
+			"end": "\\}(\\n)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.terminator.grit"
+				}
+			}
+		},
+		"expression": {
+			"patterns": [
+				{
+					"include": "#comment-single-line"
+				},
+				{
+					"include": "#comment-expression"
+				},
+				{
+					"include": "#paren-expression"
+				},
+				{
+					"include": "#curlybrace-expression"
+				},
+				{
+					"include": "#squarebracket-expression"
+				},
+				{
+					"include": "#keywords"
+				},
+				{
+					"include": "#grit-snippet"
+				},
+				{
+					"include": "#string-double-quoted"
+				},
+				{
+					"include": "#constants"
+				},
+				{
+					"include": "#operators"
+				},
+				{
+					"include": "#variables"
+				}
+			]
+		},
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.grit",
+					"match": "\\b(if|then|else|as|any|some|contains|before|after|semantic|until|where|maybe|not|or|and|within|bubble|import|private|sequential|limit)\\b"
+				}
+			]
+		},
+		"grit-snippet": {
+			"patterns": [
+				{
+					"include": "#grit-snippet-tick"
+				},
+				{
+					"include": "#grit-snippet-lang"
+				}
+			]
+		},
+		"grit-snippet-lang": {
+			"begin": "((js|html|css|json|java|csharp|markdown|python|go|rust|ruby|sol|solidity|hcl|yaml)\")",
+			"beginCaptures": {
+				"0": {
+					"name": "markup.quote.literal.begin.grit"
+				},
+				"2": {
+					"name": "markup.quote.literal.language.grit"
+				}
+			},
+			"end": "(\")",
+			"endCaptures": {
+				"0": {
+					"name": "markup.quote.literal.end.grit"
+				}
+			},
+			"name": "string.interpolated.grit-snippet",
+			"patterns": [
+				{
+					"include": "#interpolated-variables"
+				}
+			]
+		},
+		"grit-snippet-tick": {
+			"begin": "(`)",
+			"beginCaptures": {
+				"0": {
+					"name": "markup.quote.literal.begin.grit"
+				}
+			},
+			"end": "(`)",
+			"endCaptures": {
+				"0": {
+					"name": "markup.quote.literal.end.grit"
+				}
+			},
+			"name": "string.interpolated.grit-snippet",
+			"patterns": [
+				{
+					"include": "#interpolated-variables"
+				}
+			]
+		},
+		"string-double-quoted": {
+			"begin": "(\")",
+			"beginCaptures": {
+				"0": {
+					"name": "markup.quote.string.begin.grit"
+				}
+			},
+			"end": "(\")",
+			"endCaptures": {
+				"0": {
+					"name": "markup.quote.string.end.grit"
+				}
+			},
+			"name": "string.double-quoted.grit",
+			"patterns": [
+				{
+					"include": "#interpolated-variables"
+				}
+			]
+		},
+		"interpolated-variables": {
+			"patterns": [
+				{
+					"match": "\\$\\b[a-zA-Z][a-zA-Z0-9_]*\\b",
+					"name": "variable.interpolated.grit"
+				},
+				{
+					"match": "\\$\\b_[a-zA-Z0-9_]*\\b",
+					"name": "variable.special.interpolated.grit"
+				},
+				{
+					"match": "\\$\\.\\.\\.",
+					"name": "variable.special.interpolated.grit"
+				},
+				{
+					"begin": "(\\$\\[)",
+					"beginCaptures": {
+						"0": {
+							"name": "variable.interpolated.begin.grit"
+						}
+					},
+					"end": "(\\])",
+					"endCaptures": {
+						"0": {
+							"name": "variable.interpolated.end.grit"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#variables"
+						}
+					]
+				}
+			]
+		},
+		"variables": {
+			"patterns": [
+				{
+					"match": "\\b(program)\\b",
+					"name": "variable.special.grit"
+				},
+				{
+					"match": "\\$\\b[a-z][a-zA-Z0-9_]*\\b",
+					"name": "variable.startsign.grit"
+				},
+				{
+					"match": "\\b[a-zA-Z][a-zA-Z0-9_]*\\b",
+					"name": "variable.grit"
+				},
+				{
+					"match": "\\$?\\b_[a-zA-Z0-9_]*\\b",
+					"name": "variable.special.grit"
+				},
+				{
+					"match": "\\$?\\.\\.\\.",
+					"name": "variable.special.grit"
+				}
+			]
+		},
+		"constants": {
+			"patterns": [
+				{
+					"match": "([0-9]+\\.[0-9]+)",
+					"name": "constant.numeric.decimal.grit"
+				},
+				{
+					"match": "([0-9]+)",
+					"name": "constant.numeric.integer.grit"
+				},
+				{
+					"match": "(true|false)",
+					"name": "constant.language.grit"
+				},
+				{
+					"match": "(Top|Bottom)",
+					"name": "constant.language.grit"
+				}
+			]
+		},
+		"operators": {
+			"patterns": [
+				{
+					"match": "(<::|<:|&&|&|!|==|!=|=>|=:|=|/|%|\\|\\||\\+|\\*|<|>|\\|)",
+					"name": "keyword.operator.grit"
+				}
+			]
+		}
+	},
+	"scopeName": "source.grit"
+}

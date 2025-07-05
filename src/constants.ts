@@ -12,6 +12,7 @@ export const supportedLanguages: string[] = [
 	"astro",
 	"css",
 	"graphql",
+	"gritql",
 	"html",
 	"javascript",
 	"javascriptreact",
