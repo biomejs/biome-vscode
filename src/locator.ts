@@ -138,12 +138,14 @@ export default class Locator {
 	 *
 	 * 1. Check the user's settings for a custom Biome binary path.
 	 * 2. Check the system's PATH environment variable for a Biome binary.
+	 * 3. Check if the output of the "mise which biome" command contains the path of the Biome binary.
 	 */
 	public async findBiomeForGlobalInstance(): Promise<Uri | undefined> {
 		return (
 			(await this.findBiomeInSettings()) ??
 			(await this.findBiomeInGlobalNodeModules()) ??
 			(await this.findBiomeInPath()) ??
+			(await this.findBiomeInMise()) ??
 			(await this.suggestInstallingBiomeGlobally())
 		);
 	}
@@ -414,6 +416,36 @@ export default class Locator {
 			}
 		}
 
+		return undefined;
+	}
+
+	/**
+	 * Searches for the Biome binary path using the mise-en-place tool.
+	 *
+	 * 1. Executes the "mise which biome" command synchronously to get the Biome binary path.
+	 * 2. Checks if the output contains the platform-specific binary name.
+	 * 3. If the binary exists, returns its path as a Uri.
+	 * 4. Returns undefined if the binary is not found or if an error occurs (e.g., the command does not exist).
+	 *
+	 * @returns The Uri of the Biome binary, or undefined if not found or on error.
+	 */
+	private async findBiomeInMise(): Promise<Uri | undefined> {
+		this.biome.logger.debug(
+			"🔍 Running 'mise which biome' command and looking for a Biome binary path",
+		);
+
+		const output = safeSpawnSync("mise", ["which", "biome"]);
+		if (!output) {
+			this.biome.logger.warn("The 'mise' command is not available.");
+			return undefined;
+		}
+		const biome = Uri.file(output);
+		if (await fileExists(biome)) {
+			this.biome.logger.debug(
+				`🔍 Found Biome binary at "${biome.fsPath}" in the mise path`,
+			);
+			return biome;
+		}
 		return undefined;
 	}
 
