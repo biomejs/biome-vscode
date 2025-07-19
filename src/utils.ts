@@ -1,4 +1,7 @@
-import { spawnSync } from "node:child_process";
+import {
+	type SpawnSyncOptionsWithStringEncoding,
+	spawnSync,
+} from "node:child_process";
 import { extname, isAbsolute } from "node:path";
 import {
 	type ConfigurationScope,
@@ -117,9 +120,15 @@ export const debounce = <TArgs extends unknown[]>(
 	};
 };
 
+export type SafeSpawnSyncOptions = Omit<
+	SpawnSyncOptionsWithStringEncoding,
+	"encoding"
+>;
+
 export const safeSpawnSync = (
 	command: string,
 	args: readonly string[] = [],
+	options?: SafeSpawnSyncOptions,
 ): string | undefined => {
 	let output: string | undefined;
 
@@ -130,7 +139,10 @@ export const safeSpawnSync = (
 	}
 
 	try {
-		const result = spawnSync(command, args, { encoding: "utf8" });
+		const result = spawnSync(command, args, {
+			...(options ?? {}),
+			encoding: "utf8",
+		});
 
 		if (result.error || result.status !== 0) {
 			output = undefined;

@@ -16,7 +16,13 @@ import {
 	platformSpecificBinaryName,
 	platformSpecificNodePackageName,
 } from "./constants";
-import { config, fileExists, getLspBin, safeSpawnSync } from "./utils";
+import {
+	config,
+	fileExists,
+	getLspBin,
+	type SafeSpawnSyncOptions,
+	safeSpawnSync,
+} from "./utils";
 
 export default class Locator {
 	private get globalNodeModulesPaths(): Record<string, Uri | undefined> {
@@ -63,8 +69,19 @@ export default class Locator {
 		this.biome.logger.debug(`🔍 Unshimming Biome binary at "${biome.fsPath}"`);
 
 		try {
+			const spawnSyncOptions: SafeSpawnSyncOptions = {};
+
+			// Set the current working directory to the project root, if it exists. This runs the `biome` binary from the
+			// project root in case the user's local development environment depends on this, such as when using `asdf`.
+			if (this.biome.workspaceFolder?.uri)
+				spawnSyncOptions.cwd = this.biome.workspaceFolder.uri.fsPath;
+
 			// Check the version of Biome
-			const version = safeSpawnSync(biome.fsPath, ["--version"])
+			const version = safeSpawnSync(
+				biome.fsPath,
+				["--version"],
+				spawnSyncOptions,
+			)
 				?.split("Version: ")[1]
 				?.trim();
 
@@ -83,7 +100,11 @@ export default class Locator {
 			}
 
 			// If the version is 2 or higher, we can safely unshim
-			const realPath = safeSpawnSync(biome.fsPath, ["__where_am_i"]);
+			const realPath = safeSpawnSync(
+				biome.fsPath,
+				["__where_am_i"],
+				spawnSyncOptions,
+			);
 
 			if (!realPath) {
 				this.biome.logger.warn(
@@ -153,21 +174,21 @@ export default class Locator {
 	 *
 	 * This strategy is responsible for finding the Biome binary as specified
 	 * in the user's settings in the `biome.lsp.bin` configuration option.
-	 * 
+	 *
 	 * This strategy supports platform-specific settings, meaning that the user can
 	 * specify different binaries for different combos of OS, architecture and libc.
-	 * 
+	 *
 	 * If the `biome.lsp.bin` setting is specified as a string, the strategy will
 	 * attempt to locate the binary at the specified path. If the binary is not found
 	 * at the specified path, the strategy will return `undefined`.
-	 * 
+	 *
 	 * If the `biome.lsp.bin` setting is specified as an object, the strategy will
  	 * attempt to locate the binary at the specified path for the current platform
      * (OS, architecture and libc). If the binary is not found at the specified path,
      * the strategy will return `undefined`. The keys of the object are the OS, architecture
      * and libc combos, concatenated with a dash (`-`), and the values are the paths to
      * the binaries.
-	 * 
+	 *
 	 * Example:
 	 *
 	 * ```json
