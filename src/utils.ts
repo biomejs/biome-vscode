@@ -144,3 +144,45 @@ export const safeSpawnSync = (
 
 	return output;
 };
+
+export const searchForFileRecursively = async (
+	file: string,
+	dirUri: Uri,
+	skipDirectories: string[] = [],
+	maxDepth: number = 3,
+): Promise<Uri | undefined> => {
+	if (maxDepth <= 0) {
+		return;
+	}
+
+	try {
+		const entries = await workspace.fs.readDirectory(dirUri);
+
+		const filePath = Uri.joinPath(dirUri, file);
+		if (await fileExists(filePath)) {
+			return dirUri;
+		}
+
+		for (const [name, type] of entries) {
+			if (type !== FileType.Directory || skipDirectories.includes(name)) {
+				continue;
+			}
+
+			const subDirUri = Uri.joinPath(dirUri, name);
+			const filePath = await searchForFileRecursively(
+				file,
+				subDirUri,
+				skipDirectories,
+				maxDepth - 1,
+			);
+
+			if (filePath) {
+				return filePath;
+			}
+		}
+	} catch (_) {
+		// Directory might not be readable, continue silently
+	}
+
+	return;
+};
