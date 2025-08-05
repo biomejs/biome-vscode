@@ -73,14 +73,6 @@ export default class Session {
 	}
 
 	/**
-	 * Restarts the LSP session.
-	 */
-	public async restart() {
-		await this.stop();
-		await this.start();
-	}
-
-	/**
 	 * Creates a new language client for the session.
 	 */
 	private createLanguageClient(): LanguageClient {
