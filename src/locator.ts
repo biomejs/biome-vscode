@@ -16,7 +16,13 @@ import {
 	platformSpecificBinaryName,
 	platformSpecificNodePackageName,
 } from "./constants";
-import { config, fileExists, getLspBin, safeSpawnSync } from "./utils";
+import {
+	config,
+	fileExists,
+	getLspBin,
+	safeSpawnSync,
+	searchForFileRecursively,
+} from "./utils";
 
 export default class Locator {
 	private get globalNodeModulesPaths(): Record<string, Uri | undefined> {
@@ -126,7 +132,8 @@ export default class Locator {
 			(await this.findBiomeInNodeModules()) ??
 			(await this.findBiomeInGlobalNodeModules()) ??
 			(await this.findBiomeInYarnPnp()) ??
-			(await this.findBiomeInPath());
+			(await this.findBiomeInPath()) ??
+			(await this.findBiomeInSubDir());
 
 		return await this.unshim(biome);
 	}
@@ -441,5 +448,48 @@ export default class Locator {
 		}
 
 		return undefined;
+	}
+
+	private async findBiomeInSubDir(): Promise<Uri | undefined> {
+		const folder = this.biome.workspaceFolder;
+		if (!folder) {
+			return;
+		}
+
+		this.biome.logger.debug("🔍 Looking for Biome binary in sub directories");
+
+		const skipDirectories = [
+			".git",
+			"node_modules",
+			"dist",
+			"build",
+			"coverage",
+			"target", // Rust
+			"vendor", // Go/PHP
+			".next",
+			".nuxt",
+			"out",
+			"temp",
+		];
+
+		const configPath = await searchForFileRecursively(
+			"biome.json",
+			folder.uri,
+			skipDirectories,
+		);
+		if (!configPath) {
+			this.biome.logger.debug("🔍 No Biome binary found in sub directories");
+			return;
+		}
+
+		const biome =
+			(await this.findBiomeInNodeModules(configPath)) ??
+			(await this.findBiomeInYarnPnp());
+
+		if (!biome) {
+			this.biome.logger.debug("🔍 No Biome binary found in sub directories");
+		}
+
+		return biome;
 	}
 }
