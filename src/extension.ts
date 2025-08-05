@@ -110,7 +110,8 @@ export default class Extension {
 	 * Creates the extension from the context
 	 */
 	public static create(context: ExtensionContext): Extension {
-		return Extension.instance ?? new Extension(context);
+		Extension.instance ??= new Extension(context);
+		return Extension.instance;
 	}
 
 	/**
@@ -293,7 +294,10 @@ export default class Extension {
 	private async createGlobalInstance(): Promise<void> {
 		const createGlobalInstanceIfNotExists = async () => {
 			if (!this.biomes.get("global")) {
-				this.biomes.set("global", Biome.createGlobalInstance(this));
+				const biome = Biome.createGlobalInstance(this);
+				biome.start();
+
+				this.biomes.set("global", biome);
 			}
 		};
 
@@ -343,8 +347,7 @@ export default class Extension {
 		window.onDidChangeActiveTextEditor(
 			debounce(async (editor?: TextEditor) => {
 				await createGlobalInstanceIfNeeded(editor);
-				await this.biomes.get("global")?.start();
-			}, 0),
+			}, 10),
 		);
 	}
 

@@ -185,6 +185,10 @@ export default class Biome {
 	 * Starts the Biome instance.
 	 */
 	public async start() {
+		if (this._session && this.state !== "error") {
+			return; // Avoid starting the same session multiple times.
+		}
+
 		this.listenForLockfilesChanges();
 		this.listenForConfigChanges();
 
@@ -212,12 +216,6 @@ export default class Biome {
 			this.workspaceFolder,
 			this.singleFileFolder,
 		);
-
-		if (!this._session) {
-			this.state = "error";
-			this.logger.error("Unable to create the Biome session.");
-			return;
-		}
 
 		try {
 			await this._session?.start();
