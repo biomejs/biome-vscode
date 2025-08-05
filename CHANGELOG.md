@@ -1,5 +1,11 @@
 # biome
 
+## 3.1.1
+
+### Patch Changes
+
+- [`39bdeab`](https://github.com/biomejs/biome-vscode/commit/39bdeab6dcf0ccf9537a442009d7a6e0b6450ced) Thanks [@nhedger](https://github.com/nhedger)! - Only start global session once
+
 ## 3.1.0
 
 ### Minor Changes
