@@ -1,5 +1,11 @@
 # biome
 
+## 3.1.2
+
+### Patch Changes
+
+- [#720](https://github.com/biomejs/biome-vscode/pull/720) [`d7da4ad`](https://github.com/biomejs/biome-vscode/commit/d7da4ad4a7ce46e6369d3264ec63da48441f551e) Thanks [@stathis-alexander](https://github.com/stathis-alexander)! - run biome from the project root when determining version
+
 ## 3.1.1
 
 ### Patch Changes
