@@ -1,5 +1,11 @@
 # biome
 
+## 3.2.0
+
+### Minor Changes
+
+- [#750](https://github.com/biomejs/biome-vscode/pull/750) [`8e41696`](https://github.com/biomejs/biome-vscode/commit/8e4169620591d00eac1447c21749846709a7afc6) Thanks [@nhedger](https://github.com/nhedger)! - Add GritQL language support
+
 ## 3.1.2
 
 ### Patch Changes
