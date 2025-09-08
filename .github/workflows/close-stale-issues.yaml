@@ -13,7 +13,7 @@ jobs:
       issues: write
     steps:
       - name: Close issues without a minimal reproduction
-        uses: actions-cool/issues-helper@50068f49b7b2b3857270ead65e2d02e4459b022c # v3
+        uses: actions-cool/issues-helper@45d75b6cf72bf4f254be6230cb887ad002702491 # v3
         with:
           actions: "close-issues"
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -21,7 +21,7 @@ jobs:
           inactive-day: 3
           body: "This issue has been automatically closed because it has been inactive for more than 3 days and it does not have a minimal reproduction."
       - name: Close issues waiting for a response for more than 14 days
-        uses: actions-cool/issues-helper@50068f49b7b2b3857270ead65e2d02e4459b022c # v3
+        uses: actions-cool/issues-helper@45d75b6cf72bf4f254be6230cb887ad002702491 # v3
         with:
           actions: "close-issues"
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -29,7 +29,7 @@ jobs:
           inactive-day: 14
           body: "This issue has been automatically closed because it has been waiting for a response for more than 14 days."
       - name: Close issues waiting for more details for more than 14 days
-        uses: actions-cool/issues-helper@50068f49b7b2b3857270ead65e2d02e4459b022c # v3
+        uses: actions-cool/issues-helper@45d75b6cf72bf4f254be6230cb887ad002702491 # v3
         with:
           actions: "close-issues"
           token: ${{ secrets.GITHUB_TOKEN }}
