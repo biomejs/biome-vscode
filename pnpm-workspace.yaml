@@ -1,0 +1,11 @@
+ignoredBuiltDependencies:
+  - tree-sitter-gritql
+
+onlyBuiltDependencies:
+  - '@vscode/vsce-sign'
+  - esbuild
+  - keytar
+  - lefthook
+  - tree-sitter
+  - tree-sitter-javascript
+  - tree-sitter-gritql
