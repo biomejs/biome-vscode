@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-import type Parser from "web-tree-sitter";
+
+// TODO:  Use tree-sitter for more accurate parsing once tree-sitter-gritql exports wasm file
 
 const outputChannel = vscode.window.createOutputChannel(
 	"GritQL Token Provider",
@@ -22,9 +23,6 @@ const legend = new vscode.SemanticTokensLegend(
 	[],
 );
 
-// Token types are defined in the legend array above
-const tokenModifiers = new Map<string, number>();
-
 interface IParsedToken {
 	line: number;
 	startCharacter: number;
@@ -36,9 +34,6 @@ interface IParsedToken {
 class DocumentSemanticTokensProvider
 	implements vscode.DocumentSemanticTokensProvider
 {
-	private parser: Parser | null = null;
-	private language: Parser.Language | null = null;
-
 	async provideDocumentSemanticTokens(
 		document: vscode.TextDocument,
 		_token: vscode.CancellationToken,
@@ -48,11 +43,6 @@ class DocumentSemanticTokensProvider
 		);
 		try {
 			// Skip tree-sitter for now and use a simple regex-based tokenizer
-			// This will be much more reliable and easier to maintain
-			if (!this.parser) {
-				this.parser = "TODO" as any; // Just mark as initialized
-			}
-
 			const allTokens = this._parseText(document.getText());
 			outputChannel.appendLine(`Parsed ${allTokens.length} tokens`);
 
@@ -63,7 +53,7 @@ class DocumentSemanticTokensProvider
 					token.startCharacter,
 					token.length,
 					this._encodeTokenType(token.tokenType),
-					this._encodeTokenModifiers(token.tokenModifiers),
+					0,
 				);
 			});
 			return builder.build();
@@ -76,14 +66,10 @@ class DocumentSemanticTokensProvider
 	}
 
 	private _parseText(text: string): IParsedToken[] {
-		if (!this.parser) {
-			return [];
-		}
-
 		const tokens: IParsedToken[] = [];
 		const lines = text.split("\n");
 
-		// TODO: Replace with actual tree-sitter parsing logic that maps Tree-sitter nodes to IParsedToken[]
+		// TODO: Replace with actual tree-sitter parsing logic that maps Tree-sitter SyntaxNode to IParsedToken[]
 		// GritQL-specific regex patterns
 		const patterns = [
 			// Keywords and control flow
@@ -123,15 +109,5 @@ class DocumentSemanticTokensProvider
 	private _encodeTokenType(tokenType: string): number {
 		const index = legend.tokenTypes.indexOf(tokenType);
 		return index >= 0 ? index : 0;
-	}
-
-	private _encodeTokenModifiers(strTokenModifiers: string[]): number {
-		let result = 0;
-		for (const tokenModifier of strTokenModifiers) {
-			if (tokenModifiers.has(tokenModifier)) {
-				result = result | (1 << tokenModifiers.get(tokenModifier)!);
-			}
-		}
-		return result;
 	}
 }

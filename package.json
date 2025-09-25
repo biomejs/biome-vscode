@@ -168,8 +168,7 @@
 	"dependencies": {
 		"is-wsl": "3.1.0",
 		"vscode-languageclient": "9.0.1",
-		"vscode-uri": "3.1.0",
-		"web-tree-sitter": "^0.19.4"
+		"vscode-uri": "3.1.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.5",
