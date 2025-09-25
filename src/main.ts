@@ -1,5 +1,4 @@
 import type { ExtensionContext } from "vscode";
-import { window } from "vscode";
 import Extension from "./extension";
 import { activate as activateTokenProvider } from "./gritql-token-provider";
 
