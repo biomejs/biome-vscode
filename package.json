@@ -138,6 +138,12 @@
 				"extensions": [
 					".rast"
 				]
+			},
+			{
+				"id": "gritql",
+				"extensions": [
+					".grit"
+				]
 			}
 		],
 		"grammars": [
