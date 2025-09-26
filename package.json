@@ -32,10 +32,6 @@
 			{
 				"command": "biome.restart",
 				"title": "Biome: Restart"
-			},
-			{
-				"command": "gritql.testSemanticTokens",
-				"title": "Test GritQL Semantic Tokens"
 			}
 		],
 		"configuration": {
@@ -144,7 +140,7 @@
 				]
 			},
 			{
-				"id": "grit",
+				"id": "gritql",
 				"extensions": [
 					".grit"
 				]

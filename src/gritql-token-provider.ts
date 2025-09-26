@@ -1,6 +1,13 @@
 import * as vscode from "vscode";
 
-// TODO:  Use tree-sitter for more accurate parsing once tree-sitter-gritql exports wasm file
+// TODO: Replace regex-based parsing with tree-sitter parsing
+// after tree-sitter-gritql is released as an npm package with wasm file
+// See https://github.com/honeycombio/tree-sitter-gritql/issues/28
+// https://github.com/daivinhtran/biome-vscode/pull/1/files. is how it will
+// be done once tree-sitter-gritql.wasm is provided
+
+// If we have to wait for long, we can experiment building our own tree-sitter-gritql.wasm
+// our build process and use it directly here
 
 const outputChannel = vscode.window.createOutputChannel(
 	"GritQL Token Provider",
@@ -10,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
 	outputChannel.appendLine("Activating GritQL Token Provider");
 	context.subscriptions.push(
 		vscode.languages.registerDocumentSemanticTokensProvider(
-			{ language: "grit" },
+			{ language: "gritql" },
 			new DocumentSemanticTokensProvider(),
 			legend,
 		),
