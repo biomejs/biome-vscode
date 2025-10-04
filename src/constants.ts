@@ -11,6 +11,7 @@ import isWSL from "is-wsl";
 export const supportedLanguages: string[] = [
 	"astro",
 	"css",
+	"tailwindcss",
 	"graphql",
 	"grit",
 	"html",
