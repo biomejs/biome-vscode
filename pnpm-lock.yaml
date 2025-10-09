@@ -12,8 +12,8 @@ importers:
         specifier: 3.1.0
         version: 3.1.0
       tree-sitter-gritql:
-        specifier: file:../tree-sitter-gritql
-        version: file:../tree-sitter-gritql(tree-sitter@0.25.0)
+        specifier: 0.1.1
+        version: 0.1.1(tree-sitter@0.25.0)
       vscode-languageclient:
         specifier: 9.0.1
         version: 9.0.1
@@ -2058,10 +2058,10 @@ packages:
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
-  tree-sitter-gritql@file:../tree-sitter-gritql:
-    resolution: {directory: ../tree-sitter-gritql, type: directory}
+  tree-sitter-gritql@0.1.1:
+    resolution: {integrity: sha512-IN+w/kSUJykJFSimPlxNk/4nj/uKrZ4r2vV6/8KrbUcs249qlUiNk/qwODEgwS6Yf+0wcws7EUDsprCbkXb/dw==}
     peerDependencies:
-      tree-sitter: ^0.25.0
+      tree-sitter: ^0.21.0
       tree_sitter: '*'
     peerDependenciesMeta:
       tree_sitter:
@@ -4329,7 +4329,7 @@ snapshots:
 
   tr46@0.0.3: {}
 
-  tree-sitter-gritql@file:../tree-sitter-gritql(tree-sitter@0.25.0):
+  tree-sitter-gritql@0.1.1(tree-sitter@0.25.0):
     dependencies:
       node-addon-api: 7.1.1
       node-gyp-build: 4.8.4

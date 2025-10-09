@@ -1,6 +1,6 @@
 import type { ExtensionContext } from "vscode";
 import Extension from "./extension";
-import { activate as activateTokenProvider } from "./gritql-token-provider";
+import GritQL from "./gritql";
 
 let extension: Extension | undefined;
 
@@ -10,7 +10,7 @@ let extension: Extension | undefined;
 export const activate = async (context: ExtensionContext) => {
 	extension = Extension.create(context);
 	await extension.init();
-	activateTokenProvider(context);
+	GritQL.init(context);
 };
 
 /**

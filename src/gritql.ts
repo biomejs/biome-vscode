@@ -1,9 +1,20 @@
-import * as vscode from "vscode";
+import type {
+	CancellationToken,
+	ExtensionContext,
+	SemanticTokens,
+	TextDocument,
+} from "vscode";
+import {
+	languages,
+	SemanticTokensBuilder,
+	SemanticTokensLegend,
+	window,
+} from "vscode";
+
 import type {
 	Language as LanguageType,
 	Node,
 	Parser as ParserType,
-	Tree,
 } from "web-tree-sitter";
 import {
 	mapNodeTypeToSemanticModifiers,
@@ -12,20 +23,17 @@ import {
 
 const { Parser, Language } = require("web-tree-sitter");
 
-const outputChannel = vscode.window.createOutputChannel(
-	"GritQL Token Provider",
-);
+const outputChannel = window.createOutputChannel("GritQL Token Provider");
 
 let gritqlLanguage: LanguageType | null = null;
 
 // Initialize tree-sitter with GritQL grammar
-async function initializeTreeSitter(): Promise<void> {
+async function initializeTreeSitter(context: ExtensionContext): Promise<void> {
 	try {
 		await Parser.init();
-		// TODO: Propose tree-sitter-gritql to be published to npm
-		// The npm release should also include the WASM file for usage here
 		gritqlLanguage = await Language.load(
-			"/Users/vinh/github/daivinhtran/biome-vscode/node_modules/tree-sitter-gritql/tree-sitter-gritql.wasm",
+			context.extensionPath +
+				"/node_modules/tree-sitter-gritql/tree-sitter-gritql.wasm",
 		);
 		outputChannel.appendLine("Successfully loaded GritQL tree-sitter language");
 	} catch (error) {
@@ -34,11 +42,10 @@ async function initializeTreeSitter(): Promise<void> {
 	}
 }
 
-export async function activate(context: vscode.ExtensionContext) {
-	// Initialize tree-sitter before registering the provider
-	await initializeTreeSitter();
+async function init(context: ExtensionContext) {
+	await initializeTreeSitter(context);
 	context.subscriptions.push(
-		vscode.languages.registerDocumentSemanticTokensProvider(
+		languages.registerDocumentSemanticTokensProvider(
 			{ language: "gritql" },
 			new DocumentSemanticTokensProvider(),
 			legend,
@@ -48,7 +55,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // Define semantic token legend for GritQL
 // https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide#standard-token-types-and-modifiers
-const legend = new vscode.SemanticTokensLegend(
+const legend = new SemanticTokensLegend(
 	// token types - must match the types returned by mapNodeTypeToSemanticType
 	[
 		"variable", // 0 - for variables, underscore, languageName
@@ -76,9 +83,7 @@ interface IParsedToken {
 	tokenModifiers: string[];
 }
 
-class DocumentSemanticTokensProvider
-	implements vscode.DocumentSemanticTokensProvider
-{
+class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
 	private parser: ParserType;
 	constructor() {
 		// Initialize parser synchronously - tree-sitter should be ready by now
@@ -89,11 +94,14 @@ class DocumentSemanticTokensProvider
 	}
 
 	async provideDocumentSemanticTokens(
-		document: vscode.TextDocument,
-		_token: vscode.CancellationToken,
-	): Promise<vscode.SemanticTokens> {
+		document: TextDocument,
+		_token: CancellationToken,
+	): Promise<SemanticTokens> {
 		// Parse document with tree-sitter
-		const tree: Tree = this.parser.parse(document.getText())!;
+		const tree = this.parser.parse(document.getText());
+		if (!tree) {
+			return new SemanticTokensBuilder(legend).build();
+		}
 		// Convert syntax tree to semantic tokens
 		const tokens = this._extractTokensFromTree(
 			tree.rootNode,
@@ -101,7 +109,7 @@ class DocumentSemanticTokensProvider
 		);
 
 		// Build semantic tokens
-		const builder = new vscode.SemanticTokensBuilder(legend);
+		const builder = new SemanticTokensBuilder(legend);
 		tokens.forEach((token) => {
 			builder.push(
 				token.line,
@@ -176,3 +184,5 @@ class DocumentSemanticTokensProvider
 		return result;
 	}
 }
+
+export default { init };
