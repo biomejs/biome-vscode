@@ -1,7 +1,5 @@
 // The mapping here is canonical to the mapping between tree-sitter nodes to captures
 // in https://github.com/biomejs/biome-zed/blob/main/languages/grit/highlights.scm
-import type { Node } from "web-tree-sitter";
-
 export function mapNodeTypeToSemanticType(nodeType: string): string | null {
 	// Map GritQL tree-sitter node types to VS Code semantic token types
 	switch (nodeType) {
@@ -111,34 +109,4 @@ export function mapNodeTypeToSemanticType(nodeType: string): string | null {
 			// Don't tokenize unknown node types
 			return null;
 	}
-}
-
-export function mapNodeTypeToSemanticModifiers(
-	nodeType: string,
-	parent: Node | null,
-): string[] {
-	const modifiers: string[] = [];
-
-	// Based on biome-zed highlights.scm special cases
-	switch (nodeType) {
-		// @string.regex for regex patterns
-		case "regex":
-		case "snippetRegex":
-			// Already handled by returning 'regexp' type
-			break;
-
-		case "languageName":
-			if (parent) {
-				if (parent.type === "engine") {
-					// @variable.special for engine names like "marzano"
-					modifiers.push("readonly");
-				} else if (parent.type === "languageSpecificSnippet") {
-					// @label for language names in languageSpecificSnippet
-					modifiers.push("declaration");
-				}
-			}
-			break;
-	}
-
-	return modifiers;
 }

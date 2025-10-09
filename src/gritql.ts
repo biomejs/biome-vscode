@@ -10,24 +10,40 @@ import {
 	SemanticTokensLegend,
 	window,
 } from "vscode";
-
 import type {
 	Language as LanguageType,
 	Node,
 	Parser as ParserType,
 } from "web-tree-sitter";
-import {
-	mapNodeTypeToSemanticModifiers,
-	mapNodeTypeToSemanticType,
-} from "./node_to_token";
+import { mapNodeTypeToSemanticType } from "./node_to_token";
 
 const { Parser, Language } = require("web-tree-sitter");
 
 const outputChannel = window.createOutputChannel("GritQL Token Provider");
-
 let gritqlLanguage: LanguageType | null = null;
 
-// Initialize tree-sitter with GritQL grammar
+// Selected semantic tokens for GritQL
+// https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide#standard-token-types-and-modifiers
+const tokenTypes: Map<string, number> = new Map([
+	["variable", 0],
+	["string", 1],
+	["number", 2],
+	["keyword", 3],
+	["comment", 4],
+	["function", 5],
+	["parameter", 6],
+	["operator", 7],
+	["regexp", 8],
+]);
+const legend = new SemanticTokensLegend(Array.from(tokenTypes.keys()));
+
+interface IParsedToken {
+	line: number;
+	startCharacter: number;
+	length: number;
+	tokenType: string;
+}
+
 async function initializeTreeSitter(context: ExtensionContext): Promise<void> {
 	try {
 		await Parser.init();
@@ -40,47 +56,6 @@ async function initializeTreeSitter(context: ExtensionContext): Promise<void> {
 		outputChannel.appendLine(`Failed to load GritQL tree-sitter: ${error}`);
 		throw error;
 	}
-}
-
-async function init(context: ExtensionContext) {
-	await initializeTreeSitter(context);
-	context.subscriptions.push(
-		languages.registerDocumentSemanticTokensProvider(
-			{ language: "gritql" },
-			new DocumentSemanticTokensProvider(),
-			legend,
-		),
-	);
-}
-
-// Define semantic token legend for GritQL
-// https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide#standard-token-types-and-modifiers
-const legend = new SemanticTokensLegend(
-	// token types - must match the types returned by mapNodeTypeToSemanticType
-	[
-		"variable", // 0 - for variables, underscore, languageName
-		"string", // 1 - for codeSnippet, doubleQuoteSnippet
-		"number", // 2 - for intConstant, signedIntConstant, doubleConstant
-		"keyword", // 3 - for keywords and booleanConstant
-		"comment", // 4 - for comments
-		"function", // 5 - for predicateCall, nodeLike, name
-		"parameter", // 6 - for namedArg (attribute equivalent)
-		"operator", // 7 - for operators and punctuation
-		"regexp", // 8 - for regex, snippetRegex
-	],
-	// token modifiers - for special cases like @variable.special
-	[
-		"readonly", // 0 - for special variables like engine names
-		"declaration", // 1 - for labels and declarations
-	],
-);
-
-interface IParsedToken {
-	line: number;
-	startCharacter: number;
-	length: number;
-	tokenType: string;
-	tokenModifiers: string[];
 }
 
 class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
@@ -116,7 +91,6 @@ class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
 				token.startCharacter,
 				token.length,
 				this._encodeTokenType(token.tokenType),
-				this._encodeTokenModifiers(token.tokenModifiers),
 			);
 		});
 
@@ -148,14 +122,12 @@ class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
 		if (tokenType && node.childCount === 0) {
 			const startPos = node.startPosition;
 			const endPos = node.endPosition;
-			const modifiers = mapNodeTypeToSemanticModifiers(node.type, node.parent);
 
 			tokens.push({
 				line: startPos.row,
 				startCharacter: startPos.column,
 				length: endPos.column - startPos.column,
 				tokenType: tokenType,
-				tokenModifiers: modifiers,
 			});
 		}
 		// Recursively process children
@@ -164,25 +136,21 @@ class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
 		});
 	}
 
-	// The encoder functions below are adapted from
-	// https://github.com/microsoft/vscode-extension-samples/blob/bb7fc981628a99f149adf7745d60ce488f81d8cc/semantic-tokens-sample/src/extension.ts#L45-L64
-	// TODO(daivinhtran): Improve runtime by using Map
-
 	private _encodeTokenType(tokenType: string): number {
-		const index = legend.tokenTypes.indexOf(tokenType);
-		return index >= 0 ? index : 0; // Default to 'variable' if not found
+		const index = tokenTypes.get(tokenType);
+		return index !== undefined ? index : 0; // Default to 'variable' if not found
 	}
+}
 
-	private _encodeTokenModifiers(modifiers: string[]): number {
-		let result = 0;
-		modifiers.forEach((modifier) => {
-			const index = legend.tokenModifiers.indexOf(modifier);
-			if (index >= 0) {
-				result |= 1 << index;
-			}
-		});
-		return result;
-	}
+async function init(context: ExtensionContext): Promise<void> {
+	await initializeTreeSitter(context);
+	context.subscriptions.push(
+		languages.registerDocumentSemanticTokensProvider(
+			{ language: "gritql" },
+			new DocumentSemanticTokensProvider(),
+			legend,
+		),
+	);
 }
 
 export default { init };
