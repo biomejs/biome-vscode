@@ -175,7 +175,7 @@
 		"ovsx": "0.10.6",
 		"rollup": "4.52.3",
 		"rollup-plugin-esbuild": "6.2.1",
-		"typescript": "5.9.2"
+		"typescript": "5.9.3"
 	},
 	"packageManager": "pnpm@10.17.1"
 }
