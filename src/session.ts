@@ -1,15 +1,18 @@
-import { Uri, type WorkspaceFolder, window } from "vscode";
+import { type Diagnostic, Uri, type WorkspaceFolder, window } from "vscode";
 import {
 	type DocumentFilter,
 	type InitializeParams,
 	LanguageClient,
 	type LanguageClientOptions,
+	type Middleware,
+	type PublishDiagnosticsParams,
 	type ServerOptions,
 	TransportKind,
 } from "vscode-languageclient/node";
 import { displayName } from "../package.json";
 import type Biome from "./biome";
 import { supportedLanguages } from "./constants";
+import { config } from "./utils";
 
 export default class Session {
 	/**
@@ -91,6 +94,86 @@ export default class Session {
 			{ log: true },
 		);
 
+		const middleware: Middleware = {
+			handleDiagnostics: async (uri: Uri, diagnostics: Diagnostic[], next) => {
+				// Check if requireConfiguration is enabled
+				if (
+					config("requireConfiguration", { scope: this.folder, default: false })
+				) {
+					// Check if this file has a configuration file in its parent directories
+					const hasConfig = await this.biome.findNearestConfigurationFile(uri);
+					if (!hasConfig) {
+						// No configuration found, suppress diagnostics
+						return;
+					}
+				}
+				// Configuration found or requireConfiguration is disabled, show diagnostics
+				next(uri, diagnostics);
+			},
+			provideDocumentFormattingEdits: async (
+				document,
+				options,
+				token,
+				next,
+			) => {
+				// Check if requireConfiguration is enabled
+				if (
+					config("requireConfiguration", { scope: this.folder, default: false })
+				) {
+					// Check if this file has a configuration file in its parent directories
+					const hasConfig = await this.biome.findNearestConfigurationFile(
+						document.uri,
+					);
+					if (!hasConfig) {
+						// No configuration found, don't format
+						return [];
+					}
+				}
+				// Configuration found or requireConfiguration is disabled, proceed with formatting
+				return next(document, options, token);
+			},
+			provideDocumentRangeFormattingEdits: async (
+				document,
+				range,
+				options,
+				token,
+				next,
+			) => {
+				// Check if requireConfiguration is enabled
+				if (
+					config("requireConfiguration", { scope: this.folder, default: false })
+				) {
+					// Check if this file has a configuration file in its parent directories
+					const hasConfig = await this.biome.findNearestConfigurationFile(
+						document.uri,
+					);
+					if (!hasConfig) {
+						// No configuration found, don't format
+						return [];
+					}
+				}
+				// Configuration found or requireConfiguration is disabled, proceed with formatting
+				return next(document, range, options, token);
+			},
+			provideCodeActions: async (document, range, context, token, next) => {
+				// Check if requireConfiguration is enabled
+				if (
+					config("requireConfiguration", { scope: this.folder, default: false })
+				) {
+					// Check if this file has a configuration file in its parent directories
+					const hasConfig = await this.biome.findNearestConfigurationFile(
+						document.uri,
+					);
+					if (!hasConfig) {
+						// No configuration found, don't provide code actions
+						return [];
+					}
+				}
+				// Configuration found or requireConfiguration is disabled, proceed with code actions
+				return next(document, range, context, token);
+			},
+		};
+
 		const clientOptions: LanguageClientOptions = {
 			outputChannel: outputChannel,
 			traceOutputChannel: outputChannel,
@@ -101,6 +184,7 @@ export default class Session {
 					rootUri: this.singleFileFolder,
 				}),
 			},
+			middleware,
 		};
 
 		return new BiomeLanguageClient(
@@ -108,6 +192,7 @@ export default class Session {
 			"biome",
 			serverOptions,
 			clientOptions,
+			this.biome,
 		);
 	}
 
@@ -148,6 +233,16 @@ export default class Session {
 }
 
 class BiomeLanguageClient extends LanguageClient {
+	constructor(
+		id: string,
+		name: string,
+		serverOptions: ServerOptions,
+		clientOptions: LanguageClientOptions,
+		private readonly biome: Biome,
+	) {
+		super(id, name, serverOptions, clientOptions);
+	}
+
 	protected fillInitializeParams(params: InitializeParams): void {
 		super.fillInitializeParams(params);
 
