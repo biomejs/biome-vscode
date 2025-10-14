@@ -30,6 +30,20 @@
 			"sourceMapRenames": true
 		},
 		{
+			"name": "🧩 Debug GritQL Token Provider",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentKind=node",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/test/fixtures/gritql"
+			],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"preLaunchTask": "npm: dev",
+			"sourceMapRenames": true
+		},
+		{
 			"name": "🧩 Debug Extension (single-root workspace)",
 			"type": "extensionHost",
 			"request": "launch",
