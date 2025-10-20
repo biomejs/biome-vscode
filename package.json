@@ -170,7 +170,7 @@
 		"@types/node": "22.18.10",
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "3.6.2",
-		"esbuild": "0.25.10",
+		"esbuild": "0.25.11",
 		"lefthook": "1.13.6",
 		"ovsx": "0.10.6",
 		"rollup": "4.52.4",
