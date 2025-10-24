@@ -138,12 +138,6 @@
 				"extensions": [
 					".rast"
 				]
-			},
-			{
-				"id": "gritql",
-				"extensions": [
-					".grit"
-				]
 			}
 		],
 		"grammars": [
@@ -163,10 +157,8 @@
 	},
 	"dependencies": {
 		"is-wsl": "3.1.0",
-		"tree-sitter-gritql": "0.1.1",
 		"vscode-languageclient": "9.0.1",
-		"vscode-uri": "3.1.0",
-		"web-tree-sitter": "0.25.10"
+		"vscode-uri": "3.1.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.6",
