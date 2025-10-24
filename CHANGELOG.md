@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- [`cc0ea06`](https://github.com/biomejs/biome-vscode/commit/cc0ea068f98c96154740c0db25b90de500be10ee) Thanks [@nhedger](https://github.com/nhedger)! - Add tree-sitter-based token provider for GritQL
+- [#750](https://github.com/biomejs/biome-vscode/pull/795) Thanks [@daivinhtran](https://github.com/daivinhtran)! - Add tree-sitter-based token provider for GritQL
 
 ## 3.2.0
 
