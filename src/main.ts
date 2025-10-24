@@ -1,5 +1,6 @@
 import type { ExtensionContext } from "vscode";
 import Extension from "./extension";
+import GritQL from "./gritql";
 
 let extension: Extension | undefined;
 
@@ -9,6 +10,7 @@ let extension: Extension | undefined;
 export const activate = async (context: ExtensionContext) => {
 	extension = Extension.create(context);
 	await extension.init();
+	GritQL.init(context);
 };
 
 /**
