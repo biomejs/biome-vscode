@@ -330,7 +330,7 @@ export default class Extension {
 					if (supportedLanguages.includes(event.document.languageId)) {
 						await createGlobalInstanceIfNotExists();
 
-						// Dispose the listener because we wont't be coming back to
+						// Dispose the listener because we won't be coming back to
 						// this state again. The global session will be kept alive
 						// until the extension is stopped.
 						listener.dispose();
