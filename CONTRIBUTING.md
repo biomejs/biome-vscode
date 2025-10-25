@@ -1,7 +1,7 @@
 # Contribution guidelines
 
 Thank you for considering contributing to the Biome extension for Visual Studio 
-Code! This document outlines somes of the conventions on development workflow,
+Code! This document outlines some of the conventions on development workflow,
 testing protocol, and other resources to make it easier to get your contribution
 accepted.
 
