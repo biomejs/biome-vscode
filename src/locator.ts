@@ -425,8 +425,10 @@ export default class Locator {
 			return;
 		}
 
+		const executable = `biome${process.platform === "win32" ? ".cmd" : ""}`;
+
 		for (const dir of path.split(delimiter)) {
-			const biome = Uri.joinPath(Uri.file(dir), platformSpecificBinaryName);
+			const biome = Uri.joinPath(Uri.file(dir), executable);
 			if (await fileExists(biome)) {
 				this.biome.logger.debug(
 					`🔍 Found Biome binary at "${biome.fsPath}" in PATH`,
