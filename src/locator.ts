@@ -26,8 +26,12 @@ import {
 
 export default class Locator {
 	private get globalNodeModulesPaths(): Record<string, Uri | undefined> {
-		const npmGlobalNodeModulesPath = safeSpawnSync("npm", ["root", "-g"]);
-		const pnpmGlobalNodeModulesPath = safeSpawnSync("pnpm", ["root", "-g"]);
+		const npmGlobalNodeModulesPath = safeSpawnSync("npm", ["root", "-g"], {
+			shell: true,
+		});
+		const pnpmGlobalNodeModulesPath = safeSpawnSync("pnpm", ["root", "-g"], {
+			shell: true,
+		});
 		const bunGlobalNodeModulesPath = Utils.resolvePath(
 			Uri.file(homedir()),
 			".bun/install/global/node_modules",
