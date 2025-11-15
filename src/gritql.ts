@@ -144,7 +144,7 @@ async function init(context: ExtensionContext): Promise<void> {
 	await initializeTreeSitter(context);
 	context.subscriptions.push(
 		languages.registerDocumentSemanticTokensProvider(
-			{ language: "gritql" },
+			{ language: "grit" },
 			new DocumentSemanticTokensProvider(),
 			legend,
 		),
