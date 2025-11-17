@@ -57,9 +57,17 @@ languages:
 In order to use Biome, you must install it, either on a per project basis
 or globally on your machine.
 
+### As dependency
+
 To add Biome to your project, use the package manager specified in your project.
 This will ensure it is listed as a dev-dependency in `package.json`. Then
 configure Biome. Follow the full instructions on the
+[Getting Started](<https://biomejs.dev/guides/getting-started/>) page.
+
+### As stand-alone
+
+If your code editor does not have a Biome Plugin or you intend to use Biome in
+shell scripts, follow the manual installation guide mentioned on the
 [Getting Started](<https://biomejs.dev/guides/getting-started/>) page.
 
 ## Availability
