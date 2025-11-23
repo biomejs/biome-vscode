@@ -281,8 +281,8 @@ export default class Extension {
 	 * Registers a listener for the on-demand global instance
 	 *
 	 * This method registers a listener responsible for creating and starting a
-	 * global Biome instance when the user opens an a file that does not belong
-	 * to any workspace folder.
+	 * global Biome instance when the user opens a file that does not belong to
+	 * any workspace folder.
 	 *
 	 * This allows users to format Untitled files, or their VS Code settings
 	 * using Biome.
