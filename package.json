@@ -181,7 +181,7 @@
 		"esbuild": "0.27.1",
 		"lefthook": "1.13.6",
 		"ovsx": "0.10.7",
-		"rollup": "4.53.2",
+		"rollup": "4.53.3",
 		"rollup-plugin-copy": "3.5.0",
 		"rollup-plugin-esbuild": "6.2.1",
 		"typescript": "5.9.3"
