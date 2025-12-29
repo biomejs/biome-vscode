@@ -21,8 +21,8 @@ importers:
         specifier: 3.1.0
         version: 3.1.0
       web-tree-sitter:
-        specifier: 0.25.10
-        version: 0.25.10
+        specifier: 0.26.3
+        version: 0.26.3
     devDependencies:
       '@biomejs/biome':
         specifier: 2.3.10
@@ -2205,13 +2205,8 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
-  web-tree-sitter@0.25.10:
-    resolution: {integrity: sha512-Y09sF44/13XvgVKgO2cNDw5rGk6s26MgoZPXLESvMXeefBf7i6/73eFurre0IsTW6E14Y0ArIzhUMmjoc7xyzA==}
-    peerDependencies:
-      '@types/emscripten': ^1.40.0
-    peerDependenciesMeta:
-      '@types/emscripten':
-        optional: true
+  web-tree-sitter@0.26.3:
+    resolution: {integrity: sha512-JIVgIKFS1w6lejxSntCtsS/QsE/ecTS00en809cMxMPxaor6MvUnQ+ovG8uTTTvQCFosSh4MeDdI5bSGw5SoBw==}
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -4501,7 +4496,7 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
-  web-tree-sitter@0.25.10: {}
+  web-tree-sitter@0.26.3: {}
 
   webidl-conversions@3.0.1: {}
 
