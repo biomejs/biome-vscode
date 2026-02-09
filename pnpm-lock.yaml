@@ -21,8 +21,8 @@ importers:
         specifier: 3.1.0
         version: 3.1.0
       web-tree-sitter:
-        specifier: 0.26.3
-        version: 0.26.3
+        specifier: 0.26.5
+        version: 0.26.5
     devDependencies:
       '@biomejs/biome':
         specifier: 2.3.14
@@ -2242,8 +2242,8 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
-  web-tree-sitter@0.26.3:
-    resolution: {integrity: sha512-JIVgIKFS1w6lejxSntCtsS/QsE/ecTS00en809cMxMPxaor6MvUnQ+ovG8uTTTvQCFosSh4MeDdI5bSGw5SoBw==}
+  web-tree-sitter@0.26.5:
+    resolution: {integrity: sha512-u9sl+q21VSKX2T8dhpQw8bMGGqNfwaIyuoYE3kdOQGVDrOqrmcS9GmaQoCS602iaFnuokn3WCHW374c7GAnuaQ==}
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -4545,7 +4545,7 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
-  web-tree-sitter@0.26.3: {}
+  web-tree-sitter@0.26.5: {}
 
   webidl-conversions@3.0.1: {}
 
