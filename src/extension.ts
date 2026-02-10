@@ -381,9 +381,9 @@ export default class Extension {
 	 */
 	private async trustBiomeDomain(): Promise<void> {
 		// If we've already attempted to trust the domain, don't do it again
-		if (this.context.globalState.get("alreadyTrustedBiomeDomain")) {
-			return;
-		}
+		// if (this.context.globalState.get("alreadyTrustedBiomeDomain")) {
+		// 	return;
+		// }
 
 		// Get the current list of trusted domains from the configuration
 		const currentlyTrustedDomains = workspace
@@ -396,18 +396,22 @@ export default class Extension {
 		};
 
 		// Update the trusted domains in the configuration
-		await workspace
-			.getConfiguration("json.schemaDownload")
-			.update(
-				"trustedDomains",
-				newlyTrustedDomains,
-				ConfigurationTarget.Global,
+		try {
+			await workspace
+				.getConfiguration("json.schemaDownload")
+				.update(
+					"trustedDomains",
+					newlyTrustedDomains,
+					ConfigurationTarget.Global,
+				);
+
+			await this.context.globalState.update("alreadyTrustedBiomeDomain", true);
+
+			this.logger.info(
+				"🔐 Trusted biomejs.dev domain for JSON schema downloads.",
 			);
-
-		await this.context.globalState.update("alreadyTrustedBiomeDomain", true);
-
-		this.logger.info(
-			"🔐 Trusted biomejs.dev domain for JSON schema downloads.",
-		);
+		} catch {
+			this.logger.warn("Could not trust biomejs.dev domain");
+		}
 	}
 }
