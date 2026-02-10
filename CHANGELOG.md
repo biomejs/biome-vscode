@@ -4,9 +4,9 @@
 
 ### Patch Changes
 
-- [`5930fdc`](https://github.com/biomejs/biome-vscode/commit/5930fdcf3f051036974f697efcfd0a912ea42571) Thanks [@nhedger](https://github.com/nhedger)! - correctly resolve global modules when npm is missing/unconfigured
+- [`0fc659c`](https://github.com/biomejs/biome-vscode/commit/0fc659c9afc850292e66d36e03a0455e925dc41d) Thanks [@AMDphreak](https://github.com/AMDphreak)! - correctly resolve global modules when npm is missing/unconfigured
 
-- [`5930fdc`](https://github.com/biomejs/biome-vscode/commit/5930fdcf3f051036974f697efcfd0a912ea42571) Thanks [@nhedger](https://github.com/nhedger)! - Unable to find the global Biome binary on Windows
+- [`4991c09`](https://github.com/biomejs/biome-vscode/commit/4991c09d8d00cf0df4d42c1332acc33177f77a24) Thanks [@wtto00](https://github.com/wtto00)! - Unable to find the global Biome binary on Windows
 
 ## 3.3.0
 
