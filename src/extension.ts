@@ -1,4 +1,5 @@
 import {
+	ConfigurationTarget,
 	commands,
 	type ExtensionContext,
 	type TextEditor,
@@ -122,6 +123,8 @@ export default class Extension {
 	 */
 	public async init(): Promise<void> {
 		this.registerCommands();
+
+		await this.trustBiomeDomain();
 
 		await this.start();
 
@@ -360,5 +363,55 @@ export default class Extension {
 		}
 
 		this.logger.info(`🚀 Started ${this.biomes.size} Biome instance(s).`);
+	}
+
+	/**
+	 * Trust biomejs.dev domain for JSON schema downloads
+	 *
+	 * This function contributes to the json.schemaDownload.trustedDomains setting
+	 * by adding "https://biomejs.dev" to the list of trusted domains. This allows
+	 * users to load Biome JSON schemas without having to manually add the domain
+	 * to their trusted domains list.
+	 *
+	 * The extension will only attempt to trust the biomejs.dev domain once, and
+	 * will store a flag in the global state to avoid attempting to trust the
+	 * domain multiple times. If the user untrusts the domain manually, we will
+	 * not attempt to trust it again, and the user will have to manually re-trust
+	 * the domain to load Biome JSON schemas again.
+	 */
+	private async trustBiomeDomain(): Promise<void> {
+		// If we've already attempted to trust the domain, don't do it again
+		if (this.context.globalState.get("alreadyTrustedBiomeDomain")) {
+			return;
+		}
+
+		// Get the current list of trusted domains from the configuration
+		const currentlyTrustedDomains = workspace
+			.getConfiguration("json.schemaDownload")
+			.get<Record<string, boolean>>("trustedDomains", {});
+
+		const newlyTrustedDomains = {
+			...currentlyTrustedDomains,
+			"https://biomejs.dev": true,
+		};
+
+		// Update the trusted domains in the configuration
+		try {
+			await workspace
+				.getConfiguration("json.schemaDownload")
+				.update(
+					"trustedDomains",
+					newlyTrustedDomains,
+					ConfigurationTarget.Global,
+				);
+
+			await this.context.globalState.update("alreadyTrustedBiomeDomain", true);
+
+			this.logger.info(
+				"🔐 Trusted biomejs.dev domain for JSON schema downloads.",
+			);
+		} catch {
+			this.logger.warn("Could not trust biomejs.dev domain");
+		}
 	}
 }
