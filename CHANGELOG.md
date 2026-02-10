@@ -1,5 +1,11 @@
 # biome
 
+## 3.4.0
+
+### Minor Changes
+
+- [`f50051f`](https://github.com/biomejs/biome-vscode/commit/f50051f3cf01c4f24ea0a263eb927544dfba3f61) Thanks [@nhedger](https://github.com/nhedger)! - Automatically trust biomejs.dev domain for JSON schema downloads
+
 ## 3.3.1
 
 ### Patch Changes
