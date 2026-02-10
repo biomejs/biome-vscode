@@ -63,6 +63,7 @@ pull request against the `main` branch.
   git checkout -b <branch-name>
   ```
 - Make your changes in the new branch.
+- Add a changeset to your PR: `pnpm changeset`
 - Create a pull request against the `main` branch.
 - Fill the pull request template
 
