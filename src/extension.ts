@@ -1,4 +1,5 @@
 import {
+	ConfigurationTarget,
 	commands,
 	type ExtensionContext,
 	type TextEditor,
@@ -372,14 +373,15 @@ export default class Extension {
 	 * users to load Biome JSON schemas without having to manually add the domain
 	 * to their trusted domains list.
 	 *
-	 * The behavior can be disabled by setting "biome.trustBiomeDomain" to false in
-	 * the extension settings, which will prevent the domain from being automatically
-	 * trusted.
+	 * The extension will only attempt to trust the biomejs.dev domain once, and
+	 * will store a flag in the global state to avoid attempting to trust the
+	 * domain multiple times. If the user untrusts the domain manually, we will
+	 * not attempt to trust it again, and the user will have to manually re-trust
+	 * the domain to load Biome JSON schemas again.
 	 */
 	private async trustBiomeDomain(): Promise<void> {
-		// Do not trust the biomejs.dev domain if the user has disabled this
-		// behavior in the settings
-		if (!config<boolean>("biome.trustBiomeDomain", { default: true })) {
+		// If we've already attempted to trust the domain, don't do it again
+		if (this.context.globalState.get("alreadyTrustedBiomeDomain")) {
 			return;
 		}
 
@@ -396,7 +398,13 @@ export default class Extension {
 		// Update the trusted domains in the configuration
 		await workspace
 			.getConfiguration("json.schemaDownload")
-			.update("trustedDomains", newlyTrustedDomains, true);
+			.update(
+				"trustedDomains",
+				newlyTrustedDomains,
+				ConfigurationTarget.Global,
+			);
+
+		await this.context.globalState.update("alreadyTrustedBiomeDomain", true);
 
 		this.logger.info(
 			"🔐 Trusted biomejs.dev domain for JSON schema downloads.",
