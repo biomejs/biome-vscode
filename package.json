@@ -45,7 +45,7 @@
 				"biome.trustBiomeDomain": {
 					"type": "boolean",
 					"default": true,
-					"markdownDescription": "Whether to automatically trust the biomejs.dev domain in [vscode://settings/json.schemaDownload.trustedDomains](json.schemaDownload.trustedDomains) for downloading Biome JSON schemas.",
+					"markdownDescription": "Whether to automatically trust the biomejs.dev domain in `json.schemaDownload.trustedDomains` for downloading Biome JSON schemas.",
 					"scope": "resource"
 				},
 				"biome.configurationPath": {
