@@ -42,6 +42,12 @@
 					"markdownDescription": "Controls whether the Biome extension is active and provides its features in the context to which this setting applies.",
 					"scope": "resource"
 				},
+				"biome.trustBiomeDomain": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Whether to automatically trust the biomejs.dev domain in [vscode://settings/json.schemaDownload.trustedDomains](json.schemaDownload.trustedDomains) for downloading Biome JSON schemas.",
+					"scope": "resource"
+				},
 				"biome.configurationPath": {
 					"type": [
 						"string",

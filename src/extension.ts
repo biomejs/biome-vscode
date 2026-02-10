@@ -123,6 +123,8 @@ export default class Extension {
 	public async init(): Promise<void> {
 		this.registerCommands();
 
+		await this.trustBiomeDomain();
+
 		await this.start();
 
 		// When workspace folders change, restart everything
@@ -360,5 +362,44 @@ export default class Extension {
 		}
 
 		this.logger.info(`🚀 Started ${this.biomes.size} Biome instance(s).`);
+	}
+
+	/**
+	 * Trust biomejs.dev domain for JSON schema downloads
+	 *
+	 * This function contributes to the json.schemaDownload.trustedDomains setting
+	 * by adding "https://biomejs.dev" to the list of trusted domains. This allows
+	 * users to load Biome JSON schemas without having to manually add the domain
+	 * to their trusted domains list.
+	 *
+	 * The behavior can be disabled by setting "biome.trustBiomeDomain" to false in
+	 * the extension settings, which will prevent the domain from being automatically
+	 * trusted.
+	 */
+	private async trustBiomeDomain(): Promise<void> {
+		// Do not trust the biomejs.dev domain if the user has disabled this
+		// behavior in the settings
+		if (!config<boolean>("biome.trustBiomeDomain", { default: true })) {
+			return;
+		}
+
+		// Get the current list of trusted domains from the configuration
+		const currentlyTrustedDomains = workspace
+			.getConfiguration("json.schemaDownload")
+			.get<Record<string, boolean>>("trustedDomains", {});
+
+		const newlyTrustedDomains = {
+			...currentlyTrustedDomains,
+			"https://biomejs.dev": true,
+		};
+
+		// Update the trusted domains in the configuration
+		await workspace
+			.getConfiguration("json.schemaDownload")
+			.update("trustedDomains", newlyTrustedDomains, true);
+
+		this.logger.info(
+			"🔐 Trusted biomejs.dev domain for JSON schema downloads.",
+		);
 	}
 }
