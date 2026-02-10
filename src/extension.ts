@@ -381,9 +381,9 @@ export default class Extension {
 	 */
 	private async trustBiomeDomain(): Promise<void> {
 		// If we've already attempted to trust the domain, don't do it again
-		// if (this.context.globalState.get("alreadyTrustedBiomeDomain")) {
-		// 	return;
-		// }
+		if (this.context.globalState.get("alreadyTrustedBiomeDomain")) {
+			return;
+		}
 
 		// Get the current list of trusted domains from the configuration
 		const currentlyTrustedDomains = workspace
