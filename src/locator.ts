@@ -350,7 +350,7 @@ export default class Locator {
 				this.biome.logger.warn(
 					`🔍 Could not find global Node Modules path for ${key}`,
 				);
-				return;
+				continue;
 			}
 
 			const biome = await this.findBiomeInNodeModules(path);
