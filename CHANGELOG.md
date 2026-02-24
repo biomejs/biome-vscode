@@ -1,5 +1,11 @@
 # biome
 
+## 3.4.1
+
+### Patch Changes
+
+- [#960](https://github.com/biomejs/biome-vscode/pull/960) [`d37684a`](https://github.com/biomejs/biome-vscode/commit/d37684a9dcb4facc79cee43e13971aa52833e7a7) Thanks [@nhedger](https://github.com/nhedger)! - Trust biome domain only if not set
+
 ## 3.4.0
 
 ### Minor Changes
