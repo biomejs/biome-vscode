@@ -13,7 +13,7 @@ import Locator from "./locator";
 import Logger from "./logger";
 import Session from "./session";
 import type { State } from "./types";
-import { config, debounce } from "./utils";
+import { config, debounce, fileExists } from "./utils";
 
 export default class Biome {
 	/**
@@ -40,6 +40,11 @@ export default class Biome {
 	 * The configuration watcher for this Biome instance.
 	 */
 	private _configWatcher: Disposable | undefined;
+
+	/**
+	 * The configuration file watcher for this Biome instance.
+	 */
+	private _configFileWatcher: FileSystemWatcher | undefined;
 
 	/**
 	 * The locator responsible for finding the Biome binary to use.
@@ -191,11 +196,29 @@ export default class Biome {
 
 		this.listenForLockfilesChanges();
 		this.listenForConfigChanges();
+		this.listenForConfigFileChanges();
 
 		if (!this.enabled) {
 			this.logger.info("Biome is disabled.");
 			this.state = "disabled";
 			return;
+		}
+
+		// Check if requireConfiguration is enabled and if so, check for config file
+		if (
+			config("requireConfiguration", {
+				scope: this.workspaceFolder,
+				default: false,
+			})
+		) {
+			const hasConfig = await this.hasConfigurationFile();
+			if (!hasConfig) {
+				this.logger.info(
+					"Biome configuration file required but not found. Biome will not be activated.",
+				);
+				this.state = "disabled";
+				return;
+			}
 		}
 
 		this.state = "starting";
@@ -443,6 +466,10 @@ export default class Biome {
 		this._lockfileWatcher?.dispose();
 		this._lockfileWatcher = undefined;
 
+		// Dispose of the config file watcher
+		this._configFileWatcher?.dispose();
+		this._configFileWatcher = undefined;
+
 		// Nothing to cleanup if we're a global instance
 		if (this.isGlobal) {
 			return;
@@ -467,5 +494,209 @@ export default class Biome {
 	 */
 	public onStateChange(callback: (state: State) => void | Promise<void>): void {
 		this.stateChangeCallbacks.push(callback);
+	}
+
+	/**
+	 * Checks if a Biome configuration file exists in the workspace.
+	 */
+	private async hasConfigurationFile(): Promise<boolean> {
+		if (!this.workspaceFolder) {
+			return false;
+		}
+
+		// Check for custom configuration path first
+		const customPath = config("configurationPath", {
+			scope: this.workspaceFolder,
+		});
+		if (customPath) {
+			const customUri = Uri.joinPath(this.workspaceFolder.uri, customPath);
+			return await fileExists(customUri);
+		}
+
+		// Check for default configuration files at workspace root
+		const defaultConfigFiles = ["biome.json", "biome.jsonc"];
+		for (const configFile of defaultConfigFiles) {
+			const configUri = Uri.joinPath(this.workspaceFolder.uri, configFile);
+			if (await fileExists(configUri)) {
+				return true;
+			}
+		}
+
+		// If requireConfiguration is enabled, we need to check if ANY subdirectory has a config
+		// This allows for the monorepo case where config files are in subdirectories
+		const hasAnyConfig = await this.findConfigurationFilesInWorkspace();
+		return hasAnyConfig.length > 0;
+	}
+
+	/**
+	 * Finds all Biome configuration files in the workspace.
+	 */
+	private async findConfigurationFilesInWorkspace(): Promise<Uri[]> {
+		if (!this.workspaceFolder) {
+			return [];
+		}
+
+		const configFiles: Uri[] = [];
+		const pattern = new RelativePattern(
+			this.workspaceFolder,
+			"**/biome.{json,jsonc}",
+		);
+
+		try {
+			const files = await workspace.findFiles(pattern, "**/node_modules/**");
+			configFiles.push(...files);
+		} catch (error) {
+			this.logger.warn(
+				`Failed to search for configuration files: ${String(error)}`,
+			);
+		}
+
+		return configFiles;
+	}
+
+	/**
+	 * Finds the nearest Biome configuration file for a given file path.
+	 */
+	public async findNearestConfigurationFile(
+		fileUri: Uri,
+	): Promise<Uri | undefined> {
+		if (!this.workspaceFolder) {
+			return undefined;
+		}
+
+		// Check for custom configuration path first
+		const customPath = config("configurationPath", {
+			scope: this.workspaceFolder,
+		});
+		if (customPath) {
+			const customUri = Uri.joinPath(this.workspaceFolder.uri, customPath);
+			if (await fileExists(customUri)) {
+				return customUri;
+			}
+		}
+
+		// Walk up the directory tree looking for configuration files
+		let currentDir = Uri.joinPath(fileUri, "..");
+		const workspaceRoot = this.workspaceFolder.uri.fsPath;
+		const defaultConfigFiles = ["biome.json", "biome.jsonc"];
+
+		while (currentDir.fsPath.startsWith(workspaceRoot)) {
+			for (const configFile of defaultConfigFiles) {
+				const configUri = Uri.joinPath(currentDir, configFile);
+				if (await fileExists(configUri)) {
+					return configUri;
+				}
+			}
+
+			const parentDir = Uri.joinPath(currentDir, "..");
+			if (parentDir.fsPath === currentDir.fsPath) {
+				break; // Reached root
+			}
+			currentDir = parentDir;
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Listens for configuration file changes to restart Biome when needed.
+	 */
+	protected listenForConfigFileChanges() {
+		if (this.isGlobal || !this.workspaceFolder) {
+			return;
+		}
+
+		// Only listen if requireConfiguration is enabled
+		if (
+			!config("requireConfiguration", {
+				scope: this.workspaceFolder,
+				default: false,
+			})
+		) {
+			return;
+		}
+
+		// Watch for biome.json and biome.jsonc files anywhere in the workspace
+		const pattern = new RelativePattern(
+			this.workspaceFolder,
+			"**/biome.{json,jsonc}",
+		);
+
+		this._configFileWatcher = workspace.createFileSystemWatcher(
+			pattern,
+			false,
+			false,
+			false,
+		);
+
+		// Also watch for custom configuration path if specified
+		const customPath = config("configurationPath", {
+			scope: this.workspaceFolder,
+		});
+		if (customPath) {
+			const customPattern = new RelativePattern(
+				this.workspaceFolder,
+				customPath,
+			);
+			const customWatcher = workspace.createFileSystemWatcher(customPattern);
+
+			// Register the same handlers for custom config file
+			customWatcher.onDidCreate(
+				debounce(async (event) => {
+					this.logger.info(`📄 Configuration file "${event.fsPath}" created.`);
+					// If we were disabled due to missing config, restart
+					if (this.state === "disabled") {
+						await this.restart();
+					}
+				}),
+			);
+
+			customWatcher.onDidDelete(
+				debounce(async (event) => {
+					this.logger.info(`📄 Configuration file "${event.fsPath}" deleted.`);
+					// Restart to re-evaluate if Biome should be disabled
+					await this.restart();
+				}),
+			);
+
+			customWatcher.onDidChange(
+				debounce(async (event) => {
+					this.logger.info(`📄 Configuration file "${event.fsPath}" changed.`);
+					// Configuration content changed, restart
+					await this.restart();
+				}),
+			);
+
+			this.extension.context.subscriptions.push(customWatcher);
+		}
+
+		this._configFileWatcher.onDidCreate(
+			debounce(async (event) => {
+				this.logger.info(`📄 Configuration file "${event.fsPath}" created.`);
+				// If we were disabled due to missing config, restart
+				if (this.state === "disabled") {
+					await this.restart();
+				}
+			}),
+		);
+
+		this._configFileWatcher.onDidDelete(
+			debounce(async (event) => {
+				this.logger.info(`📄 Configuration file "${event.fsPath}" deleted.`);
+				// Restart to re-evaluate if Biome should be disabled
+				await this.restart();
+			}),
+		);
+
+		this._configFileWatcher.onDidChange(
+			debounce(async (event) => {
+				this.logger.info(`📄 Configuration file "${event.fsPath}" changed.`);
+				// Configuration content changed, restart
+				await this.restart();
+			}),
+		);
+
+		this.logger.info("📄 Started listening for configuration file changes.");
+		this.extension.context.subscriptions.push(this._configFileWatcher);
 	}
 }
