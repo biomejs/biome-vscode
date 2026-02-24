@@ -437,6 +437,16 @@ export default class Locator {
 				);
 				return biome;
 			}
+
+			if (process.platform === "win32") {
+				const biomeCmd = Uri.joinPath(Uri.file(dir), "biome.cmd");
+				if (await fileExists(biomeCmd)) {
+					this.biome.logger.debug(
+						`🔍 Found Biome binary at "${biomeCmd.fsPath}" in PATH`,
+					);
+					return biomeCmd;
+				}
+			}
 		}
 
 		return undefined;
