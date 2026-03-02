@@ -166,7 +166,7 @@
 		"tree-sitter-gritql": "0.1.1",
 		"vscode-languageclient": "9.0.1",
 		"vscode-uri": "3.1.0",
-		"web-tree-sitter": "0.26.5"
+		"web-tree-sitter": "0.26.6"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
