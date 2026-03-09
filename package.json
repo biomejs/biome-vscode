@@ -171,7 +171,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.4.6",
 		"@changesets/changelog-github": "0.6.0",
-		"@changesets/cli": "2.29.8",
+		"@changesets/cli": "2.30.0",
 		"@rollup/plugin-commonjs": "29.0.1",
 		"@rollup/plugin-json": "6.1.0",
 		"@rollup/plugin-node-resolve": "16.0.3",
