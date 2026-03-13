@@ -10,9 +10,11 @@ import {
 import { displayName } from "../package.json";
 import type Biome from "./biome";
 import { supportedLanguages } from "./constants";
-import { config } from "./utils";
+import { config, type SafeSpawnSyncOptions, safeSpawnSync } from "./utils";
 
 export default class Session {
+	private static watcherSupportCache = new Map<string, { versionString?: string; supportsWatcherArgs: boolean }>();
+
 	/**
 	 * The language client for this session.
 	 */
@@ -20,6 +22,13 @@ export default class Session {
 
 	public get biomeVersion(): string | undefined {
 		return this.client?.initializeResult?.serverInfo?.version;
+	}
+
+	/**
+	 * Clears the watcher support cache.
+	 */
+	public static clearCache() {
+		Session.watcherSupportCache.clear();
 	}
 
 	/**
@@ -90,7 +99,38 @@ export default class Session {
 
 		this.biome.logger.debug(`File watcher kind: "${watcherKind}"`);
 
-		if (watcherKind !== "recommended") {
+		let versionString: string | undefined;
+		let supportsWatcherArgs = false;
+
+		const cached = Session.watcherSupportCache.get(this.bin.fsPath);
+		if (cached) {
+			versionString = cached.versionString;
+			supportsWatcherArgs = cached.supportsWatcherArgs;
+		} else {
+			const spawnSyncOptions: SafeSpawnSyncOptions = {};
+			if (this.folder?.uri) {
+				spawnSyncOptions.cwd = this.folder.uri.fsPath;
+			}
+
+			const versionOutput = safeSpawnSync(
+				this.bin.fsPath,
+				["--version"],
+				spawnSyncOptions,
+			);
+			versionString = versionOutput?.split("Version: ")[1]?.trim();
+
+			if (versionString) {
+				const match = versionString.match(/^(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?/);
+				if (match) {
+					const major = parseInt(match[1], 10);
+					const minor = parseInt(match[2], 10);
+					supportsWatcherArgs = major > 2 || (major === 2 && minor >= 4);
+				}
+			}
+			Session.watcherSupportCache.set(this.bin.fsPath, { versionString, supportsWatcherArgs });
+		}
+
+		if (supportsWatcherArgs && watcherKind !== "recommended") {
 			args.push("--watcher-kind", watcherKind);
 
 			if (watcherKind === "polling") {
@@ -110,6 +150,10 @@ export default class Session {
 					);
 				}
 			}
+		} else if (!supportsWatcherArgs && watcherKind !== "recommended") {
+			this.biome.logger.warn(
+				`File watcher settings ignored: Biome version 2.4.0 or higher is required. Detected version: ${versionString ?? "unknown"}.`,
+			);
 		}
 
 		const serverOptions: ServerOptions = {

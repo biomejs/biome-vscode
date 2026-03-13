@@ -13,6 +13,7 @@ import { version } from "../package.json";
 import Biome from "./biome";
 import { supportedLanguages } from "./constants";
 import Logger from "./logger";
+import Session from "./session";
 import { StatusBar } from "./status-bar";
 import type { ExecutionMode } from "./types";
 import { config, debounce } from "./utils";
@@ -208,6 +209,7 @@ export default class Extension {
 	 * This method will stop the extension and then start it again.
 	 */
 	public async restart(): Promise<void> {
+		Session.clearCache();
 		await this.stop();
 		this.logger.info("🔄 Restarting Biome extension...");
 		await this.start();
@@ -224,6 +226,7 @@ export default class Extension {
 		const restartCommand = commands.registerCommand(
 			"biome.restart",
 			async () => {
+				Session.clearCache();
 				await this.stop();
 				await this.start();
 			},
