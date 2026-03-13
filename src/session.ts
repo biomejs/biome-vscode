@@ -10,6 +10,7 @@ import {
 import { displayName } from "../package.json";
 import type Biome from "./biome";
 import { supportedLanguages } from "./constants";
+import { config } from "./utils";
 
 export default class Session {
 	/**
@@ -80,10 +81,41 @@ export default class Session {
 			`Creating LSP session for ${this.folder?.name ?? "global"} with ${this.bin.fsPath}`,
 		);
 
+		const args: string[] = ["lsp-proxy"];
+
+		const watcherKind = config("lsp.watcher.kind", {
+			scope: this.folder,
+			default: "recommended",
+		});
+
+		this.biome.logger.debug(`File watcher kind: "${watcherKind}"`);
+
+		if (watcherKind !== "recommended") {
+			args.push("--watcher-kind", watcherKind);
+
+			if (watcherKind === "polling") {
+				const watcherPollingInterval = config("lsp.watcher.pollingInterval", {
+					scope: this.folder,
+					default: 2000,
+				});
+
+				this.biome.logger.debug(
+					`File watcher polling interval: ${watcherPollingInterval}`,
+				);
+
+				if (watcherPollingInterval !== 2000) {
+					args.push(
+						"--watcher-polling-interval",
+						watcherPollingInterval.toString(),
+					);
+				}
+			}
+		}
+
 		const serverOptions: ServerOptions = {
 			command: this.bin.fsPath,
 			transport: TransportKind.stdio,
-			args: ["lsp-proxy"],
+			args,
 		};
 
 		const outputChannel = window.createOutputChannel(

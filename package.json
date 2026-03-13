@@ -114,6 +114,26 @@
 					"default": "off",
 					"ignoreSync": true
 				},
+				"biome.lsp.watcher.kind": {
+					"type": "string",
+					"enum": [
+						"recommended",
+						"polling",
+						"none"
+					],
+					"description": "Controls how the Biome file watcher should behave. By default, Biome chooses the best watcher strategy for the current OS, however sometimes this could result in some issues, such as folders locked.",
+					"default": "recommended",
+					"scope": "resource",
+					"ignoreSync": true
+				},
+				"biome.lsp.watcher.pollingInterval": {
+					"type": "number",
+					"markdownDescription": "The polling interval in milliseconds. This is only applicable when using the `polling` watcher.",
+					"default": 2000,
+					"minimum": 0,
+					"scope": "resource",
+					"ignoreSync": true
+				},
 				"biome.lspBin": {
 					"type": "string",
 					"default": "",
