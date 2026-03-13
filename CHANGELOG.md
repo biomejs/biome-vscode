@@ -1,5 +1,11 @@
 # biome
 
+## 3.4.2
+
+### Patch Changes
+
+- [#973](https://github.com/biomejs/biome-vscode/pull/973) [`03d8195`](https://github.com/biomejs/biome-vscode/commit/03d8195a6c6b54618b65dd37e81acbfa99b657a4) Thanks [@astrochemx](https://github.com/astrochemx)! - Fix copying of `web-tree-sitter.wasm` into `out`
+
 ## 3.4.1
 
 ### Patch Changes
