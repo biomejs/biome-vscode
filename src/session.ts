@@ -13,7 +13,10 @@ import { supportedLanguages } from "./constants";
 import { config, type SafeSpawnSyncOptions, safeSpawnSync } from "./utils";
 
 export default class Session {
-	private static watcherSupportCache = new Map<string, { versionString?: string; supportsWatcherArgs: boolean }>();
+	private static watcherSupportCache = new Map<
+		string,
+		{ versionString?: string; supportsWatcherArgs: boolean }
+	>();
 
 	/**
 	 * The language client for this session.
@@ -92,13 +95,6 @@ export default class Session {
 
 		const args: string[] = ["lsp-proxy"];
 
-		const watcherKind = config("lsp.watcher.kind", {
-			scope: this.folder,
-			default: "recommended",
-		});
-
-		this.biome.logger.debug(`File watcher kind: "${watcherKind}"`);
-
 		let versionString: string | undefined;
 		let supportsWatcherArgs = false;
 
@@ -120,37 +116,56 @@ export default class Session {
 			versionString = versionOutput?.split("Version: ")[1]?.trim();
 
 			if (versionString) {
-				const match = versionString.match(/^(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?/);
+				const match = versionString.match(
+					/^(\d+)\.(\d+)\.(\d+)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?/,
+				);
 				if (match) {
 					const major = parseInt(match[1], 10);
 					const minor = parseInt(match[2], 10);
 					supportsWatcherArgs = major > 2 || (major === 2 && minor >= 4);
 				}
 			}
-			Session.watcherSupportCache.set(this.bin.fsPath, { versionString, supportsWatcherArgs });
+			Session.watcherSupportCache.set(this.bin.fsPath, {
+				versionString,
+				supportsWatcherArgs,
+			});
 		}
 
-		if (supportsWatcherArgs && watcherKind !== "recommended") {
-			args.push("--watcher-kind", watcherKind);
+		const watcherKind = config<string | undefined>("lsp.watcher.kind", {
+			scope: this.folder,
+			default: undefined,
+		});
 
-			if (watcherKind === "polling") {
-				const watcherPollingInterval = config("lsp.watcher.pollingInterval", {
-					scope: this.folder,
-					default: 2000,
-				});
+		const watcherPollingInterval = config<number | undefined>(
+			"lsp.watcher.pollingInterval",
+			{
+				scope: this.folder,
+				default: undefined,
+			},
+		);
 
-				this.biome.logger.debug(
-					`File watcher polling interval: ${watcherPollingInterval}`,
-				);
+		if (supportsWatcherArgs) {
+			this.biome.logger.debug(
+				`File watcher kind: "${watcherKind ?? process.env.BIOME_WATCHER_KIND ?? "recommended"}"`,
+			);
 
-				if (watcherPollingInterval !== 2000) {
-					args.push(
-						"--watcher-polling-interval",
-						watcherPollingInterval.toString(),
+			if (watcherKind === "polling" || watcherKind === "none") {
+				args.push("--watcher-kind", watcherKind);
+
+				if (watcherKind === "polling") {
+					this.biome.logger.debug(
+						`File watcher polling interval: ${watcherPollingInterval ?? process.env.BIOME_WATCHER_POLLING_INTERVAL ?? 2000}`,
 					);
+
+					if (watcherPollingInterval && watcherPollingInterval !== 2000) {
+						args.push(
+							"--watcher-polling-interval",
+							watcherPollingInterval.toString(),
+						);
+					}
 				}
 			}
-		} else if (!supportsWatcherArgs && watcherKind !== "recommended") {
+		} else if (watcherKind || watcherPollingInterval) {
 			this.biome.logger.warn(
 				`File watcher settings ignored: Biome version 2.4.0 or higher is required. Detected version: ${versionString ?? "unknown"}.`,
 			);
