@@ -7,6 +7,8 @@ jobs:
   publish:
     name: Publish
     runs-on: depot-ubuntu-24.04-arm-16
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     permissions: 
       contents: write
       packages: write
@@ -51,4 +53,14 @@ jobs:
         run: pnpm exec ovsx publish --packagePath biome.vsix
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
+
+  # Publish pre-release after stable release is published to ensure that the
+  # pre-release never falls behind the stable release.
+  publish-prerelease:
+    name: Publish pre-release
+    needs: publish
+    uses: ./.github/workflows/release-prerelease.yaml
+    with:
+      ref: refs/tags/v${{ needs.publish.outputs.version }}
+    secrets: inherit
       

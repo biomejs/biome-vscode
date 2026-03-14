@@ -77,7 +77,8 @@ pull request against the `main` branch.
 > This section is only relevant for maintainers of the extension.
 
 The release process is mostly automated. The only manual step is to trigger
-the release workflows.
+the stable or prerelease workflow, depending on the kind of release you want
+to publish.
 
 We usually release a prerelease version of the extension before promoting the 
 changes to a stable version, unless there are critical security or performance
@@ -85,7 +86,8 @@ issues that need to be addressed.
 
 ### 🌙 Releasing a prerelease version
 
-To release a prerelease version of the extension, trigger the [**🌙 Release new prerelease version**](https://github.com/biomejs/biome-vscode/actions/workflows/release-prerelease.yaml) workflow manually.
+To release a prerelease version of the extension ahead of a stable promotion,
+trigger the [**🌙 Release new prerelease version**](https://github.com/biomejs/biome-vscode/actions/workflows/release-prerelease.yaml) workflow manually.
 
 This workflow:
 - Patches the `package.json` version with a date-based prerelease identifier (e.g. `2024.08.221005`).
@@ -106,4 +108,4 @@ This workflow:
 - Patches the `package.json` version with the new version number.
 - Builds and packages the extension.
 - Publishes the extension to the Visual Studio Marketplace and Open VSX Registry.
-- Publishes the extension to GitHub Releases (with release notes).
+- Automatically republishes the same code as a prerelease build so the prerelease channel stays aligned with the new stable release.

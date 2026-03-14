@@ -1,15 +1,25 @@
 name: 🌙 Release new pre-release version
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
 
 jobs:
 
   publish:
     name: Publish
     runs-on: depot-ubuntu-24.04-arm-16
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
       - name: Setup PNPM
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
       - name: Setup Node.js
