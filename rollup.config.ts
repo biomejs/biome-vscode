@@ -23,7 +23,10 @@ export default defineConfig([
 			}),
 			copy({
 				targets: [
-					{ src: "node_modules/web-tree-sitter/web-tree-sitter.wasm", dest: "out" },
+					{
+						src: "node_modules/web-tree-sitter/web-tree-sitter.wasm",
+						dest: "out",
+					},
 					{
 						src: "node_modules/tree-sitter-gritql/tree-sitter-gritql.wasm",
 						dest: "out",
