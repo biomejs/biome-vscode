@@ -1,5 +1,11 @@
 # biome
 
+## 3.4.3
+
+### Patch Changes
+
+- [#976](https://github.com/biomejs/biome-vscode/pull/976) [`81c715c`](https://github.com/biomejs/biome-vscode/commit/81c715c9892694d9e8e46d3e6c6a513c3b7ab9e0) Thanks [@nhedger](https://github.com/nhedger)! - Fix musl system detection
+
 ## 3.4.2
 
 ### Patch Changes
