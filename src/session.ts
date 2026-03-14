@@ -131,33 +131,39 @@ export default class Session {
 			});
 		}
 
-		const watcherKind = config<string | undefined>("lsp.watcher.kind", {
+		const watcherKind = config<string | null>("lsp.watcher.kind", {
 			scope: this.folder,
-			default: undefined,
+			default: null,
 		});
 
-		const watcherPollingInterval = config<number | undefined>(
+		const watcherPollingInterval = config<number | null>(
 			"lsp.watcher.pollingInterval",
 			{
 				scope: this.folder,
-				default: undefined,
+				default: null,
 			},
 		);
 
 		if (supportsWatcherArgs) {
+			const WATCHER_KIND_DEFAULT = "recommended";
+			const WATCHER_POLLING_INTERVAL_DEFAULT = 2000;
+
 			this.biome.logger.debug(
-				`File watcher kind: "${watcherKind ?? process.env.BIOME_WATCHER_KIND ?? "recommended"}"`,
+				`File watcher kind: "${watcherKind ?? process.env.BIOME_WATCHER_KIND ?? WATCHER_KIND_DEFAULT}"`,
 			);
 
-			if (watcherKind === "polling" || watcherKind === "none") {
+			if (watcherKind && watcherKind !== WATCHER_KIND_DEFAULT) {
 				args.push("--watcher-kind", watcherKind);
 
 				if (watcherKind === "polling") {
 					this.biome.logger.debug(
-						`File watcher polling interval: ${watcherPollingInterval ?? process.env.BIOME_WATCHER_POLLING_INTERVAL ?? 2000}`,
+						`File watcher polling interval: ${watcherPollingInterval ?? process.env.BIOME_WATCHER_POLLING_INTERVAL ?? WATCHER_POLLING_INTERVAL_DEFAULT}`,
 					);
 
-					if (watcherPollingInterval && watcherPollingInterval !== 2000) {
+					if (
+						watcherPollingInterval &&
+						watcherPollingInterval !== WATCHER_POLLING_INTERVAL_DEFAULT
+					) {
 						args.push(
 							"--watcher-polling-interval",
 							watcherPollingInterval.toString(),
@@ -167,7 +173,8 @@ export default class Session {
 			}
 		} else if (watcherKind || watcherPollingInterval) {
 			this.biome.logger.warn(
-				`File watcher settings ignored: Biome version 2.4.0 or higher is required. Detected version: ${versionString ?? "unknown"}.`,
+				"File watcher settings ignored: Biome version 2.4.0 or higher is required. " +
+					`Detected version: ${versionString ?? "unknown"} ("${this.bin.fsPath}").`,
 			);
 		}
 
