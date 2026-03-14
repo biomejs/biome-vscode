@@ -37,7 +37,7 @@ export const isMusl = (() => {
 
 	try {
 		const output = spawnSync("ldd", ["--version"], { encoding: "utf8" });
-		return output.stdout.includes("musl");
+		return output.stdout.includes("musl") || output.stderr.includes("musl");
 	} catch {
 		return false;
 	}
