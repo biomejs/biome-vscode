@@ -18,8 +18,8 @@
 		"url": "https://github.com/sponsors/biomejs"
 	},
 	"scripts": {
-		"build": "rollup --config rollup.config.ts --configPlugin esbuild",
-		"dev": "rollup --watch --config rollup.config.ts --configPlugin esbuild",
+		"build": "rolldown --config rolldown.config.ts",
+		"dev": "rolldown --watch --config rolldown.config.ts",
 		"prepackage": "pnpm run build",
 		"package": "vsce package --out biome.vsix"
 	},
@@ -172,18 +172,12 @@
 		"@biomejs/biome": "2.4.6",
 		"@changesets/changelog-github": "0.6.0",
 		"@changesets/cli": "2.30.0",
-		"@rollup/plugin-commonjs": "29.0.1",
-		"@rollup/plugin-json": "6.1.0",
-		"@rollup/plugin-node-resolve": "16.0.3",
 		"@types/node": "24.12.0",
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "3.7.1",
-		"esbuild": "0.27.3",
 		"lefthook": "2.1.2",
 		"ovsx": "0.10.9",
-		"rollup": "4.59.0",
-		"rollup-plugin-copy": "3.5.0",
-		"rollup-plugin-esbuild": "6.2.1",
+		"rolldown": "1.0.0-rc.9",
 		"typescript": "5.9.3"
 	},
 	"packageManager": "pnpm@10.30.3"
