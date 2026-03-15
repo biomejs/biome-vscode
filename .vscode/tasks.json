@@ -12,19 +12,19 @@
 					"applyTo": "allDocuments",
 					"fileLocation": ["relative", "${cwd}"],
 					"pattern": {
-						"regexp": "^(?<file>.+) \\((?<line>\\d+):(?<column>\\d+)\\) .*Error:\\s(?<message>.+)$",
-						"file": 1,
-						"line": 2,
-						"column": 3,
-						"message": 4
+						"regexp": "^\\[!\\] (plugin esbuild) Error: (?<message>.+)\\r?\\n(?<file>.*?):\\s*\\((?<line>\\d+):(?<column>\\d+)\\)",
+						"message": 1,
+						"file": 2,
+						"line": 3,
+						"column": 4
 					},
 					"background": {
 						"activeOnStart": true,
 						"beginsPattern": {
-							"regexp": "."
+							"regexp": "^rollup v\\d+\\.\\d+\\.\\d+$"
 						},
 						"endsPattern": {
-							"regexp": "^(Waiting for changes\\.\\.\\.|✔ Rebuilt out in .+)$"
+							"regexp": "^\\[[:-\\s\\d]+\\] waiting for changes\\.\\.\\.$"
 						}
 					}
 				}
