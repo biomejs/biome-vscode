@@ -18,6 +18,8 @@ jobs:
         uses: biomejs/setup-biome@29711cbb52afee00eb13aeb30636592f9edc0088 # v2
       - name: Run Biome checks
         run: biome ci --reporter=github
+      - name: Typecheck
+        run: pnpm run typecheck
   
   build:
     name: Build

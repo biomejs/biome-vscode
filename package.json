@@ -18,10 +18,12 @@
 		"url": "https://github.com/sponsors/biomejs"
 	},
 	"scripts": {
+		"prebuild": "pnpm run typecheck",
 		"build": "rollup --config rollup.config.ts --configPlugin esbuild",
 		"dev": "rollup --watch --config rollup.config.ts --configPlugin esbuild",
 		"prepackage": "pnpm run build",
-		"package": "vsce package --out biome.vsix"
+		"package": "vsce package --out biome.vsix",
+		"typecheck": "tsc --noEmit"
 	},
 	"main": "./out/main.js",
 	"activationEvents": [
