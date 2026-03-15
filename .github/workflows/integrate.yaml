@@ -18,6 +18,11 @@ jobs:
         uses: biomejs/setup-biome@29711cbb52afee00eb13aeb30636592f9edc0088 # v2
       - name: Run Biome checks
         run: biome ci --reporter=github
+      - name: Setup PNPM
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4
+        with:
+          cache: true
+          run_install: true
       - name: Typecheck
         run: pnpm run typecheck
   
