@@ -1,5 +1,16 @@
 # biome
 
+## 3.5.0
+
+### Minor Changes
+
+- [#974](https://github.com/biomejs/biome-vscode/pull/974) [`af4f3a0`](https://github.com/biomejs/biome-vscode/commit/af4f3a0c42c2c727f6c084a022c72b2e8bf720e9) Thanks [@astrochemx](https://github.com/astrochemx)! - Now the extension exposes the file watcher controls to the user by adding two new settings:
+
+  - `biome.lsp.watcher.kind`: Controls how the Biome file watcher should behave.
+  - `biome.lsp.watcher.pollingInterval`: The polling interval in milliseconds.
+
+  These settings are passed to the Biome LSP server when it is started.
+
 ## 3.4.3
 
 ### Patch Changes
