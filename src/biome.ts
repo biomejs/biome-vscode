@@ -251,6 +251,7 @@ export default class Biome {
 	 */
 	public async restart() {
 		this.logger.info("🔄 Restarting Biome...");
+		Session.clearCache();
 		await this.stop();
 		await this.start();
 	}
