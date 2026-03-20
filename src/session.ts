@@ -23,6 +23,10 @@ export default class Session {
 	 */
 	private client: LanguageClient | undefined;
 
+	public get selectorRoot(): Uri | undefined {
+		return this.folder?.uri ?? this.singleFileFolder;
+	}
+
 	public get biomeVersion(): string | undefined {
 		return this.client?.initializeResult?.serverInfo?.version;
 	}
@@ -213,23 +217,13 @@ export default class Session {
 	 * Creates the document selector for the language client.
 	 */
 	private createDocumentSelector(): DocumentFilter[] {
-		const folder = this.folder;
-		const singleFileFolder = this.singleFileFolder;
+		const selectorRoot = this.selectorRoot;
 
-		if (folder !== undefined) {
+		if (selectorRoot !== undefined) {
 			return supportedLanguages.map((language) => ({
 				language,
 				scheme: "file",
-				pattern: Uri.joinPath(folder.uri, "**", "*").fsPath.replaceAll(
-					"\\",
-					"/",
-				),
-			}));
-		} else if (singleFileFolder !== undefined) {
-			return supportedLanguages.map((language) => ({
-				language,
-				scheme: "file",
-				pattern: Uri.joinPath(singleFileFolder, "**", "*").fsPath.replaceAll(
+				pattern: Uri.joinPath(selectorRoot, "**", "*").fsPath.replaceAll(
 					"\\",
 					"/",
 				),

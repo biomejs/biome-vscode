@@ -1,3 +1,4 @@
+import { isAbsolute, relative, resolve } from "node:path";
 import {
 	ConfigurationTarget,
 	commands,
@@ -17,6 +18,17 @@ import Session from "./session";
 import { StatusBar } from "./status-bar";
 import type { ExecutionMode } from "./types";
 import { config, debounce } from "./utils";
+
+type FileBackedBiomeSession = {
+	name: string;
+	root: string;
+	normalizedRoot: string;
+};
+
+type OverlappingBiomeSessionPair = {
+	first: FileBackedBiomeSession;
+	second: FileBackedBiomeSession;
+};
 
 export default class Extension {
 	/**
@@ -182,6 +194,7 @@ export default class Extension {
 
 		// Finally, start the instances
 		await this.startInstances();
+		this.warnAboutOverlappingSessions();
 
 		this.logger.info(`✨ See the dedicated logging channels for more details.`);
 	}
@@ -201,6 +214,34 @@ export default class Extension {
 		}
 
 		this.logger.info("⏹️ Biome extension stopped.");
+	}
+
+	private warnAboutOverlappingSessions(): void {
+		const overlaps = this.getOverlappingSessionPairs();
+
+		if (overlaps.length === 0) {
+			return;
+		}
+
+		const openLogsAction = "Open Biome logs to see which";
+		const message =
+			"Biome started multiple sessions for some of the same files. This " +
+			"usually happens when workspace folders overlap. Make sure each " +
+			"workspace root is separate and not nested inside another one.";
+
+		this.logger.warn(message);
+
+		for (const { first, second } of overlaps) {
+			this.logger.warn(
+				`Overlapping workspace roots: "${first.name}" (${first.root}) and "${second.name}" (${second.root})`,
+			);
+		}
+
+		void window.showWarningMessage(message, openLogsAction).then((action) => {
+			if (action === openLogsAction) {
+				this.logger.show();
+			}
+		});
 	}
 
 	/**
@@ -366,6 +407,73 @@ export default class Extension {
 		}
 
 		this.logger.info(`🚀 Started ${this.biomes.size} Biome instance(s).`);
+	}
+
+	private getOverlappingSessionPairs(): OverlappingBiomeSessionPair[] {
+		const sessions = this.getFileBackedSessions();
+		const overlaps: OverlappingBiomeSessionPair[] = [];
+
+		for (let index = 0; index < sessions.length; index++) {
+			const first = sessions[index];
+
+			for (
+				let nextIndex = index + 1;
+				nextIndex < sessions.length;
+				nextIndex++
+			) {
+				const second = sessions[nextIndex];
+
+				if (!this.rootsOverlap(first.normalizedRoot, second.normalizedRoot)) {
+					continue;
+				}
+
+				overlaps.push({ first, second });
+			}
+		}
+
+		return overlaps;
+	}
+
+	private getFileBackedSessions(): FileBackedBiomeSession[] {
+		return Array.from(this.biomes.values()).flatMap((biome) => {
+			const selectorRoot = biome.session?.selectorRoot;
+
+			if (!selectorRoot) {
+				return [];
+			}
+
+			return [
+				{
+					name: biome.name,
+					root: selectorRoot.fsPath,
+					normalizedRoot: this.normalizeRootPath(selectorRoot),
+				},
+			];
+		});
+	}
+
+	private normalizeRootPath(root: Uri): string {
+		const normalizedRoot = resolve(root.fsPath);
+
+		return process.platform === "win32"
+			? normalizedRoot.toLowerCase()
+			: normalizedRoot;
+	}
+
+	private rootsOverlap(firstRoot: string, secondRoot: string): boolean {
+		return (
+			this.isSameOrNestedRoot(firstRoot, secondRoot) ||
+			this.isSameOrNestedRoot(secondRoot, firstRoot)
+		);
+	}
+
+	private isSameOrNestedRoot(root: string, candidate: string): boolean {
+		const difference = relative(root, candidate);
+
+		return (
+			difference === "" ||
+			(!difference.startsWith("..") && !isAbsolute(difference))
+		);
 	}
 
 	/**
