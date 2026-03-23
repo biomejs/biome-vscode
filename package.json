@@ -173,6 +173,12 @@
 				"extensions": [
 					".grit"
 				]
+			},
+			{
+				"id": "svg",
+				"extensions": [
+					".svg"
+				]
 			}
 		],
 		"grammars": [
