@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"name": "Workspace root",
+			"path": "outer"
+		},
+		{
+			"name": "Nested workspace root",
+			"path": "outer/nested"
+		}
+	]
+}

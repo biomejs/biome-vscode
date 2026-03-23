@@ -58,6 +58,20 @@
 			"sourceMapRenames": true
 		},
 		{
+			"name": "🧩 Debug Extension (overlapping workspace roots)",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentKind=node",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"${workspaceFolder}/test/fixtures/overlapping-roots-workspace/test.code-workspace"
+			],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
+			"preLaunchTask": "npm: dev",
+			"sourceMapRenames": true
+		},
+		{
 			"name": "🧩 Debug Extension (requires config file but missing)",
 			"type": "extensionHost",
 			"request": "launch",
