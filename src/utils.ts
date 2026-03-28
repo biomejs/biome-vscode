@@ -1,4 +1,5 @@
 import {
+	execFile,
 	type SpawnSyncOptionsWithStringEncoding,
 	spawnSync,
 } from "node:child_process";
@@ -156,3 +157,44 @@ export const safeSpawnSync = (
 
 	return output;
 };
+
+/**
+ * Resolves a module specifier to an absolute path using a fresh Node.js runtime
+ *
+ * This function spawns a new Node.js process to resolve a module specifier to an
+ * absolute path, ensuring that the resolution is performed in a clean environment
+ * without any caching effects from the current process.
+ */
+export function resolveFreshFromRuntime(
+	specifier: string,
+	searchRoot: string,
+): Promise<string> {
+	return new Promise((resolve, reject) => {
+		execFile(
+			process.execPath,
+			[
+				"-e",
+				`
+          const path = require("node:path");
+          const { createRequire } = require("node:module");
+
+          const root = process.argv[1];
+          const spec = process.argv[2];
+
+          const req = createRequire(path.join(root, "package.json"));
+          process.stdout.write(req.resolve(spec));
+        `,
+				searchRoot,
+				specifier,
+			],
+			{ cwd: searchRoot },
+			(err, stdout, stderr) => {
+				if (err) {
+					reject(new Error(stderr || err.message));
+					return;
+				}
+				resolve(stdout.trim());
+			},
+		);
+	});
+}
