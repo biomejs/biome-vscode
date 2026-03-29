@@ -2,4 +2,4 @@
 "biome": patch
 ---
 
-Fix new biome version not picked up when updating with pnpm
+Fixed new biome version not being picked up when updating it with pnpm
