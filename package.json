@@ -209,7 +209,7 @@
 		"@vscode/vsce": "3.7.1",
 		"esbuild": "0.27.4",
 		"lefthook": "2.1.4",
-		"ovsx": "0.10.9",
+		"ovsx": "0.10.10",
 		"rollup": "4.59.0",
 		"rollup-plugin-copy": "3.5.0",
 		"rollup-plugin-esbuild": "6.2.1",
