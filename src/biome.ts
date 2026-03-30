@@ -272,7 +272,7 @@ export default class Biome {
 			return undefined;
 		}
 
-		return (await this.shouldRunFromTemporaryLocation())
+		return this.shouldRunFromTemporaryLocation()
 			? await this.copyToTemporaryLocation(binary)
 			: binary;
 	}
@@ -295,7 +295,7 @@ export default class Biome {
 	 * so we'll provide an escape hatch in the form of a configuration
 	 * setting.
 	 */
-	protected async shouldRunFromTemporaryLocation(): Promise<boolean> {
+	protected shouldRunFromTemporaryLocation(): boolean {
 		// Never copy the binary when creating a global instance, because we assume it's
 		// installed globally and already in the right place.
 		if (this.isGlobal) {
@@ -449,11 +449,11 @@ export default class Biome {
 			return;
 		}
 
-		this.logger.debug("🧹 Cleaning up temporary directory.");
-
-		if (!this.tempDirectory) {
+		if (!this.tempDirectory || !this.shouldRunFromTemporaryLocation()) {
 			return;
 		}
+
+		this.logger.debug("🧹 Cleaning up temporary directory.");
 
 		await workspace.fs.delete(this.tempDirectory, {
 			recursive: true,
