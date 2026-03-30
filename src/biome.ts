@@ -15,6 +15,10 @@ import Session from "./session";
 import type { State } from "./types";
 import { config, debounce } from "./utils";
 
+type StopOptions = {
+	waitForConfigurationChange?: boolean;
+};
+
 export default class Biome {
 	/**
 	 * Logger for this Biome instance
@@ -231,13 +235,15 @@ export default class Biome {
 	/**
 	 * Stops the Biome instance.
 	 */
-	public async stop() {
-		// If we end up here following a configuration change, we need to wait
-		// for the notification to be processed before we can stop the LSP session,
-		// otherwise we will get an error. This is a workaround for a race condition
-		// that occurs when the configuration change notification is sent while the
-		// LSP session is already stopped.
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+	public async stop({ waitForConfigurationChange = false }: StopOptions = {}) {
+		if (waitForConfigurationChange) {
+			// If we end up here following a configuration change, we need to wait
+			// for the notification to be processed before we can stop the LSP session,
+			// otherwise we will get an error. This is a workaround for a race condition
+			// that occurs when the configuration change notification is sent while the
+			// LSP session is already stopped.
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+		}
 
 		await this._session?.stop();
 
@@ -249,10 +255,10 @@ export default class Biome {
 	/**
 	 * Restarts the Biome instance.
 	 */
-	public async restart() {
+	public async restart(options: StopOptions = {}) {
 		this.logger.info("🔄 Restarting Biome...");
 		Session.clearCache();
-		await this.stop();
+		await this.stop(options);
 		await this.start();
 	}
 
@@ -423,7 +429,7 @@ export default class Biome {
 				debounce(async (event) => {
 					if (event.affectsConfiguration("biome", this.workspaceFolder)) {
 						this.logger.info("⚙️ Configuration changed.");
-						await this.restart();
+						await this.restart({ waitForConfigurationChange: true });
 					}
 				}, 1000),
 			);
