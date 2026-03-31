@@ -1,5 +1,11 @@
 # biome
 
+## 3.6.1
+
+### Patch Changes
+
+- [`02a285e`](https://github.com/biomejs/biome-vscode/commit/02a285e4dcb2de70899b0c874596f79af3bafeb1) Thanks [@nhedger](https://github.com/nhedger)! - Revert [#995](https://github.com/biomejs/biome-vscode/issues/995) until we find a way to resolve the path without triggering security policies
+
 ## 3.6.0
 
 ### Minor Changes
