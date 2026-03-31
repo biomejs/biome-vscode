@@ -20,7 +20,6 @@ import {
 	config,
 	fileExists,
 	getLspBin,
-	resolveFreshFromRuntime,
 	type SafeSpawnSyncOptions,
 	safeSpawnSync,
 } from "./utils";
@@ -303,9 +302,11 @@ export default class Locator {
 			// Resolve the path to the root @biomejs/biome package starting
 			// from the root of the workspace folder.
 
-			const pathToRootBiomePackage = await resolveFreshFromRuntime(
+			const pathToRootBiomePackage = require.resolve(
 				"@biomejs/biome/package.json",
-				searchRoot.fsPath,
+				{
+					paths: [searchRoot.fsPath],
+				},
 			);
 
 			// Create a require function scoped to @biomejs/biome package.
