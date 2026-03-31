@@ -1,5 +1,19 @@
 # biome
 
+## 3.6.0
+
+### Minor Changes
+
+- [#1003](https://github.com/biomejs/biome-vscode/pull/1003) [`4fa0ab8`](https://github.com/biomejs/biome-vscode/commit/4fa0ab849858a1fa51c9556769c3a22d6193c1fc) Thanks [@nhedger](https://github.com/nhedger)! - Conditionally wait for configuration change notification on stop
+
+  Up until now, we would always wait 1000ms when stopping the Biome LSP server, even if there were no configuration changes. This change makes it so that we only wait for the notification if there are actually configuration changes to be made, which should make stopping the server faster in cases where there are no changes.
+
+- [#986](https://github.com/biomejs/biome-vscode/pull/986) [`1428b59`](https://github.com/biomejs/biome-vscode/commit/1428b598964cbbd86a7569d9810e648783030131) Thanks [@nhedger](https://github.com/nhedger)! - Warn when overlapping workspace roots cause multiple Biome sessions to apply to the same files.
+
+### Patch Changes
+
+- [#995](https://github.com/biomejs/biome-vscode/pull/995) [`c9b2902`](https://github.com/biomejs/biome-vscode/commit/c9b29026a59d416b1a4abf19b671f6da17862de5) Thanks [@nhedger](https://github.com/nhedger)! - Fixed new biome version not being picked up when updating it with pnpm ([#994](https://github.com/biomejs/biome-vscode/issues/994))
+
 ## 3.5.0
 
 ### Minor Changes
