@@ -76,9 +76,9 @@ export const resolveVariables = (
 	let resolved = value;
 	const substitutions = new Map<string, string>();
 	const home = process.env.HOME || process.env.USERPROFILE;
-	const userHomeVariable = String.raw`\${userHome}`;
-	const workspaceFolderVariable = String.raw`\${workspaceFolder}`;
-	const cwdVariable = String.raw`\${cwd}`;
+	const userHomeVariable = "$" + "{userHome}";
+	const workspaceFolderVariable = "$" + "{workspaceFolder}";
+	const cwdVariable = "$" + "{cwd}";
 
 	if (home) {
 		substitutions.set(userHomeVariable, home);
