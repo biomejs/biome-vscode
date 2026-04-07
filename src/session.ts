@@ -223,6 +223,41 @@ export default class Session {
 							}
 
 							if (
+								item.section === "biome.configurationPath" &&
+								typeof value === "string"
+							) {
+								return (
+									normalizeBiomeSettings(
+										{ configurationPath: value },
+										resource,
+									) as { configurationPath?: string }
+								).configurationPath;
+							}
+
+							if (
+								(item.section === "biome.lsp.bin" ||
+									item.section === "biome.lspBin") &&
+								(typeof value === "string" ||
+									(typeof value === "object" &&
+										value !== null &&
+										!Array.isArray(value)))
+							) {
+								if (item.section === "biome.lspBin") {
+									return (
+										normalizeBiomeSettings({ lspBin: value }, resource) as {
+											lspBin?: unknown;
+										}
+									).lspBin;
+								}
+
+								return (
+									normalizeBiomeSettings({ lsp: { bin: value } }, resource) as {
+										lsp?: { bin?: unknown };
+									}
+								).lsp?.bin;
+							}
+
+							if (
 								(item.section === undefined || item.section === null) &&
 								typeof value === "object" &&
 								value !== null &&
