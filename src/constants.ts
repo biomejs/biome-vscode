@@ -64,6 +64,24 @@ export const platformIdentifier = (() => {
 })();
 
 /**
+ * Platform-specific binary names
+ *
+ * This constant contains the possible names of the Biome binary for the current
+ * platform. On Windows, both "biome.exe" and "biome.cmd" are possible names for
+ * the binary, depending on how it was installed.
+ *
+ * @example "biome" (on Linux, macOS, and other Unix-like systems)
+ * @example ["biome.exe", "biome.cmd"] (on Windows)
+ */
+export const platformSpecificBinaryNames = (() => {
+	if (process.platform === "win32") {
+		return ["biome.exe", "biome.cmd"];
+	}
+
+	return ["biome"];
+})();
+
+/**
  * Platform-specific binary name
  *
  * This constant contains the name of the Biome binary for the current
@@ -72,8 +90,8 @@ export const platformIdentifier = (() => {
  * @example "biome" (on Linux, macOS, and other Unix-like systems)
  * @example "biome.exe" (on Windows)
  */
-export const platformSpecificBinaryName = (() => {
-	return `biome${process.platform === "win32" ? ".exe" : ""}`;
+export const platformSpecificDefaultBinaryName = (() => {
+	return platformSpecificBinaryNames[0];
 })();
 
 /**
