@@ -19,6 +19,7 @@ export const supportedLanguages: string[] = [
 	"json",
 	"jsonc",
 	"snippets",
+	"svg",
 	"svelte",
 	"tailwindcss",
 	"typescript",
