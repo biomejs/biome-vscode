@@ -64,6 +64,113 @@ export const config: {
 };
 
 /**
+ * Resolves common VS Code variables in user-provided settings.
+ *
+ * This mirrors the behavior used by other language tool extensions for path-like
+ * settings such as `${workspaceFolder}`, `${userHome}`, and `${env:NAME}`.
+ */
+export const resolveVariables = (
+	value: string,
+	workspaceFolder?: WorkspaceFolder,
+): string => {
+	let resolved = value;
+	const substitutions = new Map<string, string>();
+	const home = process.env.HOME || process.env.USERPROFILE;
+	const userHomeVariable = "$" + "{userHome}";
+	const workspaceFolderVariable = "$" + "{workspaceFolder}";
+	const cwdVariable = "$" + "{cwd}";
+
+	if (home) {
+		substitutions.set(userHomeVariable, home);
+	}
+
+	if (workspaceFolder) {
+		substitutions.set(workspaceFolderVariable, workspaceFolder.uri.fsPath);
+	}
+
+	substitutions.set(cwdVariable, process.cwd());
+
+	for (const folder of workspace.workspaceFolders ?? []) {
+		substitutions.set(`\${workspaceFolder:${folder.name}}`, folder.uri.fsPath);
+	}
+
+	for (const [key, envValue] of Object.entries(process.env)) {
+		if (envValue !== undefined) {
+			substitutions.set(`\${env:${key}}`, envValue);
+		}
+	}
+
+	for (const [key, substitution] of substitutions) {
+		resolved = resolved.replaceAll(key, substitution);
+	}
+
+	return resolved;
+};
+
+const resolvePathSetting = (
+	value: string,
+	workspaceFolder?: WorkspaceFolder,
+): string => resolveVariables(value, workspaceFolder);
+
+const isStringRecord = (value: unknown): value is Record<string, string> =>
+	typeof value === "object" &&
+	value !== null &&
+	!Array.isArray(value) &&
+	Object.values(value).every((entry) => typeof entry === "string");
+
+export const normalizeBiomeSettings = (
+	settings: unknown,
+	resource?: Uri,
+): unknown => {
+	if (
+		typeof settings !== "object" ||
+		settings === null ||
+		Array.isArray(settings)
+	) {
+		return settings;
+	}
+
+	const workspaceFolder = resource
+		? workspace.getWorkspaceFolder(resource)
+		: undefined;
+	const result = { ...(settings as Record<string, unknown>) };
+
+	if (typeof result.configurationPath === "string") {
+		result.configurationPath = resolvePathSetting(
+			result.configurationPath,
+			workspaceFolder,
+		);
+	}
+
+	if (typeof result.lspBin === "string") {
+		result.lspBin = resolvePathSetting(result.lspBin, workspaceFolder);
+	}
+
+	if (
+		typeof result.lsp === "object" &&
+		result.lsp !== null &&
+		!Array.isArray(result.lsp)
+	) {
+		const lspSettings = { ...(result.lsp as Record<string, unknown>) };
+
+		if (typeof lspSettings.bin === "string") {
+			lspSettings.bin = resolvePathSetting(lspSettings.bin, workspaceFolder);
+		} else if (isStringRecord(lspSettings.bin)) {
+			lspSettings.bin = Object.fromEntries(
+				Object.entries(lspSettings.bin).map(([key, entry]) => [
+					key,
+					resolvePathSetting(entry, workspaceFolder),
+				]),
+			);
+		}
+
+		result.lsp = lspSettings;
+	}
+
+	return result;
+};
+
+/**
  * Retrieves the `biome.lsp.bin` setting
  *
  * This function retrieves the `biome.lsp.bin` setting from the given scope. It
@@ -79,13 +186,17 @@ export const getLspBin = (
 		}) || config<string>("lspBin", { scope: workspaceFolder }); // deprecated setting for fallback.
 
 	const resolvePath = (lspBin: string, workspaceFolder?: WorkspaceFolder) => {
+		const resolvedPath = resolvePathSetting(lspBin, workspaceFolder);
+
 		// If the specified path is relative, resolve it against the root of
 		// the workspace folder (if any).
-		if (workspaceFolder && !isAbsolute(lspBin)) {
-			return Uri.file(Utils.resolvePath(workspaceFolder.uri, lspBin).fsPath);
+		if (workspaceFolder && !isAbsolute(resolvedPath)) {
+			return Uri.file(
+				Utils.resolvePath(workspaceFolder.uri, resolvedPath).fsPath,
+			);
 		}
 
-		return Uri.file(lspBin);
+		return Uri.file(resolvedPath);
 	};
 
 	if (typeof lspBin === "string") {
