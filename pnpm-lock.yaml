@@ -49,8 +49,8 @@ importers:
         specifier: ^1.80.0
         version: 1.99.1
       '@vscode/vsce':
-        specifier: 3.7.1
-        version: 3.7.1
+        specifier: 3.9.1
+        version: 3.9.1
       esbuild:
         specifier: 0.28.0
         version: 0.28.0
@@ -872,8 +872,8 @@ packages:
   '@vscode/vsce-sign@2.0.5':
     resolution: {integrity: sha512-GfYWrsT/vypTMDMgWDm75iDmAOMe7F71sZECJ+Ws6/xyIfmB3ELVnVN+LwMFAvmXY+e6eWhR2EzNGF/zAhWY3Q==}
 
-  '@vscode/vsce@3.7.1':
-    resolution: {integrity: sha512-OTm2XdMt2YkpSn2Nx7z2EJtSuhRHsTPYsSK59hr3v8jRArK+2UEoju4Jumn1CmpgoBLGI6ReHLJ/czYltNUW3g==}
+  '@vscode/vsce@3.9.1':
+    resolution: {integrity: sha512-MPn5p+DoudI+3GfJSpAZZraE1lgLv0LcwbH3+xy7RgEhty3UIkmUMUA+5jPTDaxXae00AnX5u77FxGM8FhfKKA==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -1228,9 +1228,6 @@ packages:
 
   fastq@1.19.1:
     resolution: {integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ==}
-
-  fd-slicer@1.1.0:
-    resolution: {integrity: sha512-cE1qsB/VwyQozZ+q1dGxR8LBYNZeofhEdUNGSMbQD3Gw2lAzX9Zb3uIU6Ebc/Fmyjo9AWWfnn0AUCHqtevs/8g==}
 
   fdir@6.4.4:
     resolution: {integrity: sha512-1NZP+GK4GfuAv3PqKvxQRDMjdSRZjnkq7KfhlNrCNNlZ0ygQFpebfrnfnq/W7fpUnAv9aGWmY1zKx7FYL3gwhg==}
@@ -2284,8 +2281,9 @@ packages:
     resolution: {integrity: sha512-/HCXpyHXJQQHvFq9noqrjfa/WpQC2XYs3vI7tBiAi4QiIU1knvYhZGaO1QPjwIVMdqflxbmwgMXtYeaRiAE0CA==}
     engines: {node: '>=16'}
 
-  yauzl@2.10.0:
-    resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
+  yauzl@3.3.0:
+    resolution: {integrity: sha512-PtGEvEP30p7sbIBJKUBjUnqgTVOyMURc4dLo9iNyAJnNIEz9pm88cCXF21w94Kg3k6RXkeZh5DHOGS0qEONvNQ==}
+    engines: {node: '>=12'}
 
   yazl@2.5.1:
     resolution: {integrity: sha512-phENi2PLiHnHb6QBVot+dJnaAZ0xosj7p3fWl+znIjBDlnMI2PsZCJZ306BPTFOaHf5qdDEI8x5qFrSOBN5vrw==}
@@ -3089,7 +3087,7 @@ snapshots:
       '@vscode/vsce-sign-win32-arm64': 2.0.2
       '@vscode/vsce-sign-win32-x64': 2.0.2
 
-  '@vscode/vsce@3.7.1':
+  '@vscode/vsce@3.9.1':
     dependencies:
       '@azure/identity': 4.9.1
       '@secretlint/node': 10.2.2
@@ -3118,7 +3116,7 @@ snapshots:
       typed-rest-client: 1.8.11
       url-join: 4.0.1
       xml2js: 0.5.0
-      yauzl: 2.10.0
+      yauzl: 3.3.0
       yazl: 2.5.1
     optionalDependencies:
       keytar: 7.9.0
@@ -3486,10 +3484,6 @@ snapshots:
   fastq@1.19.1:
     dependencies:
       reusify: 1.1.0
-
-  fd-slicer@1.1.0:
-    dependencies:
-      pend: 1.2.0
 
   fdir@6.4.4(picomatch@4.0.2):
     optionalDependencies:
@@ -4018,7 +4012,7 @@ snapshots:
 
   ovsx@0.10.11:
     dependencies:
-      '@vscode/vsce': 3.7.1
+      '@vscode/vsce': 3.9.1
       commander: 6.2.1
       follow-redirects: 1.15.9
       is-ci: 2.0.0
@@ -4579,10 +4573,10 @@ snapshots:
       is-it-type: 5.1.2
       simple-invariant: 2.0.1
 
-  yauzl@2.10.0:
+  yauzl@3.3.0:
     dependencies:
       buffer-crc32: 0.2.13
-      fd-slicer: 1.1.0
+      pend: 1.2.0
 
   yazl@2.5.1:
     dependencies:
