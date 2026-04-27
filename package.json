@@ -210,7 +210,7 @@
 		"esbuild": "0.28.0",
 		"lefthook": "2.1.6",
 		"ovsx": "0.10.11",
-		"rollup": "4.60.1",
+		"rollup": "4.60.2",
 		"rollup-plugin-copy": "3.5.0",
 		"rollup-plugin-esbuild": "6.2.1",
 		"typescript": "6.0.3"
