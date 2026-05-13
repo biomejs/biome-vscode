@@ -24,6 +24,7 @@ export const supportedLanguages: string[] = [
 	"typescript",
 	"typescriptreact",
 	"vue",
+	"xml",
 ];
 
 /**
