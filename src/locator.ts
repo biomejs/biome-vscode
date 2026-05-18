@@ -1,6 +1,7 @@
+import { readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { homedir } from "node:os";
-import { delimiter, dirname } from "node:path";
+import { basename, delimiter, dirname, join } from "node:path";
 import { env } from "node:process";
 import {
 	ConfigurationTarget,
@@ -25,11 +26,38 @@ import {
 } from "./utils";
 
 export default class Locator {
-	private get globalNodeModulesPaths(): Record<string, Uri | undefined> {
-		const npmGlobalNodeModulesPath = safeSpawnSync("npm", ["root", "-g"], {
+	private get pnpmGlobalNodeModulesPaths(): Uri[] {
+		const root = safeSpawnSync("pnpm", ["root", "-g"], {
 			shell: true,
 		});
-		const pnpmGlobalNodeModulesPath = safeSpawnSync("pnpm", ["root", "-g"], {
+		if (!root) {
+			return [];
+		}
+
+		// pnpm v10: ~/Library/pnpm/global/5
+		// pnpm v11: ~/Library/pnpm/global/v11
+		if (!basename(root).startsWith("v")) {
+			return [Uri.file(root)];
+		}
+
+		// Since pnpm v11, global package installations are stored in an isolated directory.
+		const roots: Uri[] = [];
+		for (const entry of readdirSync(root, {
+			recursive: false,
+			withFileTypes: true,
+		})) {
+			if (entry.isSymbolicLink()) {
+				continue;
+			}
+
+			roots.push(Uri.file(join(root, entry.name)));
+		}
+
+		return roots;
+	}
+
+	private get globalNodeModulesPaths(): Record<string, Uri[]> {
+		const npmGlobalNodeModulesPath = safeSpawnSync("npm", ["root", "-g"], {
 			shell: true,
 		});
 		const bunGlobalNodeModulesPath = Utils.resolvePath(
@@ -38,13 +66,9 @@ export default class Locator {
 		);
 
 		return {
-			npm: npmGlobalNodeModulesPath
-				? Uri.file(npmGlobalNodeModulesPath)
-				: undefined,
-			pnpm: pnpmGlobalNodeModulesPath
-				? Uri.file(pnpmGlobalNodeModulesPath)
-				: undefined,
-			bun: bunGlobalNodeModulesPath,
+			npm: npmGlobalNodeModulesPath ? [Uri.file(npmGlobalNodeModulesPath)] : [],
+			pnpm: this.pnpmGlobalNodeModulesPaths,
+			bun: [bunGlobalNodeModulesPath],
 		};
 	}
 
@@ -345,20 +369,14 @@ export default class Locator {
 
 		const globalNodeModulesPaths = this.globalNodeModulesPaths;
 
-		for (const [key, path] of Object.entries(globalNodeModulesPaths)) {
+		for (const [key, path] of Object.entries(globalNodeModulesPaths).flatMap(
+			([key, paths]) => paths.map((path) => [key, path] as const),
+		)) {
 			this.biome.logger.debug(
 				`🔍 Found global Node Modules path for ${key}: ${path}`,
 			);
 
-			if (!path) {
-				this.biome.logger.warn(
-					`🔍 Could not find global Node Modules path for ${key}`,
-				);
-				continue;
-			}
-
 			const biome = await this.findBiomeInNodeModules(path);
-
 			if (biome) {
 				return biome;
 			}
