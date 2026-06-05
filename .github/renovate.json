@@ -5,7 +5,8 @@
 	"extends": [
 		"config:best-practices",
 		":semanticCommitTypeAll(chore)",
-		":pinAllExceptPeerDependencies"
+		":pinAllExceptPeerDependencies",
+		"customManagers:biomeVersions"
 	],
 	"rangeStrategy": "pin",
 	"lockFileMaintenance": {
