@@ -14,7 +14,8 @@ import { Utils } from "vscode-uri";
 import type Biome from "./biome";
 import {
 	platformIdentifier,
-	platformSpecificBinaryName,
+	platformSpecificBinaryNames,
+	platformSpecificDefaultBinaryName,
 	platformSpecificNodePackageName,
 } from "./constants";
 import {
@@ -348,7 +349,7 @@ export default class Locator {
 			// Resolve the path to the biome binary.
 			const biome = Uri.joinPath(
 				pathToBiomeCliPackage,
-				platformSpecificBinaryName,
+				platformSpecificDefaultBinaryName,
 			);
 
 			if (await fileExists(biome)) {
@@ -414,7 +415,7 @@ export default class Locator {
 
 				const biome = Uri.file(
 					yarnPnpApi.resolveRequest(
-						`${platformSpecificNodePackageName}/${platformSpecificBinaryName}`,
+						`${platformSpecificNodePackageName}/${platformSpecificDefaultBinaryName}`,
 						rootBiomePackage,
 					) as string,
 				);
@@ -448,12 +449,14 @@ export default class Locator {
 		}
 
 		for (const dir of path.split(delimiter)) {
-			const biome = Uri.joinPath(Uri.file(dir), platformSpecificBinaryName);
-			if (await fileExists(biome)) {
-				this.biome.logger.debug(
-					`🔍 Found Biome binary at "${biome.fsPath}" in PATH`,
-				);
-				return biome;
+			for (const binaryName of platformSpecificBinaryNames) {
+				const biome = Uri.joinPath(Uri.file(dir), binaryName);
+				if (await fileExists(biome)) {
+					this.biome.logger.debug(
+						`🔍 Found Biome binary at "${biome.fsPath}" in PATH`,
+					);
+					return biome;
+				}
 			}
 		}
 
