@@ -1,5 +1,15 @@
 # biome
 
+## 3.7.0
+
+### Minor Changes
+
+- [#1039](https://github.com/biomejs/biome-vscode/pull/1039) [`76baf3f`](https://github.com/biomejs/biome-vscode/commit/76baf3f6568744fd02516c55e0c828841e6caa55) Thanks [@ematipico](https://github.com/ematipico)! - Added support for linting and formatting of `.svg` files.
+
+### Patch Changes
+
+- [#1051](https://github.com/biomejs/biome-vscode/pull/1051) [`edbd525`](https://github.com/biomejs/biome-vscode/commit/edbd525cf1e48e2a489ae2afc6a5e79e32fc3c82) Thanks [@siketyan](https://github.com/siketyan)! - Fixed [#1050](https://github.com/biomejs/biome-vscode/issues/1050): globally installed Biome is now correctly detected when it is installed using pnpm v11 or later.
+
 ## 3.6.1
 
 ### Patch Changes
