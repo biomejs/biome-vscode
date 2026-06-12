@@ -220,14 +220,24 @@ export default class Session {
 		const selectorRoot = this.selectorRoot;
 
 		if (selectorRoot !== undefined) {
-			return supportedLanguages.map((language) => ({
-				language,
-				scheme: "file",
-				pattern: Uri.joinPath(selectorRoot, "**", "*").fsPath.replaceAll(
-					"\\",
-					"/",
-				),
-			}));
+			return supportedLanguages.flatMap((language) => [
+				{
+					language,
+					scheme: "file",
+					pattern: Uri.joinPath(selectorRoot, "**", "*").fsPath.replaceAll(
+						"\\",
+						"/",
+					),
+				},
+				{
+					language,
+					scheme: "untitled",
+				},
+				{
+					language,
+					scheme: "vscode-userdata",
+				},
+			]);
 		}
 
 		return supportedLanguages.flatMap((language) => {
