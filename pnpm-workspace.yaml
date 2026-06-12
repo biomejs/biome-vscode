@@ -1,0 +1,7 @@
+allowBuilds:
+  '@vscode/vsce-sign': true
+  esbuild: true
+  keytar: true
+  lefthook: true
+  tree-sitter: true
+  tree-sitter-gritql: true
