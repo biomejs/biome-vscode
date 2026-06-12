@@ -26,6 +26,8 @@ jobs:
           node-version-file: .node-version
       - name: Install dependencies
         run: pnpm install
+        env:
+          CXXFLAGS: "-std=c++20"
       - name: Consume changesets
         run: pnpm changeset version
         env:

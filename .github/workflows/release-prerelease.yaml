@@ -28,6 +28,8 @@ jobs:
           node-version-file: .node-version
       - name: Install dependencies
         run: pnpm install
+        env:
+          CXXFLAGS: "-std=c++20"
       - name: Generate pre-release version
         id: generate-pre-release-version
         run: |
