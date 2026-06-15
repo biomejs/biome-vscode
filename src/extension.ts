@@ -189,8 +189,6 @@ export default class Extension {
 
 		// Register a callback to update the status bar when the active text editor changes
 		window.onDidChangeActiveTextEditor(async () => {
-			this.statusBar.update();
-
 			if (this.mode === "single-file" && !this.biomes.has("single")) {
 				await this.createSingleFileInstance();
 				const singleInstance = this.biomes.get("single");
@@ -199,6 +197,8 @@ export default class Extension {
 					this.logger.info("🚀 Lazily initialized and started single-file Biome session.");
 				}
 			}
+
+			this.statusBar.update();
 		});
 
 		// Finally, start the instances
