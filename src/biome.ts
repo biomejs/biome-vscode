@@ -364,7 +364,10 @@ export default class Biome {
 			chmodSync(destination.fsPath, 0o755);
 
 			return destination;
-		} catch (_error) {
+		} catch (error) {
+			this.logger.error(
+				`Failed to copy the Biome binary to a temporary location: ${error}`,
+			);
 			await this.cleanup();
 			return undefined;
 		}
