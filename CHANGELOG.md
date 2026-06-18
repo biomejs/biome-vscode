@@ -1,5 +1,11 @@
 # biome
 
+## 3.7.1
+
+### Patch Changes
+
+- [#1083](https://github.com/biomejs/biome-vscode/pull/1083) [`704ce7d`](https://github.com/biomejs/biome-vscode/commit/704ce7dbea333efaefcb01a87911fb9b2146e8ca) Thanks [@shm11C3](https://github.com/shm11C3)! - Log the underlying error when copying the Biome binary to a temporary location fails, so Windows temporary-copy failures are easier to diagnose.
+
 ## 3.7.0
 
 ### Minor Changes
