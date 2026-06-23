@@ -13,7 +13,7 @@ import Locator from "./locator";
 import Logger from "./logger";
 import Session from "./session";
 import type { State } from "./types";
-import { config, debounce } from "./utils";
+import { config, debounce, fileExists } from "./utils";
 
 type StopOptions = {
 	waitForConfigurationChange?: boolean;
@@ -355,13 +355,36 @@ export default class Biome {
 				`Will copy the original binary at ${originalBinary.fsPath} to ${destination.fsPath}`,
 			);
 
-			copyFileSync(originalBinary.fsPath, destination.fsPath);
+			try {
+				copyFileSync(originalBinary.fsPath, destination.fsPath);
 
-			this.logger.debug(
-				`Copied the original binary to a temporary location: ${destination.fsPath}`,
-			);
+				this.logger.debug(
+					`Copied the original binary to a temporary location: ${destination.fsPath}`,
+				);
 
-			chmodSync(destination.fsPath, 0o755);
+				chmodSync(destination.fsPath, 0o755);
+			} catch (copyError) {
+				// On Windows, the destination binary may be locked (EBUSY/EPERM) by
+				// a Biome process from a previous session that is still running (for
+				// example after a window reload). Overwriting a running executable is
+				// not allowed, but a locked destination means a valid copy already
+				// exists there, and Windows still allows spawning new processes from
+				// it. So instead of failing — which surfaces to the user as "Unable
+				// to find the Biome binary" — reuse the existing copy.
+				const code = (copyError as NodeJS.ErrnoException).code;
+
+				if (
+					(code === "EBUSY" || code === "EPERM") &&
+					(await fileExists(destination))
+				) {
+					this.logger.warn(
+						`Could not refresh the temporary Biome binary (${code}: locked by a running instance). Reusing the existing copy at ${destination.fsPath}.`,
+					);
+					return destination;
+				}
+
+				throw copyError;
+			}
 
 			return destination;
 		} catch (error) {
