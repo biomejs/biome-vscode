@@ -194,7 +194,9 @@ export default class Extension {
 				const singleInstance = this.biomes.get("single");
 				if (singleInstance) {
 					await singleInstance.start();
-					this.logger.info("🚀 Lazily initialized and started single-file Biome session.");
+					this.logger.info(
+						"🚀 Lazily initialized and started single-file Biome session.",
+					);
 				}
 			}
 
