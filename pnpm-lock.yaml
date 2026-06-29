@@ -58,8 +58,8 @@ importers:
         specifier: 2.1.9
         version: 2.1.9
       ovsx:
-        specifier: 1.0.1
-        version: 1.0.1
+        specifier: 1.0.2
+        version: 1.0.2
       rollup:
         specifier: 4.62.0
         version: 4.62.0
@@ -1759,8 +1759,8 @@ packages:
   outdent@0.5.0:
     resolution: {integrity: sha512-/jHxFIzoMXdqPzTaCpFzAAWhpkSjZPF4Vsn6jAfNpmbH/ymsmd7Qc6VE9BGn0L6YMj6uwpQLxCECpus4ukKS9Q==}
 
-  ovsx@1.0.1:
-    resolution: {integrity: sha512-dNIVv/33z/wURvH1wAw2PRicVM5CdQB3BRL3WhEeFEFMDUkKoujlBPpqMr/meIpf4xDYUEfRwFRBiDzs38vQvw==}
+  ovsx@1.0.2:
+    resolution: {integrity: sha512-N0gWlINGgoOA2Sn0AhrF9L3ap40a/QbsFUpMDKR+CKYyZGJeTFEoNGngplLHjAYtcjrrZv2jX2K7ktPzxWjPNg==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -3988,7 +3988,7 @@ snapshots:
 
   outdent@0.5.0: {}
 
-  ovsx@1.0.1:
+  ovsx@1.0.2:
     dependencies:
       '@vscode/vsce': 3.9.2
       commander: 6.2.1
