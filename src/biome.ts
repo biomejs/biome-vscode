@@ -7,7 +7,7 @@ import {
 	type WorkspaceFolder,
 	workspace,
 } from "vscode";
-import { platformSpecificBinaryName } from "./constants";
+import { platformSpecificDefaultBinaryName } from "./constants";
 import type Extension from "./extension";
 import Locator from "./locator";
 import Logger from "./logger";
@@ -348,7 +348,7 @@ export default class Biome {
 
 			const destination = Uri.joinPath(
 				tempDirectory,
-				platformSpecificBinaryName,
+				platformSpecificDefaultBinaryName,
 			);
 
 			this.logger.debug(
