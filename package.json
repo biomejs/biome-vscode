@@ -208,7 +208,7 @@
 		"@types/vscode": "^1.80.0",
 		"@vscode/vsce": "3.9.2",
 		"esbuild": "0.28.1",
-		"lefthook": "2.1.9",
+		"lefthook": "2.1.10",
 		"ovsx": "1.0.2",
 		"rollup": "4.62.2",
 		"rollup-plugin-copy": "3.5.0",
