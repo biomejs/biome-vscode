@@ -198,7 +198,7 @@
 		"web-tree-sitter": "0.26.10"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.3",
+		"@biomejs/biome": "2.5.4",
 		"@changesets/changelog-github": "0.7.0",
 		"@changesets/cli": "2.31.0",
 		"@rollup/plugin-commonjs": "29.0.3",
