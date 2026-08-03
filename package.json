@@ -213,7 +213,7 @@
 		"rollup": "4.62.3",
 		"rollup-plugin-copy": "3.5.0",
 		"rollup-plugin-esbuild": "6.2.1",
-		"typescript": "6.0.3"
+		"typescript": "7.0.2"
 	},
 	"packageManager": "pnpm@11.18.0"
 }
