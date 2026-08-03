@@ -65,17 +65,44 @@ export const platformIdentifier = (() => {
 })();
 
 /**
- * Platform-specific binary name
+ * Platform-specific binary names
  *
- * This constant contains the name of the Biome binary for the current
- * platform.
+ * Possible Biome binary/shim names for the current platform. On Windows,
+ * package managers expose `biome.cmd` (and sometimes `biome.ps1`) on PATH
+ * rather than `biome.exe`. The real executable usually lives in a
+ * content-addressable store outside PATH.
+ *
+ * @example ["biome"] (on Linux, macOS, and other Unix-like systems)
+ * @example ["biome.exe", "biome.cmd"] (on Windows)
+ */
+export const platformSpecificBinaryNames = (() => {
+	if (process.platform === "win32") {
+		return ["biome.exe", "biome.cmd"];
+	}
+
+	return ["biome"];
+})();
+
+/**
+ * Platform-specific default binary name
+ *
+ * Preferred name when resolving a binary inside a known package directory
+ * (node_modules / Yarn PnP), where the real `biome.exe` (Windows) or
+ * `biome` (Unix) is present.
  *
  * @example "biome" (on Linux, macOS, and other Unix-like systems)
  * @example "biome.exe" (on Windows)
  */
-export const platformSpecificBinaryName = (() => {
-	return `biome${process.platform === "win32" ? ".exe" : ""}`;
+export const platformSpecificDefaultBinaryName = (() => {
+	return platformSpecificBinaryNames[0];
 })();
+
+/**
+ * @deprecated Use {@link platformSpecificDefaultBinaryName} or
+ * {@link platformSpecificBinaryNames}. Kept as an alias for call sites that
+ * intentionally want the real package binary name.
+ */
+export const platformSpecificBinaryName = platformSpecificDefaultBinaryName;
 
 /**
  * Platform-specific package name

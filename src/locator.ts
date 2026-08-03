@@ -14,7 +14,8 @@ import { Utils } from "vscode-uri";
 import type Biome from "./biome";
 import {
 	platformIdentifier,
-	platformSpecificBinaryName,
+	platformSpecificBinaryNames,
+	platformSpecificDefaultBinaryName,
 	platformSpecificNodePackageName,
 } from "./constants";
 import {
@@ -189,12 +190,19 @@ export default class Locator {
 	 * 2. Check the system's PATH environment variable for a Biome binary.
 	 */
 	public async findBiomeForGlobalInstance(): Promise<Uri | undefined> {
-		return (
+		const biome =
 			(await this.findBiomeInSettings()) ??
 			(await this.findBiomeInGlobalNodeModules()) ??
-			(await this.findBiomeInPath()) ??
-			(await this.suggestInstallingBiomeGlobally())
-		);
+			(await this.findBiomeInPath());
+
+		if (!biome) {
+			return await this.suggestInstallingBiomeGlobally();
+		}
+
+		// Global/single-file sessions also need unshim: Windows package managers
+		// put biome.cmd on PATH, and the language client cannot spawn .cmd without
+		// a shell. unshim() resolves the real biome.exe via __where_am_i.
+		return await this.unshim(biome);
 	}
 
 	/**
@@ -348,7 +356,7 @@ export default class Locator {
 			// Resolve the path to the biome binary.
 			const biome = Uri.joinPath(
 				pathToBiomeCliPackage,
-				platformSpecificBinaryName,
+				platformSpecificDefaultBinaryName,
 			);
 
 			if (await fileExists(biome)) {
@@ -414,7 +422,7 @@ export default class Locator {
 
 				const biome = Uri.file(
 					yarnPnpApi.resolveRequest(
-						`${platformSpecificNodePackageName}/${platformSpecificBinaryName}`,
+						`${platformSpecificNodePackageName}/${platformSpecificDefaultBinaryName}`,
 						rootBiomePackage,
 					) as string,
 				);
@@ -448,12 +456,14 @@ export default class Locator {
 		}
 
 		for (const dir of path.split(delimiter)) {
-			const biome = Uri.joinPath(Uri.file(dir), platformSpecificBinaryName);
-			if (await fileExists(biome)) {
-				this.biome.logger.debug(
-					`🔍 Found Biome binary at "${biome.fsPath}" in PATH`,
-				);
-				return biome;
+			for (const binaryName of platformSpecificBinaryNames) {
+				const biome = Uri.joinPath(Uri.file(dir), binaryName);
+				if (await fileExists(biome)) {
+					this.biome.logger.debug(
+						`🔍 Found Biome binary at "${biome.fsPath}" in PATH`,
+					);
+					return biome;
+				}
 			}
 		}
 
