@@ -58,8 +58,8 @@ importers:
         specifier: 2.1.10
         version: 2.1.10
       ovsx:
-        specifier: 1.1.0
-        version: 1.1.0(@types/node@24.13.3)(debug@4.4.1(supports-color@7.2.0))(supports-color@7.2.0)
+        specifier: 1.1.1
+        version: 1.1.1(@types/node@24.13.3)(debug@4.4.1(supports-color@7.2.0))(supports-color@7.2.0)
       rollup:
         specifier: 4.62.4
         version: 4.62.4
@@ -2106,8 +2106,8 @@ packages:
   outdent@0.5.0:
     resolution: {integrity: sha512-/jHxFIzoMXdqPzTaCpFzAAWhpkSjZPF4Vsn6jAfNpmbH/ymsmd7Qc6VE9BGn0L6YMj6uwpQLxCECpus4ukKS9Q==}
 
-  ovsx@1.1.0:
-    resolution: {integrity: sha512-portv4pwDJTlZrvgDMpLTgA+Ctu60kRQfD/cBu4JBhakXabeHVoBAzOba8jMt7RAq+4C0PMHvANalu/S3+s6+w==}
+  ovsx@1.1.1:
+    resolution: {integrity: sha512-tklsCzvGVWKlM91Vc9U8tNnaQ+XacPJ12SWHjDaHGUJB49oMhoAULsJGeefhHebPvvckbcWbKqKIXODMZah5SA==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -4590,7 +4590,7 @@ snapshots:
 
   outdent@0.5.0: {}
 
-  ovsx@1.1.0(@types/node@24.13.3)(debug@4.4.1(supports-color@7.2.0))(supports-color@7.2.0):
+  ovsx@1.1.1(@types/node@24.13.3)(debug@4.4.1(supports-color@7.2.0))(supports-color@7.2.0):
     dependencies:
       '@inquirer/prompts': 7.10.1(@types/node@24.13.3)
       '@vscode/vsce': 3.9.2(supports-color@7.2.0)
