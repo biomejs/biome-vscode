@@ -24,7 +24,19 @@ import { Utils } from "vscode-uri";
 export const fileExists = async (uri: Uri): Promise<boolean> => {
 	try {
 		const stat = await workspace.fs.stat(uri);
-		return (stat.type & FileType.File) > 0;
+		// FileType.SymbolicLink is normally OR'd with File/Directory. Treat a
+		// non-directory symlink as an existing file so WinGet Links (and similar
+		// reparse-point shims) are not skipped by PATH search.
+		if ((stat.type & FileType.File) > 0) {
+			return true;
+		}
+		if (
+			(stat.type & FileType.SymbolicLink) > 0 &&
+			(stat.type & FileType.Directory) === 0
+		) {
+			return true;
+		}
+		return false;
 	} catch (_err) {
 		return false;
 	}
@@ -131,16 +143,28 @@ export const safeSpawnSync = (
 	options?: SafeSpawnSyncOptions,
 ): string | undefined => {
 	let output: string | undefined;
+	const spawnOptions: SafeSpawnSyncOptions = { ...(options ?? {}) };
+
+	const extension = extname(command).toLowerCase();
 
 	// If the command is a powershell script, run it through powershell
-	if (extname(command) === ".ps1") {
+	if (extension === ".ps1") {
 		args = [command, ...args];
 		command = "powershell.exe";
 	}
 
+	// Windows .cmd/.bat shims (npm, pnpm, Volta, etc.) cannot be spawned without
+	// a shell — Node returns EINVAL. Build one quoted command string so paths with
+	// spaces work and we avoid DEP0190 (args + shell: true).
+	if (extension === ".cmd" || extension === ".bat") {
+		command = `"${command}" ${args.join(" ")}`;
+		args = [];
+		spawnOptions.shell = true;
+	}
+
 	try {
 		const result = spawnSync(command, args, {
-			...(options ?? {}),
+			...spawnOptions,
 			encoding: "utf8",
 		});
 
