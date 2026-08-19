@@ -154,8 +154,11 @@ export const safeSpawnSync = (
 	}
 
 	// Windows .cmd/.bat shims (npm, pnpm, Volta, etc.) cannot be spawned without
-	// a shell — Node returns EINVAL. Enable shell so unshim/version probes work.
+	// a shell — Node returns EINVAL. Build one quoted command string so paths with
+	// spaces work and we avoid DEP0190 (args + shell: true).
 	if (extension === ".cmd" || extension === ".bat") {
+		command = `"${command}" ${args.join(" ")}`;
+		args = [];
 		spawnOptions.shell = true;
 	}
 

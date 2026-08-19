@@ -102,8 +102,12 @@ export default class Locator {
 
 			// Set the current working directory to the project root, if it exists. This runs the `biome` binary from the
 			// project root in case the user's local development environment depends on this, such as when using `asdf`.
-			if (this.biome.workspaceFolder?.uri)
-				spawnSyncOptions.cwd = this.biome.workspaceFolder.uri.fsPath;
+			const folder =
+				this.biome.workspaceFolder?.uri ?? this.biome.singleFileFolder;
+
+			if (folder) {
+				spawnSyncOptions.cwd = folder.fsPath;
+			}
 
 			// Check the version of Biome
 			const version = safeSpawnSync(
