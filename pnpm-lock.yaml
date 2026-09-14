@@ -21,8 +21,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       web-tree-sitter:
-        specifier: 0.26.13
-        version: 0.26.13
+        specifier: 0.27.0
+        version: 0.27.0
     devDependencies:
       '@biomejs/biome':
         specifier: 2.5.12
@@ -2506,8 +2506,8 @@ packages:
   vscode-uri@3.2.0:
     resolution: {integrity: sha512-m2gXo3bn0G1kT9InzMf07fTbqMbGtyckj3bH5ktLO+1Ssv+yiATZ4dhwaQv9UZWxJh6E9IFGnQyjgWVDWVBDrg==}
 
-  web-tree-sitter@0.26.13:
-    resolution: {integrity: sha512-5bUZ7vbQ1kcondet96wzP974+JfCZDeQ7bTpacICm2nnvHpa5cO0ByRsoMcAhUP+743vpkb4m0BFlVSm+Ye9VA==}
+  web-tree-sitter@0.27.0:
+    resolution: {integrity: sha512-XK08gj6RwTMQatAG7uVRP8MunqotL/XC19vHgkSPKmELgbGPBj4ECvB8haHOUnyj6ls2B8t42UTro14zxGgAHg==}
 
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
@@ -4938,7 +4938,7 @@ snapshots:
 
   vscode-uri@3.2.0: {}
 
-  web-tree-sitter@0.26.13: {}
+  web-tree-sitter@0.27.0: {}
 
   whatwg-encoding@3.1.1:
     dependencies:
