@@ -16,7 +16,9 @@ export default defineConfig([
 		plugins: [
 			json(),
 			commonjs(),
-			nodeResolve(),
+			nodeResolve({
+				exportConditions: ["node"],
+			}),
 			esbuild({
 				target: "node16",
 				sourceMap: true,
