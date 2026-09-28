@@ -284,7 +284,7 @@ export default class Extension {
 			},
 		);
 
-		this.context.subscriptions.push(...[showLogsCommand, restartCommand]);
+		this.context.subscriptions.push(showLogsCommand, restartCommand);
 	}
 
 	private async createInstances(): Promise<void> {
