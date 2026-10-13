@@ -18,6 +18,8 @@ export const supportedLanguages: string[] = [
 	"javascriptreact",
 	"json",
 	"jsonc",
+	"markdown",
+	"scss",
 	"snippets",
 	"svelte",
 	"tailwindcss",
@@ -25,6 +27,7 @@ export const supportedLanguages: string[] = [
 	"typescriptreact",
 	"vue",
 	"xml",
+	"yaml",
 ];
 
 /**

@@ -173,6 +173,12 @@
 				"extensions": [
 					".grit"
 				]
+			},
+			{
+				"id": "javascript",
+				"extensions": [
+					".gs"
+				]
 			}
 		],
 		"grammars": [
