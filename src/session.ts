@@ -10,7 +10,12 @@ import {
 import { displayName } from "../package.json";
 import type Biome from "./biome";
 import { supportedLanguages } from "./constants";
-import { config, type SafeSpawnSyncOptions, safeSpawnSync } from "./utils";
+import {
+	config,
+	normalizeBiomeSettings,
+	type SafeSpawnSyncOptions,
+	safeSpawnSync,
+} from "./utils";
 
 export default class Session {
 	private static watcherSupportCache = new Map<
@@ -198,6 +203,81 @@ export default class Session {
 			traceOutputChannel: outputChannel,
 			documentSelector: this.createDocumentSelector(),
 			workspaceFolder: this.folder,
+			middleware: {
+				workspace: {
+					configuration: async (params, token, next) => {
+						const settings = await next(params, token);
+
+						if (!Array.isArray(settings)) {
+							return settings;
+						}
+
+						return params.items.map((item, index) => {
+							const resource = item.scopeUri
+								? Uri.parse(item.scopeUri)
+								: undefined;
+							const value = settings[index];
+
+							if (item.section === "biome") {
+								return normalizeBiomeSettings(value, resource);
+							}
+
+							if (
+								item.section === "biome.configurationPath" &&
+								typeof value === "string"
+							) {
+								return (
+									normalizeBiomeSettings(
+										{ configurationPath: value },
+										resource,
+									) as { configurationPath?: string }
+								).configurationPath;
+							}
+
+							if (
+								(item.section === "biome.lsp.bin" ||
+									item.section === "biome.lspBin") &&
+								(typeof value === "string" ||
+									(typeof value === "object" &&
+										value !== null &&
+										!Array.isArray(value)))
+							) {
+								if (item.section === "biome.lspBin") {
+									return (
+										normalizeBiomeSettings({ lspBin: value }, resource) as {
+											lspBin?: unknown;
+										}
+									).lspBin;
+								}
+
+								return (
+									normalizeBiomeSettings({ lsp: { bin: value } }, resource) as {
+										lsp?: { bin?: unknown };
+									}
+								).lsp?.bin;
+							}
+
+							if (
+								(item.section === undefined || item.section === null) &&
+								typeof value === "object" &&
+								value !== null &&
+								!Array.isArray(value) &&
+								"biome" in value
+							) {
+								return {
+									...(value as Record<string, unknown>),
+									biome: normalizeBiomeSettings(
+										(value as Record<string, unknown>).biome,
+										resource,
+									),
+								};
+							}
+
+							return value;
+						});
+					},
+				},
+			},
 			initializationOptions: {
 				...(this.singleFileFolder && {
 					rootUri: this.singleFileFolder,
