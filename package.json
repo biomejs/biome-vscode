@@ -204,7 +204,7 @@
 		"@rollup/plugin-commonjs": "29.0.3",
 		"@rollup/plugin-json": "6.1.0",
 		"@rollup/plugin-node-resolve": "16.0.3",
-		"@types/node": "24.13.6",
+		"@types/node": "24.19.2",
 		"@types/vscode": "^1.91.0",
 		"@vscode/vsce": "4.0.0",
 		"esbuild": "0.28.2",
