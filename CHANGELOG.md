@@ -1,5 +1,23 @@
 # biome
 
+## 3.8.0
+
+### Minor Changes
+
+- [#1181](https://github.com/biomejs/biome-vscode/pull/1181) [`c6f72b5`](https://github.com/biomejs/biome-vscode/commit/c6f72b5ecfcfe23c49fc01834bc29e57cc84ee52) Thanks [@ematipico](https://github.com/ematipico)! - Added support for Markdown, SCSS, and YAML files, as well as Google Apps Script (`.gs`) files, which are now associated with the JavaScript language.
+
+- [#1079](https://github.com/biomejs/biome-vscode/pull/1079) [`aabdd7d`](https://github.com/biomejs/biome-vscode/commit/aabdd7dda4a1eb97e6d182e5f0ee5ecd70cbad47) Thanks [@renovate](https://github.com/apps/renovate)! - Bumped the minimum supported VS Code version to 1.91.
+
+### Patch Changes
+
+- [#1060](https://github.com/biomejs/biome-vscode/pull/1060) [`3048619`](https://github.com/biomejs/biome-vscode/commit/3048619baf111ca349cf6760aced87617ea9f79f) Thanks [@pranavchoudhary-tech](https://github.com/pranavchoudhary-tech)! - Fixed an issue where the extension failed to initialize the single-file session when VS Code was launched into an empty/unopened window.
+
+- [#1091](https://github.com/biomejs/biome-vscode/pull/1091) [`0d2b0f9`](https://github.com/biomejs/biome-vscode/commit/0d2b0f95eb59a95daf02c89d03b46b5b8496c49b) Thanks [@shm11C3](https://github.com/shm11C3)! - Fixed [#1080](https://github.com/biomejs/biome-vscode/issues/1080): reuse the locked temporary Biome binary on Windows instead of failing to start.
+
+- [#1059](https://github.com/biomejs/biome-vscode/pull/1059) [`5501d1f`](https://github.com/biomejs/biome-vscode/commit/5501d1f59f6ad3f09b77fd1b3b58c5baaf2071bd) Thanks [@pranavchoudhary-tech](https://github.com/pranavchoudhary-tech)! - Fixed an issue where the extension failed to format newly created unsaved/untitled documents when a workspace folder was open.
+
+- [#1120](https://github.com/biomejs/biome-vscode/pull/1120) [`93c17ac`](https://github.com/biomejs/biome-vscode/commit/93c17acffaf42ff4fb87ec80d8ab281099465d65) Thanks [@AMDphreak](https://github.com/AMDphreak)! - Fix global/single-file detection on Windows when Biome is installed via pnpm/npm/Volta shims (`biome.cmd` on PATH). Resolve `.cmd` through the existing unshim path so the LSP starts the real `biome.exe`.
+
 ## 3.7.1
 
 ### Patch Changes
