@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { type Dirent, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { basename, delimiter, dirname, join } from "node:path";
@@ -42,11 +42,19 @@ export default class Locator {
 		}
 
 		// Since pnpm v11, global package installations are stored in an isolated directory.
+		// pnpm reports this directory even when it does not exist yet (no global packages).
+		let entries: Dirent[];
+		try {
+			entries = readdirSync(root, {
+				recursive: false,
+				withFileTypes: true,
+			});
+		} catch {
+			return [];
+		}
+
 		const roots: Uri[] = [];
-		for (const entry of readdirSync(root, {
-			recursive: false,
-			withFileTypes: true,
-		})) {
+		for (const entry of entries) {
 			if (entry.isSymbolicLink()) {
 				continue;
 			}
