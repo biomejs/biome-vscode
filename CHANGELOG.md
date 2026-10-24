@@ -1,5 +1,11 @@
 # biome
 
+## 3.8.1
+
+### Patch Changes
+
+- [#1188](https://github.com/biomejs/biome-vscode/pull/1188) [`35c6bcd`](https://github.com/biomejs/biome-vscode/commit/35c6bcd745eb403a524e3a63077d2f8e27e4a98c) Thanks [@RaphaelFakhri](https://github.com/RaphaelFakhri)! - Fixed Biome binary lookup failing when pnpm v11 or later is installed but has no global packages. The extension now skips the missing pnpm global directory and continues looking for Biome in `PATH`.
+
 ## 3.8.0
 
 ### Minor Changes
