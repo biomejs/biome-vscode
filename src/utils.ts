@@ -9,6 +9,7 @@ import {
 	FileType,
 	Uri,
 	type WorkspaceFolder,
+	window,
 	workspace,
 } from "vscode";
 import { Utils } from "vscode-uri";
@@ -77,6 +78,12 @@ export const config: {
 };
 
 /**
+ * Messages about unresolved variables that have already been shown, so that
+ * repeated configuration requests don't show the same popup again.
+ */
+const reportedUnresolvedVariables = new Set<string>();
+
+/**
  * Resolves common VS Code variables in user-provided settings.
  *
  * This mirrors the behavior used by other language tool extensions for path-like
@@ -117,6 +124,19 @@ export const resolveVariables = (
 		/\$\{env:([^}]+)\}/g,
 		(_, name: string) => process.env[name] ?? "",
 	);
+
+	// Workspace folder variables cannot be resolved when no matching folder is
+	// open, so let the user know instead of silently using a broken path.
+	const unresolved = resolved.match(/\$\{workspaceFolder(?::[^}]+)?\}/);
+
+	if (unresolved) {
+		const message = `Biome could not resolve "${unresolved[0]}" in "${value}". Make sure a matching workspace folder is open.`;
+
+		if (!reportedUnresolvedVariables.has(message)) {
+			reportedUnresolvedVariables.add(message);
+			void window.showErrorMessage(message);
+		}
+	}
 
 	return resolved;
 };
