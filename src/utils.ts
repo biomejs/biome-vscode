@@ -132,7 +132,10 @@ export const resolveVariables = (
 	// Workspace folder variables cannot be resolved when no matching folder is
 	// open, so let the user know instead of silently using a broken path.
 	if (unresolved.length > 0) {
-		const message = `Biome could not resolve "${unresolved[0]}" in "${value}". Make sure a matching workspace folder is open.`;
+		const variables = [...new Set(unresolved)]
+			.map((variable) => `"${variable}"`)
+			.join(", ");
+		const message = `Biome could not resolve ${variables} in "${value}". Workspace folder variables only work for files inside an open workspace folder, and named folders must match an open folder's name.`;
 
 		if (!reportedUnresolvedVariables.has(message)) {
 			reportedUnresolvedVariables.add(message);
