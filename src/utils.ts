@@ -146,12 +146,12 @@ const resolvePathSetting = (
 	workspaceFolder?: WorkspaceFolder,
 ): string => resolveVariables(value, workspaceFolder);
 
-const isStringRecord = (value: unknown): value is Record<string, string> =>
-	typeof value === "object" &&
-	value !== null &&
-	!Array.isArray(value) &&
-	Object.values(value).every((entry) => typeof entry === "string");
-
+/**
+ * Resolves variables in the `biome` settings sent to the language server
+ *
+ * `configurationPath` is the only path setting the server reads. Other path
+ * settings, such as `biome.lsp.bin`, are resolved by the extension itself.
+ */
 export const normalizeBiomeSettings = (
 	settings: unknown,
 	resource?: Uri,
@@ -174,31 +174,6 @@ export const normalizeBiomeSettings = (
 			result.configurationPath,
 			workspaceFolder,
 		);
-	}
-
-	if (typeof result.lspBin === "string") {
-		result.lspBin = resolvePathSetting(result.lspBin, workspaceFolder);
-	}
-
-	if (
-		typeof result.lsp === "object" &&
-		result.lsp !== null &&
-		!Array.isArray(result.lsp)
-	) {
-		const lspSettings = { ...(result.lsp as Record<string, unknown>) };
-
-		if (typeof lspSettings.bin === "string") {
-			lspSettings.bin = resolvePathSetting(lspSettings.bin, workspaceFolder);
-		} else if (isStringRecord(lspSettings.bin)) {
-			lspSettings.bin = Object.fromEntries(
-				Object.entries(lspSettings.bin).map(([key, entry]) => [
-					key,
-					resolvePathSetting(entry, workspaceFolder),
-				]),
-			);
-		}
-
-		result.lsp = lspSettings;
 	}
 
 	return result;
