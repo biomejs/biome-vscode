@@ -141,11 +141,6 @@ export const resolveVariables = (
 	return resolved;
 };
 
-const resolvePathSetting = (
-	value: string,
-	workspaceFolder?: WorkspaceFolder,
-): string => resolveVariables(value, workspaceFolder);
-
 /**
  * Resolves variables in the `biome` settings sent to the language server
  *
@@ -170,7 +165,7 @@ export const normalizeBiomeSettings = (
 	const result = { ...(settings as Record<string, unknown>) };
 
 	if (typeof result.configurationPath === "string") {
-		result.configurationPath = resolvePathSetting(
+		result.configurationPath = resolveVariables(
 			result.configurationPath,
 			workspaceFolder,
 		);
@@ -195,7 +190,7 @@ export const getLspBin = (
 		}) || config<string>("lspBin", { scope: workspaceFolder }); // deprecated setting for fallback.
 
 	const resolvePath = (lspBin: string, workspaceFolder?: WorkspaceFolder) => {
-		const resolvedPath = resolvePathSetting(lspBin, workspaceFolder);
+		const resolvedPath = resolveVariables(lspBin, workspaceFolder);
 
 		// If the specified path is relative, resolve it against the root of
 		// the workspace folder (if any).
