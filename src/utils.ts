@@ -98,7 +98,6 @@ export const resolveVariables = (
 	const home = homedir();
 	const userHomeVariable = "$" + "{userHome}";
 	const workspaceFolderVariable = "$" + "{workspaceFolder}";
-	const cwdVariable = "$" + "{cwd}";
 
 	if (home) {
 		substitutions.set(userHomeVariable, home);
@@ -107,8 +106,6 @@ export const resolveVariables = (
 	if (workspaceFolder) {
 		substitutions.set(workspaceFolderVariable, workspaceFolder.uri.fsPath);
 	}
-
-	substitutions.set(cwdVariable, process.cwd());
 
 	for (const folder of workspace.workspaceFolders ?? []) {
 		substitutions.set(`\${workspaceFolder:${folder.name}}`, folder.uri.fsPath);
