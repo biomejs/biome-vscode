@@ -106,15 +106,16 @@ export const resolveVariables = (
 		substitutions.set(`\${workspaceFolder:${folder.name}}`, folder.uri.fsPath);
 	}
 
-	for (const [key, envValue] of Object.entries(process.env)) {
-		if (envValue !== undefined) {
-			substitutions.set(`\${env:${key}}`, envValue);
-		}
-	}
-
 	for (const [key, substitution] of substitutions) {
 		resolved = resolved.replaceAll(key, substitution);
 	}
+
+	// Resolve environment variables. Like VS Code, undefined ones resolve to an
+	// empty string.
+	resolved = resolved.replace(
+		/\$\{env:([^}]+)\}/g,
+		(_, name: string) => process.env[name] ?? "",
+	);
 
 	return resolved;
 };
