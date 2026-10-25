@@ -115,6 +115,30 @@ export const getLspBin = (
 };
 
 /**
+ * Retrieves the `biome.lsp.searchPath` setting
+ *
+ * This function retrieves the `biome.lsp.searchPath` setting from the given
+ * scope and resolves it against the root of the workspace folder if relative.
+ */
+export const getLspSearchPath = (
+	workspaceFolder?: WorkspaceFolder,
+): Uri | undefined => {
+	const searchPath = config<string>("lsp.searchPath", {
+		scope: workspaceFolder,
+	});
+
+	if (typeof searchPath !== "string" || !searchPath) {
+		return;
+	}
+
+	if (workspaceFolder && !isAbsolute(searchPath)) {
+		return Uri.file(Utils.resolvePath(workspaceFolder.uri, searchPath).fsPath);
+	}
+
+	return Uri.file(searchPath);
+};
+
+/**
  * Debounces a function
  *
  * This function debounces a function by waiting for a specified delay before

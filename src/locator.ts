@@ -22,6 +22,7 @@ import {
 	config,
 	fileExists,
 	getLspBin,
+	getLspSearchPath,
 	type SafeSpawnSyncOptions,
 	safeSpawnSync,
 } from "./utils";
@@ -178,14 +179,15 @@ export default class Locator {
 	 * This method will try to find the Biome binary using the following strategies:
 	 *
 	 * 1. Check the user's settings for a custom Biome binary path.
-	 * 2. Check the project's `node_modules` directory for a Biome binary.
+	 * 2. Check the `node_modules` directories of the user's search path and of
+	 *    the project for a Biome binary.
 	 * 3. Check the project's `yarn` PnP configuration for a Biome binary.
 	 * 4. Check the system's PATH environment variable for a Biome binary.
 	 */
 	public async findBiomeForWorkspaceFolder(): Promise<Uri | undefined> {
 		const biome =
 			(await this.findBiomeInSettings()) ??
-			(await this.findBiomeInNodeModules()) ??
+			(await this.findBiomeInProjectNodeModules()) ??
 			(await this.findBiomeInGlobalNodeModules()) ??
 			(await this.findBiomeInYarnPnp()) ??
 			(await this.findBiomeInPath());
@@ -306,6 +308,27 @@ export default class Locator {
 		return biomeLspBin instanceof Uri
 			? await findBinary(biomeLspBin)
 			: await findPlatformSpecificBinary(biomeLspBin);
+	}
+
+	/**
+	 * Finds the Biome binary in the project's dependencies, honoring the
+	 * user's search path.
+	 *
+	 * This strategy looks for the Biome binary in the directory specified in
+	 * the `biome.lsp.searchPath` setting first, and falls back to the root of
+	 * the workspace folder.
+	 */
+	private async findBiomeInProjectNodeModules(): Promise<Uri | undefined> {
+		const searchPath = getLspSearchPath(this.biome.workspaceFolder);
+
+		if (searchPath) {
+			const biome = await this.findBiomeInNodeModules(searchPath);
+			if (biome) {
+				return biome;
+			}
+		}
+
+		return await this.findBiomeInNodeModules();
 	}
 
 	/**
