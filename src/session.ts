@@ -10,7 +10,12 @@ import {
 import { displayName } from "../package.json";
 import type Biome from "./biome";
 import { supportedLanguages } from "./constants";
-import { config, type SafeSpawnSyncOptions, safeSpawnSync } from "./utils";
+import {
+	config,
+	normalizeBiomeSettings,
+	type SafeSpawnSyncOptions,
+	safeSpawnSync,
+} from "./utils";
 
 export default class Session {
 	private static watcherSupportCache = new Map<
@@ -198,6 +203,33 @@ export default class Session {
 			traceOutputChannel: outputChannel,
 			documentSelector: this.createDocumentSelector(),
 			workspaceFolder: this.folder,
+			middleware: {
+				workspace: {
+					configuration: async (params, token, next) => {
+						const settings = await next(params, token);
+
+						if (!Array.isArray(settings)) {
+							return settings;
+						}
+
+						// Biome only requests the `biome` section, so that is the only one
+						// whose path settings need their variables resolved.
+						return settings.map((value, index) => {
+							const item = params.items[index];
+
+							if (item.section !== "biome") {
+								return value;
+							}
+
+							const resource = item.scopeUri
+								? Uri.parse(item.scopeUri)
+								: this.folder?.uri;
+
+							return normalizeBiomeSettings(value, resource);
+						});
+					},
+				},
+			},
 			initializationOptions: {
 				...(this.singleFileFolder && {
 					rootUri: this.singleFileFolder,

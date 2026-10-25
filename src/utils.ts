@@ -2,12 +2,14 @@ import {
 	type SpawnSyncOptionsWithStringEncoding,
 	spawnSync,
 } from "node:child_process";
+import { homedir } from "node:os";
 import { extname, isAbsolute } from "node:path";
 import {
 	type ConfigurationScope,
 	FileType,
 	Uri,
 	type WorkspaceFolder,
+	window,
 	workspace,
 } from "vscode";
 import { Utils } from "vscode-uri";
@@ -76,6 +78,108 @@ export const config: {
 };
 
 /**
+ * Messages about unresolved variables that have already been shown, so that
+ * repeated configuration requests don't show the same popup again.
+ */
+const reportedUnresolvedVariables = new Set<string>();
+
+/**
+ * Resolves common VS Code variables in user-provided settings.
+ *
+ * This mirrors the behavior used by other language tool extensions for path-like
+ * settings such as `${workspaceFolder}`, `${userHome}`, and `${env:NAME}`.
+ */
+export const resolveVariables = (
+	value: string,
+	workspaceFolder?: WorkspaceFolder,
+): string => {
+	const unresolved: string[] = [];
+
+	// Resolve every variable in a single pass so that substituted values are
+	// never expanded again.
+	const resolved = value.replace(
+		/\$\{(\w+)(?::([^}]+))?\}/g,
+		(match, name: string, argument?: string) => {
+			switch (name) {
+				case "userHome":
+					return homedir() || match;
+
+				case "env":
+					// Like VS Code, undefined environment variables resolve to an
+					// empty string.
+					return argument ? (process.env[argument] ?? "") : match;
+
+				case "workspaceFolder": {
+					const folder = argument
+						? workspace.workspaceFolders?.find((f) => f.name === argument)
+						: workspaceFolder;
+
+					if (folder) {
+						return folder.uri.fsPath;
+					}
+
+					unresolved.push(match);
+					return match;
+				}
+
+				default:
+					// Leave unsupported variables untouched.
+					return match;
+			}
+		},
+	);
+
+	// Workspace folder variables cannot be resolved when no matching folder is
+	// open, so let the user know instead of silently using a broken path.
+	if (unresolved.length > 0) {
+		const variables = [...new Set(unresolved)]
+			.map((variable) => `"${variable}"`)
+			.join(", ");
+		const message = `Biome could not resolve ${variables} in "${value}". Workspace folder variables only work for files inside an open workspace folder, and named folders must match an open folder's name.`;
+
+		if (!reportedUnresolvedVariables.has(message)) {
+			reportedUnresolvedVariables.add(message);
+			void window.showErrorMessage(message);
+		}
+	}
+
+	return resolved;
+};
+
+/**
+ * Resolves variables in the `biome` settings sent to the language server
+ *
+ * `configurationPath` is the only path setting the server reads. Other path
+ * settings, such as `biome.lsp.bin`, are resolved by the extension itself.
+ */
+export const normalizeBiomeSettings = (
+	settings: unknown,
+	resource?: Uri,
+): unknown => {
+	if (
+		typeof settings !== "object" ||
+		settings === null ||
+		Array.isArray(settings)
+	) {
+		return settings;
+	}
+
+	const workspaceFolder = resource
+		? workspace.getWorkspaceFolder(resource)
+		: undefined;
+	const result = { ...(settings as Record<string, unknown>) };
+
+	if (typeof result.configurationPath === "string") {
+		result.configurationPath = resolveVariables(
+			result.configurationPath,
+			workspaceFolder,
+		);
+	}
+
+	return result;
+};
+
+/**
  * Retrieves the `biome.lsp.bin` setting
  *
  * This function retrieves the `biome.lsp.bin` setting from the given scope. It
@@ -91,13 +195,17 @@ export const getLspBin = (
 		}) || config<string>("lspBin", { scope: workspaceFolder }); // deprecated setting for fallback.
 
 	const resolvePath = (lspBin: string, workspaceFolder?: WorkspaceFolder) => {
+		const resolvedPath = resolveVariables(lspBin, workspaceFolder);
+
 		// If the specified path is relative, resolve it against the root of
 		// the workspace folder (if any).
-		if (workspaceFolder && !isAbsolute(lspBin)) {
-			return Uri.file(Utils.resolvePath(workspaceFolder.uri, lspBin).fsPath);
+		if (workspaceFolder && !isAbsolute(resolvedPath)) {
+			return Uri.file(
+				Utils.resolvePath(workspaceFolder.uri, resolvedPath).fsPath,
+			);
 		}
 
-		return Uri.file(lspBin);
+		return Uri.file(resolvedPath);
 	};
 
 	if (typeof lspBin === "string") {
