@@ -50,7 +50,7 @@
 						"null"
 					],
 					"default": null,
-					"markdownDescription": "Specifies the path to a custom Biome configuration file within the workspace folder.\n\nIf set to `null`, the extension will fall back to the default Biome configuration files.",
+					"markdownDescription": "Specifies the path to a custom Biome configuration file within the workspace folder.\n\nIf set to `null`, the extension will fall back to the default Biome configuration files.\n\nSupports the `${workspaceFolder}`, `${workspaceFolder:name}`, `${userHome}` and `${env:NAME}` variables.",
 					"scope": "resource",
 					"examples": [
 						".config/biome.json"
@@ -83,7 +83,7 @@
 					"oneOf": [
 						{
 							"type": "string",
-							"description": "Path to a custom Biome binary.\n\nWhen set, the extension will use this path and will not attempt to locate Biome automatically.",
+							"description": "Path to a custom Biome binary.\n\nWhen set, the extension will use this path and will not attempt to locate Biome automatically.\n\nSupports the ${workspaceFolder}, ${workspaceFolder:name}, ${userHome} and ${env:NAME} variables.",
 							"default": "",
 							"examples": [
 								"/path/to/biome"
@@ -92,7 +92,7 @@
 						{
 							"type": "object",
 							"uniqueItems": true,
-							"description": "Platform-specific paths to a custom Biome binary.\n\nWhen set, the extension will use the specified path for each matching platform and will not attempt to locate Biome automatically.",
+							"description": "Platform-specific paths to a custom Biome binary.\n\nWhen set, the extension will use the specified path for each matching platform and will not attempt to locate Biome automatically.\n\nSupports the ${workspaceFolder}, ${workspaceFolder:name}, ${userHome} and ${env:NAME} variables.",
 							"examples": [
 								{
 									"linux-x64": "/path/to/biome",
