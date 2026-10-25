@@ -2,6 +2,7 @@ import {
 	type SpawnSyncOptionsWithStringEncoding,
 	spawnSync,
 } from "node:child_process";
+import { homedir } from "node:os";
 import { extname, isAbsolute } from "node:path";
 import {
 	type ConfigurationScope,
@@ -87,7 +88,7 @@ export const resolveVariables = (
 ): string => {
 	let resolved = value;
 	const substitutions = new Map<string, string>();
-	const home = process.env.HOME || process.env.USERPROFILE;
+	const home = homedir();
 	const userHomeVariable = "$" + "{userHome}";
 	const workspaceFolderVariable = "$" + "{workspaceFolder}";
 	const cwdVariable = "$" + "{cwd}";
