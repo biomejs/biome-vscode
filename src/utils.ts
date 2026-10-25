@@ -93,40 +93,45 @@ export const resolveVariables = (
 	value: string,
 	workspaceFolder?: WorkspaceFolder,
 ): string => {
-	let resolved = value;
-	const substitutions = new Map<string, string>();
-	const home = homedir();
-	const userHomeVariable = "$" + "{userHome}";
-	const workspaceFolderVariable = "$" + "{workspaceFolder}";
+	const unresolved: string[] = [];
 
-	if (home) {
-		substitutions.set(userHomeVariable, home);
-	}
+	// Resolve every variable in a single pass so that substituted values are
+	// never expanded again.
+	const resolved = value.replace(
+		/\$\{(\w+)(?::([^}]+))?\}/g,
+		(match, name: string, argument?: string) => {
+			switch (name) {
+				case "userHome":
+					return homedir() || match;
 
-	if (workspaceFolder) {
-		substitutions.set(workspaceFolderVariable, workspaceFolder.uri.fsPath);
-	}
+				case "env":
+					// Like VS Code, undefined environment variables resolve to an
+					// empty string.
+					return argument ? (process.env[argument] ?? "") : match;
 
-	for (const folder of workspace.workspaceFolders ?? []) {
-		substitutions.set(`\${workspaceFolder:${folder.name}}`, folder.uri.fsPath);
-	}
+				case "workspaceFolder": {
+					const folder = argument
+						? workspace.workspaceFolders?.find((f) => f.name === argument)
+						: workspaceFolder;
 
-	for (const [key, substitution] of substitutions) {
-		resolved = resolved.replaceAll(key, substitution);
-	}
+					if (folder) {
+						return folder.uri.fsPath;
+					}
 
-	// Resolve environment variables. Like VS Code, undefined ones resolve to an
-	// empty string.
-	resolved = resolved.replace(
-		/\$\{env:([^}]+)\}/g,
-		(_, name: string) => process.env[name] ?? "",
+					unresolved.push(match);
+					return match;
+				}
+
+				default:
+					// Leave unsupported variables untouched.
+					return match;
+			}
+		},
 	);
 
 	// Workspace folder variables cannot be resolved when no matching folder is
 	// open, so let the user know instead of silently using a broken path.
-	const unresolved = resolved.match(/\$\{workspaceFolder(?::[^}]+)?\}/);
-
-	if (unresolved) {
+	if (unresolved.length > 0) {
 		const message = `Biome could not resolve "${unresolved[0]}" in "${value}". Make sure a matching workspace folder is open.`;
 
 		if (!reportedUnresolvedVariables.has(message)) {
