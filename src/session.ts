@@ -212,68 +212,20 @@ export default class Session {
 							return settings;
 						}
 
-						return params.items.map((item, index) => {
+						// Biome only requests the `biome` section, so that is the only one
+						// whose path settings need their variables resolved.
+						return settings.map((value, index) => {
+							const item = params.items[index];
+
+							if (item.section !== "biome") {
+								return value;
+							}
+
 							const resource = item.scopeUri
 								? Uri.parse(item.scopeUri)
-								: undefined;
-							const value = settings[index];
+								: this.folder?.uri;
 
-							if (item.section === "biome") {
-								return normalizeBiomeSettings(value, resource);
-							}
-
-							if (
-								item.section === "biome.configurationPath" &&
-								typeof value === "string"
-							) {
-								return (
-									normalizeBiomeSettings(
-										{ configurationPath: value },
-										resource,
-									) as { configurationPath?: string }
-								).configurationPath;
-							}
-
-							if (
-								(item.section === "biome.lsp.bin" ||
-									item.section === "biome.lspBin") &&
-								(typeof value === "string" ||
-									(typeof value === "object" &&
-										value !== null &&
-										!Array.isArray(value)))
-							) {
-								if (item.section === "biome.lspBin") {
-									return (
-										normalizeBiomeSettings({ lspBin: value }, resource) as {
-											lspBin?: unknown;
-										}
-									).lspBin;
-								}
-
-								return (
-									normalizeBiomeSettings({ lsp: { bin: value } }, resource) as {
-										lsp?: { bin?: unknown };
-									}
-								).lsp?.bin;
-							}
-
-							if (
-								(item.section === undefined || item.section === null) &&
-								typeof value === "object" &&
-								value !== null &&
-								!Array.isArray(value) &&
-								"biome" in value
-							) {
-								return {
-									...(value as Record<string, unknown>),
-									biome: normalizeBiomeSettings(
-										(value as Record<string, unknown>).biome,
-										resource,
-									),
-								};
-							}
-
-							return value;
+							return normalizeBiomeSettings(value, resource);
 						});
 					},
 				},
