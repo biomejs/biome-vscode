@@ -7,7 +7,6 @@
 The **Biome extension for Visual Studio Code** brings first-class support for
 Biome in VS Code and VS Code-based editors. By integrating with Biome's
 language server, the extension provides the following features:
-
 - 💾 Format on save
 - 🚜 Code refactoring
 - 💡 Inline suggestions and quick fixes
@@ -16,14 +15,12 @@ language server, the extension provides the following features:
 
 The Biome extension for VS Code is available on the **Visual Studio Marketplace**
 and the **Open VSX Registry**:
-
-- 📦 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) (recommended for [*VS Code*](https://code.visualstudio.com/) users)
-- 📦 [Open VSX Registry](https://open-vsx.org/extension/biomejs/biome) (recommended for [*VSCodium*](https://vscodium.com/) users)
+- 📦 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) (recommended for [_VS Code_](https://code.visualstudio.com/) users)
+- 📦 [Open VSX Registry](https://open-vsx.org/extension/biomejs/biome) (recommended for [_VSCodium_](https://vscodium.com/) users)
 
 ## Documentation
 
 The documentation for the extension is available on the [official website](https://biomejs.dev/).
-
 - [📖 Documentation](https://biomejs.dev/reference/vscode/)
 
 ## Contributing
