@@ -221,5 +221,5 @@
 		"rollup-plugin-esbuild": "6.2.1",
 		"typescript": "7.0.2"
 	},
-	"packageManager": "pnpm@12.14.0"
+	"packageManager": "pnpm@12.15.0"
 }
