@@ -1,10 +1,13 @@
+import { spawnSync } from "node:child_process";
 import { chmodSync, copyFileSync } from "node:fs";
 import {
+	ConfigurationTarget,
 	type Disposable,
 	type FileSystemWatcher,
 	RelativePattern,
 	Uri,
 	type WorkspaceFolder,
+	window,
 	workspace,
 } from "vscode";
 import { platformSpecificDefaultBinaryName } from "./constants";
@@ -44,6 +47,12 @@ export default class Biome {
 	 * The configuration watcher for this Biome instance.
 	 */
 	private _configWatcher: Disposable | undefined;
+
+	/**
+	 * Whether the user has already been warned that the Biome binary could not
+	 * be executed from the temporary location.
+	 */
+	private _temporaryLocationWarningShown = false;
 
 	/**
 	 * The locator responsible for finding the Biome binary to use.
@@ -225,9 +234,9 @@ export default class Biome {
 			await this._session?.start();
 			this.logger.info("✅ Biome is ready.");
 			this.state = "ready";
-		} catch (_error) {
+		} catch (error) {
 			this.state = "error";
-			this.logger.error("Failed to start the session");
+			this.logger.error(`Failed to start the session: ${error}`);
 			await this.stop();
 		}
 	}
@@ -278,9 +287,91 @@ export default class Biome {
 			return undefined;
 		}
 
-		return this.shouldRunFromTemporaryLocation()
-			? await this.copyToTemporaryLocation(binary)
-			: binary;
+		if (!this.shouldRunFromTemporaryLocation()) {
+			return binary;
+		}
+
+		const temporaryBinary = await this.copyToTemporaryLocation(binary);
+
+		if (!temporaryBinary) {
+			return undefined;
+		}
+
+		// Some systems enforce policies that prevent executables from running
+		// from the temporary location (e.g. anything under AppData on Windows).
+		// The copy succeeds, but spawning the LSP later fails with an opaque
+		// error, so we make sure the copied binary can actually be executed and
+		// fall back to the original binary if it can't.
+		const spawnError = this.probeBinary(temporaryBinary);
+
+		if (!spawnError) {
+			return temporaryBinary;
+		}
+
+		this.logger.warn(
+			`Biome could not be started from the temporary location ${temporaryBinary.fsPath} (${spawnError.code ?? spawnError.message}). This is usually caused by a system policy that prevents running executables from that folder. Falling back to the original binary at ${binary.fsPath}. Set "biome.runFromTemporaryLocation" to false to skip the temporary location entirely.`,
+		);
+
+		try {
+			await this.deleteTemporaryDirectory();
+		} catch (error) {
+			this.logger.debug(`Failed to delete the temporary directory: ${error}`);
+		}
+
+		this.warnAboutTemporaryLocation();
+
+		return binary;
+	}
+
+	/**
+	 * Checks whether the given binary can be executed.
+	 *
+	 * Returns the error raised when spawning the binary, or undefined if the
+	 * binary could be spawned successfully.
+	 */
+	protected probeBinary(binary: Uri): NodeJS.ErrnoException | undefined {
+		const result = spawnSync(binary.fsPath, ["--version"], {
+			timeout: 5000,
+		});
+
+		return result.error as NodeJS.ErrnoException | undefined;
+	}
+
+	/**
+	 * Lets the user know that Biome could not be started from the temporary
+	 * location, and offers to stop using it for this workspace folder.
+	 */
+	protected warnAboutTemporaryLocation(): void {
+		if (this._temporaryLocationWarningShown) {
+			return;
+		}
+
+		this._temporaryLocationWarningShown = true;
+
+		const alwaysUseOriginal = "Always run original binary";
+		const showLogs = "Show logs";
+
+		// Not awaited on purpose, so the session can start while the
+		// notification is displayed.
+		void window
+			.showWarningMessage(
+				`Biome could not be started from its temporary location${this.workspaceFolder ? ` for ${this.workspaceFolder.name}` : ""}, possibly because of a system policy. The original binary is being used instead.`,
+				alwaysUseOriginal,
+				showLogs,
+			)
+			.then(async (choice) => {
+				if (choice === alwaysUseOriginal) {
+					await workspace
+						.getConfiguration("biome", this.workspaceFolder)
+						.update(
+							"runFromTemporaryLocation",
+							false,
+							ConfigurationTarget.WorkspaceFolder,
+						);
+				} else if (choice === showLogs) {
+					this.logger.show();
+				}
+			});
 	}
 
 	/**
@@ -481,7 +572,18 @@ export default class Biome {
 			return;
 		}
 
-		if (!this.tempDirectory || !this.shouldRunFromTemporaryLocation()) {
+		if (!this.shouldRunFromTemporaryLocation()) {
+			return;
+		}
+
+		await this.deleteTemporaryDirectory();
+	}
+
+	/**
+	 * Deletes the temporary directory, if any.
+	 */
+	protected async deleteTemporaryDirectory(): Promise<void> {
+		if (!this.tempDirectory) {
 			return;
 		}
 
