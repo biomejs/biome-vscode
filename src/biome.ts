@@ -309,7 +309,7 @@ export default class Biome {
 		}
 
 		this.logger.warn(
-			`Biome could not be started from the temporary location ${temporaryBinary.fsPath} (${spawnError.code ?? spawnError.message}). This is usually caused by a system policy that prevents running executables from that folder. Falling back to the original binary at ${binary.fsPath}. Set "biome.runFromTemporaryLocation" to false to skip the temporary location entirely.`,
+			`Biome could not be started from the temporary location ${temporaryBinary.fsPath} (${spawnError.code ?? spawnError.message}). This is usually caused by a system policy that prevents running executables from that folder. Falling back to the original binary at ${binary.fsPath}. While Biome is running, the original binary may be locked by the system, which can prevent package managers from updating or removing it until Biome is stopped. Set "biome.runFromTemporaryLocation" to false to skip the temporary location entirely.`,
 		);
 
 		try {
@@ -355,7 +355,7 @@ export default class Biome {
 		// notification is displayed.
 		void window
 			.showWarningMessage(
-				`Biome could not be started from its temporary location${this.workspaceFolder ? ` for ${this.workspaceFolder.name}` : ""}, possibly because of a system policy. The original binary is being used instead.`,
+				`Biome could not be started from its temporary location${this.workspaceFolder ? ` for ${this.workspaceFolder.name}` : ""}, possibly because of a system policy, so the original binary is being used instead. While Biome is running, that binary may be locked, which can prevent your package manager from updating or removing it until Biome is stopped.`,
 				alwaysUseOriginal,
 				showLogs,
 			)
