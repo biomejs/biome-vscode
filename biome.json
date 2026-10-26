@@ -10,8 +10,12 @@
 			"**/*",
 			"!test/fixtures/**/*",
 			"!pnpm-lock.yaml",
-			"!.changeset",
 			"!CHANGELOG.md"
 		]
+	},
+	"markdown": {
+		"parser": {
+			"frontmatter": true
+		}
 	}
 }
