@@ -1,7 +1,6 @@
 import { type Dirent, readdirSync } from "node:fs";
-import { createRequire } from "node:module";
 import { homedir } from "node:os";
-import { basename, delimiter, dirname, join } from "node:path";
+import { basename, delimiter, join } from "node:path";
 import { env } from "node:process";
 import {
 	ConfigurationTarget,
@@ -18,6 +17,7 @@ import {
 	platformSpecificDefaultBinaryName,
 	platformSpecificNodePackageName,
 } from "./constants";
+import { resolveInWorker } from "./resolver";
 import {
 	config,
 	fileExists,
@@ -343,26 +343,12 @@ export default class Locator {
 		);
 
 		try {
-			// Resolve the path to the root @biomejs/biome package starting
-			// from the root of the workspace folder.
-
-			const pathToRootBiomePackage = require.resolve(
-				"@biomejs/biome/package.json",
-				{
-					paths: [searchRoot.fsPath],
-				},
-			);
-
-			// Create a require function scoped to @biomejs/biome package.
-			const rootBiomePackage = createRequire(pathToRootBiomePackage);
-
-			// Resolve the path to the platform-specific @biomejs/cli-* package.
 			const pathToBiomeCliPackage = Uri.file(
-				dirname(
-					rootBiomePackage.resolve(
-						`${platformSpecificNodePackageName}/package.json`,
-					),
-				),
+				await resolveInWorker({
+					kind: "node-modules",
+					searchRoot: searchRoot.fsPath,
+					platformPackageName: platformSpecificNodePackageName,
+				}),
 			);
 
 			// Resolve the path to the biome binary.
@@ -421,29 +407,24 @@ export default class Locator {
 			}
 
 			try {
-				const yarnPnpApi = require(yarnPnpFile.fsPath);
-
-				const rootBiomePackage = yarnPnpApi.resolveRequest(
-					"@biomejs/biome/package.json",
-					folder.uri.fsPath,
-				);
-
-				if (!rootBiomePackage) {
-					continue;
-				}
-
 				const biome = Uri.file(
-					yarnPnpApi.resolveRequest(
-						`${platformSpecificNodePackageName}/${platformSpecificDefaultBinaryName}`,
-						rootBiomePackage,
-					) as string,
+					await resolveInWorker({
+						kind: "yarn-pnp",
+						pnpFile: yarnPnpFile.fsPath,
+						searchRoot: folder.uri.fsPath,
+						platformPackageName: platformSpecificNodePackageName,
+						binaryName: platformSpecificDefaultBinaryName,
+					}),
 				);
 
 				if (await fileExists(biome)) {
 					this.biome.logger.debug(`🔍 Found Biome binary at "${biome.fsPath}"`);
 					return biome;
 				}
-			} catch {
+			} catch (error) {
+				this.biome.logger.debug(
+					`🔍 Error while looking for Biome binary in Yarn PnP: ${error}`,
+				);
 				return undefined;
 			}
 		}

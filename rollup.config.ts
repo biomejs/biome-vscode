@@ -38,4 +38,20 @@ export default defineConfig([
 		],
 		external: ["vscode", "node:events"],
 	},
+	{
+		// Resolves Biome's binary with fresh module caches, see src/resolver.ts.
+		input: "src/resolve-worker.ts",
+		output: {
+			dir: "out",
+			format: "cjs",
+			sourcemap: true,
+		},
+		plugins: [
+			esbuild({
+				target: "node16",
+				sourceMap: true,
+			}),
+		],
+		external: [/^node:/],
+	},
 ]);
