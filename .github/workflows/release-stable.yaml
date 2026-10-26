@@ -3,13 +3,12 @@ name: 🚀 Release new stable version
 on: [workflow_dispatch]
 
 jobs:
-
   publish:
     name: Publish
     runs-on: depot-ubuntu-24.04-arm-16
     outputs:
       version: ${{ steps.version.outputs.version }}
-    permissions: 
+    permissions:
       contents: write
       packages: write
       statuses: read
@@ -65,4 +64,3 @@ jobs:
     with:
       ref: refs/tags/v${{ needs.publish.outputs.version }}
     secrets: inherit
-      
