@@ -69,6 +69,50 @@
 					"description": "Require a Biome configuration file to enable Biome features in the context to which this setting applies.\n\nIf set to `true`, the extension will not provide Biome features unless a configuration file is present in the workspace folder.",
 					"scope": "resource"
 				},
+				"biome.languageAliases": {
+					"type": "object",
+					"default": {},
+					"propertyNames": {
+						"enum": [
+							"astro",
+							"css",
+							"graphql",
+							"grit",
+							"html",
+							"javascript",
+							"javascriptreact",
+							"json",
+							"jsonc",
+							"markdown",
+							"scss",
+							"snippets",
+							"svelte",
+							"tailwindcss",
+							"typescript",
+							"typescriptreact",
+							"vue",
+							"xml",
+							"yaml"
+						]
+					},
+					"additionalProperties": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"uniqueItems": true
+					},
+					"markdownDescription": "Language identifiers that other extensions assign to files written in a language Biome supports, listed by that language, so that Biome can handle these files.\n\nFor example, the Azure Pipelines extension assigns the `azure-pipelines` language identifier to pipeline definitions, which are YAML files.\n\nBy default, the `ansible`, `azure-pipelines`, `dockercompose` and `github-actions-workflow` language identifiers are handled as YAML. Listing aliases for a language replaces its default ones, so set it to an empty list to stop handling them.",
+					"scope": "resource",
+					"examples": [
+						{
+							"yaml": [
+								"azure-pipelines",
+								"my-yaml-dialect"
+							]
+						}
+					]
+				},
 				"biome.runFromTemporaryLocation": {
 					"type": [
 						"boolean",

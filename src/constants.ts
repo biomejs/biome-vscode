@@ -7,8 +7,11 @@ import isWSL from "is-wsl";
  * This constant contains a list of identifiers of the languages supported by the
  * extension. These identifiers are used determine whether LSP sessions should be
  * taking a given file into account or not.
+ *
+ * When adding a language to this list, also add it to the `propertyNames` enum
+ * of the `biome.languageAliases` setting in `package.json`.
  */
-export const supportedLanguages: string[] = [
+export const supportedLanguages = [
 	"astro",
 	"css",
 	"graphql",
@@ -28,7 +31,39 @@ export const supportedLanguages: string[] = [
 	"vue",
 	"xml",
 	"yaml",
-];
+] as const;
+
+/**
+ * Identifier of a language supported by the extension
+ */
+export type SupportedLanguage = (typeof supportedLanguages)[number];
+
+/**
+ * Default language identifier aliases
+ *
+ * Some extensions assign their own language identifier to files that are
+ * written in a language Biome supports, such as Azure Pipelines definitions,
+ * which are YAML files. This constant lists those identifiers for each language
+ * Biome supports, so that the extension can handle these files and report them
+ * to the LSP server with their underlying language.
+ *
+ * Users can replace the aliases of a language with the `biome.languageAliases`
+ * setting.
+ */
+export const defaultLanguageAliases: Partial<
+	Record<SupportedLanguage, string[]>
+> = {
+	yaml: [
+		// https://marketplace.visualstudio.com/items?itemName=redhat.ansible
+		"ansible",
+		// https://marketplace.visualstudio.com/items?itemName=ms-azure-devops.azure-pipelines
+		"azure-pipelines",
+		// Built into VS Code: https://github.com/microsoft/vscode/blob/main/extensions/yaml/package.json
+		"dockercompose",
+		// https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-github-actions
+		"github-actions-workflow",
+	],
+};
 
 /**
  * Whether the current platform uses musl
