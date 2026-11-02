@@ -4,8 +4,8 @@ import {
 	ThemeColor,
 	window,
 } from "vscode";
-import { supportedLanguages } from "./constants";
 import type Extension from "./extension";
+import { isSupportedLanguage } from "./utils";
 
 export class StatusBar {
 	/**
@@ -54,8 +54,8 @@ export class StatusBar {
 
 		// Hide the status bar item if there is no active text editor or if the
 		// document uses an unsupported language.
-		const languageId = window.activeTextEditor?.document.languageId;
-		if (!languageId || !supportedLanguages.includes(languageId)) {
+		const document = window.activeTextEditor?.document;
+		if (!document || !isSupportedLanguage(document.languageId, document.uri)) {
 			this.hide();
 			return;
 		}

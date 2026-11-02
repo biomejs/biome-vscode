@@ -12,7 +12,9 @@ import type Biome from "./biome";
 import { supportedLanguages } from "./constants";
 import {
 	config,
+	languageAliases,
 	normalizeBiomeSettings,
+	resolveLanguageAlias,
 	type SafeSpawnSyncOptions,
 	safeSpawnSync,
 } from "./utils";
@@ -198,12 +200,21 @@ export default class Session {
 			{ log: true },
 		);
 
+		// Changing the aliases restarts the session, so they only need to be
+		// read once per language client.
+		const aliases = languageAliases(this.folder);
+
 		const clientOptions: LanguageClientOptions = {
 			outputChannel: outputChannel,
 			traceOutputChannel: outputChannel,
-			documentSelector: this.createDocumentSelector(),
+			documentSelector: this.createDocumentSelector([
+				...supportedLanguages,
+				...aliases.keys(),
+			]),
 			workspaceFolder: this.folder,
 			middleware: {
+				didOpen: (document, next) =>
+					next(resolveLanguageAlias(document, aliases)),
 				workspace: {
 					configuration: async (params, token, next) => {
 						const settings = await next(params, token);
@@ -248,11 +259,11 @@ export default class Session {
 	/**
 	 * Creates the document selector for the language client.
 	 */
-	private createDocumentSelector(): DocumentFilter[] {
+	private createDocumentSelector(languages: string[]): DocumentFilter[] {
 		const selectorRoot = this.selectorRoot;
 
 		if (selectorRoot !== undefined) {
-			return supportedLanguages.flatMap((language) => [
+			return languages.flatMap((language) => [
 				{
 					language,
 					scheme: "file",
@@ -272,7 +283,7 @@ export default class Session {
 			]);
 		}
 
-		return supportedLanguages.flatMap((language) => {
+		return languages.flatMap((language) => {
 			return ["untitled", "vscode-userdata"].map((scheme) => ({
 				language,
 				scheme,

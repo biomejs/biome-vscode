@@ -7,12 +7,18 @@ import { extname, isAbsolute } from "node:path";
 import {
 	type ConfigurationScope,
 	FileType,
+	type TextDocument,
 	Uri,
 	type WorkspaceFolder,
 	window,
 	workspace,
 } from "vscode";
 import { Utils } from "vscode-uri";
+import {
+	defaultLanguageAliases,
+	type SupportedLanguage,
+	supportedLanguages,
+} from "./constants";
 
 /**
  * Checks whether a file exists
@@ -75,6 +81,109 @@ export const config: {
 		);
 
 	return workspace.getConfiguration("biome", options?.scope).get<T>(key);
+};
+
+/**
+ * Checks whether Biome supports a language natively
+ *
+ * @param languageId The language identifier to check
+ */
+const isNativelySupportedLanguage = (
+	languageId: string,
+): languageId is SupportedLanguage => {
+	return (supportedLanguages as readonly string[]).includes(languageId);
+};
+
+/**
+ * Retrieves the language identifier aliases
+ *
+ * This function combines the default aliases with the ones configured with the
+ * `biome.languageAliases` setting. The aliases configured for a language
+ * replace its default ones, and aliases that are themselves languages Biome
+ * supports natively are ignored.
+ *
+ * @param scope The scope in which to look up the setting
+ * @returns The language Biome supports, keyed by its alias
+ */
+export const languageAliases = (
+	scope?: ConfigurationScope,
+): Map<string, SupportedLanguage> => {
+	const userAliases = config<Record<string, unknown>>("languageAliases", {
+		scope,
+		default: {},
+	});
+
+	const aliases = new Map<string, SupportedLanguage>();
+
+	for (const [language, languageAliasList] of Object.entries({
+		...defaultLanguageAliases,
+		...userAliases,
+	})) {
+		if (
+			!isNativelySupportedLanguage(language) ||
+			!Array.isArray(languageAliasList)
+		) {
+			continue;
+		}
+
+		for (const alias of languageAliasList) {
+			if (typeof alias === "string" && !isNativelySupportedLanguage(alias)) {
+				aliases.set(alias, language);
+			}
+		}
+	}
+
+	return aliases;
+};
+
+/**
+ * Replaces the language identifier of a document with the language it is an
+ * alias of, if any.
+ *
+ * The LSP server only receives the language identifier of a document when it
+ * is opened, and uses it over the file extension to determine its language, so
+ * this is the only notification in which it must be translated.
+ */
+export const resolveLanguageAlias = (
+	document: TextDocument,
+	aliases: Map<string, SupportedLanguage>,
+): TextDocument => {
+	const languageId = aliases.get(document.languageId);
+
+	if (languageId === undefined) {
+		return document;
+	}
+
+	return new Proxy(document, {
+		get: (target, property) => {
+			if (property === "languageId") {
+				return languageId;
+			}
+
+			const value = Reflect.get(target, property, target);
+
+			return typeof value === "function" ? value.bind(target) : value;
+		},
+	});
+};
+
+/**
+ * Checks whether a language is supported
+ *
+ * A language is supported if Biome supports it natively, or if it is an alias
+ * of a language Biome supports.
+ *
+ * @param languageId The language identifier to check
+ * @param scope The scope in which to look up the aliases
+ */
+export const isSupportedLanguage = (
+	languageId: string,
+	scope?: ConfigurationScope,
+): boolean => {
+	return (
+		isNativelySupportedLanguage(languageId) ||
+		languageAliases(scope).has(languageId)
+	);
 };
 
 /**
