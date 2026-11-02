@@ -105,6 +105,15 @@
 					],
 					"scope": "resource"
 				},
+				"biome.lsp.searchPath": {
+					"type": "string",
+					"default": "",
+					"markdownDescription": "Directory in which to look for the `@biomejs/biome` package, in addition to the root of the workspace folder.\n\nRelative paths are resolved against the root of the workspace folder. If Biome cannot be found in this directory, the extension falls back to the root of the workspace folder.\n\nThis is useful when Biome is installed in a subdirectory of the workspace, such as `./web`. It only affects where the extension looks for Biome, not which files Biome handles.",
+					"examples": [
+						"./web"
+					],
+					"scope": "resource"
+				},
 				"biome.lsp.trace.server": {
 					"type": "string",
 					"enum": [
