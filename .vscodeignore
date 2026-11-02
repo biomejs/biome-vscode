@@ -2,6 +2,7 @@
 !resources
 !LICENSE*
 !out/main.js
+!out/resolve-worker.js
 !out/*.wasm
 !package.json
 !README.md
