@@ -12,12 +12,11 @@ import {
 import { Utils } from "vscode-uri";
 import { version } from "../package.json";
 import Biome from "./biome";
-import { supportedLanguages } from "./constants";
 import Logger from "./logger";
 import Session from "./session";
 import { StatusBar } from "./status-bar";
 import type { ExecutionMode } from "./types";
-import { config, debounce } from "./utils";
+import { config, debounce, isSupportedLanguage } from "./utils";
 
 type FileBackedBiomeSession = {
 	name: string;
@@ -375,7 +374,7 @@ export default class Extension {
 				// supported and create the global instance if it is. This is usually
 				// the case for settings files, which already exist on disk and have
 				// a languageId.
-				if (supportedLanguages.includes(editor?.document.languageId)) {
+				if (isSupportedLanguage(editor.document.languageId)) {
 					await createGlobalInstanceIfNotExists();
 					return;
 				}
@@ -385,7 +384,7 @@ export default class Extension {
 				// Untitled files, which don't have a languageId until the user
 				// sets on manually, or types enough characters for VS Code to guess it.
 				const listener = workspace.onDidChangeTextDocument(async (event) => {
-					if (supportedLanguages.includes(event.document.languageId)) {
+					if (isSupportedLanguage(event.document.languageId)) {
 						await createGlobalInstanceIfNotExists();
 
 						// Dispose the listener because we won't be coming back to
