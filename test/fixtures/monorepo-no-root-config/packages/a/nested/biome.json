@@ -1,0 +1,5 @@
+{
+	"root": false,
+	"extends": "//",
+	"formatter": { "indentWidth": 8 }
+}

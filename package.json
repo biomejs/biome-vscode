@@ -66,7 +66,7 @@
 				"biome.requireConfiguration": {
 					"type": "boolean",
 					"default": false,
-					"description": "Require a Biome configuration file to enable Biome features in the context to which this setting applies.\n\nIf set to `true`, the extension will not provide Biome features unless a configuration file is present in the workspace folder.",
+					"description": "Require a Biome configuration file to enable Biome features in the context to which this setting applies.\n\nIf set to `true`, the extension will not provide Biome features unless a configuration file is present in the workspace folder. In monorepos without a configuration file at the root of the workspace folder, the extension starts a dedicated session for each nested root configuration file instead.",
 					"scope": "resource"
 				},
 				"biome.runFromTemporaryLocation": {

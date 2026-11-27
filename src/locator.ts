@@ -111,7 +111,9 @@ export default class Locator {
 			// Set the current working directory to the project root, if it exists. This runs the `biome` binary from the
 			// project root in case the user's local development environment depends on this, such as when using `asdf`.
 			const folder =
-				this.biome.workspaceFolder?.uri ?? this.biome.singleFileFolder;
+				this.biome.projectRoot ??
+				this.biome.workspaceFolder?.uri ??
+				this.biome.singleFileFolder;
 
 			if (folder) {
 				spawnSyncOptions.cwd = folder.fsPath;
@@ -332,7 +334,8 @@ export default class Locator {
 	private async findBiomeInNodeModules(
 		rootPath?: Uri,
 	): Promise<Uri | undefined> {
-		const searchRoot = rootPath ?? this.biome.workspaceFolder?.uri;
+		const searchRoot =
+			rootPath ?? this.biome.projectRoot ?? this.biome.workspaceFolder?.uri;
 
 		if (!searchRoot) {
 			return;

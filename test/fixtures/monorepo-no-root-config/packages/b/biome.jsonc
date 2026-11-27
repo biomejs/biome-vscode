@@ -1,0 +1,4 @@
+{
+	// Tabs, unlike package a
+	"formatter": { "indentStyle": "tab" }
+}

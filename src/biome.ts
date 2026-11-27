@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { chmodSync, copyFileSync } from "node:fs";
+import { relative } from "node:path";
 import {
 	ConfigurationTarget,
 	type Disposable,
@@ -125,6 +126,15 @@ export default class Biome {
 			return "global";
 		}
 
+		if (this.projectRoot) {
+			const relativePath = relative(
+				this.workspaceFolder.uri.fsPath,
+				this.projectRoot.fsPath,
+			).replaceAll("\\", "/");
+
+			return `${this.workspaceFolder.name}/${relativePath}`;
+		}
+
 		return this.workspaceFolder?.name ?? "unknown";
 	}
 
@@ -138,7 +148,7 @@ export default class Biome {
 
 		return Uri.joinPath(
 			this.extension.context.storageUri,
-			this.workspaceFolder.name,
+			this.name.replaceAll("/", "__"),
 		);
 	}
 
@@ -151,6 +161,7 @@ export default class Biome {
 		public readonly extension: Extension,
 		public readonly workspaceFolder?: WorkspaceFolder,
 		public readonly singleFileFolder?: Uri,
+		public readonly projectRoot?: Uri,
 	) {
 		this.logger = new Logger(`Biome (${this.name})`);
 		this.locator = new Locator(this);
@@ -183,6 +194,24 @@ export default class Biome {
 		workspaceFolder: WorkspaceFolder,
 	): Biome {
 		return new Biome(extension, workspaceFolder);
+	}
+
+	/**
+	 * Creates a new Biome instance for a nested project root.
+	 *
+	 * This is used in monorepos where the workspace folder has no Biome
+	 * configuration file at its root, but some of its sub-directories do.
+	 *
+	 * @param extension The extension instance.
+	 * @param workspaceFolder The workspace folder containing the project.
+	 * @param projectRoot The directory containing the project's configuration file.
+	 */
+	public static createForProjectRoot(
+		extension: Extension,
+		workspaceFolder: WorkspaceFolder,
+		projectRoot: Uri,
+	): Biome {
+		return new Biome(extension, workspaceFolder, undefined, projectRoot);
 	}
 
 	/**
@@ -227,7 +256,7 @@ export default class Biome {
 			this,
 			binary,
 			this.workspaceFolder,
-			this.singleFileFolder,
+			this.projectRoot ?? this.singleFileFolder,
 		);
 
 		try {
