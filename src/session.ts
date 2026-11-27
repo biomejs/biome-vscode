@@ -29,7 +29,7 @@ export default class Session {
 	private client: LanguageClient | undefined;
 
 	public get selectorRoot(): Uri | undefined {
-		return this.folder?.uri ?? this.singleFileFolder;
+		return this.singleFileFolder ?? this.folder?.uri;
 	}
 
 	public get biomeVersion(): string | undefined {
@@ -287,6 +287,16 @@ class BiomeLanguageClient extends LanguageClient {
 
 		if (params.initializationOptions?.rootUri) {
 			params.rootUri = params.initializationOptions?.rootUri.toString();
+		}
+
+		// When a custom root is provided (single file or nested project root),
+		// make sure Biome treats it as the only workspace folder, otherwise it
+		// would prefer the workspace folders over the root URI.
+		if (params.initializationOptions?.rootUri && params.workspaceFolders) {
+			const rootUri = params.initializationOptions.rootUri.toString();
+			params.workspaceFolders = [
+				{ uri: rootUri, name: rootUri.split("/").pop() ?? rootUri },
+			];
 		}
 
 		if (params.initializationOptions?.rootPath) {

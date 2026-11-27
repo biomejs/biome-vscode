@@ -3,6 +3,8 @@ import {
 	ConfigurationTarget,
 	commands,
 	type ExtensionContext,
+	type FileSystemWatcher,
+	RelativePattern,
 	type TextEditor,
 	Uri,
 	type WorkspaceFolder,
@@ -17,7 +19,7 @@ import Logger from "./logger";
 import Session from "./session";
 import { StatusBar } from "./status-bar";
 import type { ExecutionMode } from "./types";
-import { config, debounce } from "./utils";
+import { config, debounce, findNestedConfigRoots } from "./utils";
 
 type FileBackedBiomeSession = {
 	name: string;
@@ -56,7 +58,13 @@ export default class Extension {
 	 * in the workspace. This allows the extension to provide Biome support for
 	 * each workspace folder independently.
 	 */
-	public biomes: Map<WorkspaceFolder | "global" | "single", Biome>;
+	public biomes: Map<WorkspaceFolder | "global" | "single" | string, Biome>;
+
+	/**
+	 * Watchers for Biome configuration files in workspace folders that run
+	 * nested project sessions (monorepos without a root configuration).
+	 */
+	private configFileWatchers: FileSystemWatcher[] = [];
 
 	/**
 	 * The extension's execution mode
@@ -101,11 +109,30 @@ export default class Extension {
 		// and return the corresponding Biome instance
 		const folder = workspace.getWorkspaceFolder(editor.document.uri);
 
-		if (folder) {
-			return this.biomes.get(folder);
+		if (!folder) {
+			return undefined;
 		}
 
-		return undefined;
+		// Prefer the deepest nested project root containing the document
+		const documentPath = this.normalizeRootPath(editor.document.uri);
+		let match: { biome: Biome; depth: number } | undefined;
+
+		for (const biome of this.biomes.values()) {
+			if (biome.workspaceFolder !== folder || !biome.projectRoot) {
+				continue;
+			}
+
+			const root = this.normalizeRootPath(biome.projectRoot);
+
+			if (
+				this.isSameOrNestedRoot(root, documentPath) &&
+				(!match || root.length > match.depth)
+			) {
+				match = { biome, depth: root.length };
+			}
+		}
+
+		return match?.biome ?? this.biomes.get(folder);
 	}
 
 	/**
@@ -224,6 +251,8 @@ export default class Extension {
 			this.biomes.delete(_folder);
 		}
 
+		this.disposeConfigFileWatchers();
+
 		this.logger.info("⏹️ Biome extension stopped.");
 	}
 
@@ -331,8 +360,70 @@ export default class Extension {
 
 		// Create the Biome instances for each workspace folder
 		for (const folder of folders) {
-			this.biomes.set(folder, Biome.createForWorkspaceFolder(this, folder));
+			const projectRoots = await findNestedConfigRoots(folder);
+
+			if (projectRoots.length === 0) {
+				this.biomes.set(folder, Biome.createForWorkspaceFolder(this, folder));
+				continue;
+			}
+
+			this.logger.info(
+				`📦 No Biome configuration at the root of "${folder.name}", found ${projectRoots.length} nested project(s).`,
+			);
+
+			for (const root of projectRoots) {
+				this.biomes.set(
+					root.toString(),
+					Biome.createForProjectRoot(this, folder, root),
+				);
+			}
 		}
+
+		this.watchConfigFiles(folders);
+	}
+
+	/**
+	 * Watches Biome configuration files so that the set of sessions is
+	 * recomputed when configuration files are added or removed (for example
+	 * when a root configuration is created in a monorepo, or a new package is
+	 * added).
+	 */
+	private watchConfigFiles(folders: readonly WorkspaceFolder[]): void {
+		this.disposeConfigFileWatchers();
+
+		const restart = debounce(async (uri: Uri) => {
+			if (uri.fsPath.split(/[\\/]/).includes("node_modules")) {
+				return;
+			}
+
+			this.logger.info(
+				`📦 Biome configuration "${uri.fsPath}" added or removed.`,
+			);
+			await this.restart();
+		}, 1000);
+
+		for (const folder of folders) {
+			const watcher = workspace.createFileSystemWatcher(
+				new RelativePattern(folder, "**/biome.{json,jsonc}"),
+				false,
+				true,
+				false,
+			);
+
+			watcher.onDidCreate(restart);
+			watcher.onDidDelete(restart);
+
+			this.configFileWatchers.push(watcher);
+			this.context.subscriptions.push(watcher);
+		}
+	}
+
+	private disposeConfigFileWatchers(): void {
+		for (const watcher of this.configFileWatchers) {
+			watcher.dispose();
+		}
+
+		this.configFileWatchers = [];
 	}
 
 	/**

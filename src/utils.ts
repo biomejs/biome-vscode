@@ -7,6 +7,7 @@ import { extname, isAbsolute } from "node:path";
 import {
 	type ConfigurationScope,
 	FileType,
+	RelativePattern,
 	Uri,
 	type WorkspaceFolder,
 	window,
@@ -287,4 +288,83 @@ export const safeSpawnSync = (
 	}
 
 	return output;
+};
+
+const configFileNames = ["biome.json", "biome.jsonc"];
+
+/**
+ * Discovers nested Biome project roots inside a workspace folder
+ *
+ * In monorepos, the workspace folder itself may not contain a Biome
+ * configuration file, while individual packages do. In that case, Biome
+ * would not pick up any configuration when started from the workspace folder,
+ * so we need to start a dedicated session for each package instead.
+ *
+ * This function returns an empty array when the workspace folder already has
+ * a configuration file at its root (or a custom `biome.configurationPath` is
+ * set), meaning the regular per-folder session should be used.
+ *
+ * Otherwise, it returns the directories of all nested root configuration
+ * files, excluding those inside `node_modules`, those that explicitly declare
+ * `"root": false`, and those nested under another discovered root (Biome
+ * resolves those itself from the parent session).
+ */
+export const findNestedConfigRoots = async (
+	folder: WorkspaceFolder,
+): Promise<Uri[]> => {
+	if (
+		config<string | null>("configurationPath", { scope: folder, default: null })
+	) {
+		return [];
+	}
+
+	for (const name of configFileNames) {
+		if (await fileExists(Uri.joinPath(folder.uri, name))) {
+			return [];
+		}
+	}
+
+	const files = await workspace.findFiles(
+		new RelativePattern(folder, "**/biome.{json,jsonc}"),
+		"**/node_modules/**",
+	);
+
+	const candidates: Uri[] = [];
+
+	for (const file of files) {
+		try {
+			const content = new TextDecoder().decode(
+				await workspace.fs.readFile(file),
+			);
+
+			// Configurations that explicitly opt out of being a root are
+			// resolved by Biome from their parent root configuration.
+			if (/"root"\s*:\s*false/.test(content)) {
+				continue;
+			}
+		} catch {
+			continue;
+		}
+
+		candidates.push(Utils.dirname(file));
+	}
+
+	// Sort by depth so that parents come before their children
+	candidates.sort((a, b) => a.path.length - b.path.length);
+
+	const roots: Uri[] = [];
+
+	for (const candidate of candidates) {
+		const isNested = roots.some(
+			(root) =>
+				candidate.path === root.path ||
+				candidate.path.startsWith(`${root.path}/`),
+		);
+
+		if (!isNested) {
+			roots.push(candidate);
+		}
+	}
+
+	return roots;
 };
